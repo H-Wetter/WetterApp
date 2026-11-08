@@ -1,0 +1,28 @@
+{
+  "name": "wetter-app",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "build": "tsc -b && vite build",
+    "lint": "oxlint",
+    "preview": "vite preview",
+    "encrypt": "staticrypt dist/index.html -d dist-encrypted --short --remember 30 --template-title \"Wetter-App\" --template-instructions \"Bitte Passwort eingeben, um die Wetter-App zu öffnen.\" --template-placeholder \"Passwort\" --template-button \"Öffnen\" --template-remember \"Angemeldet bleiben (30 Tage)\" --template-error \"Falsches Passwort\" --template-toggle-show \"Passwort anzeigen\" --template-toggle-hide \"Passwort verbergen\" --template-color-primary \"#2f6fdd\" --template-color-secondary \"#f4f6f9\""
+  },
+  "dependencies": {
+    "react": "^19.3.1",
+    "react-dom": "^19.3.1"
+  },
+  "devDependencies": {
+    "@types/node": "^24.19.2",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@vitejs/plugin-react": "^6.1.2",
+    "oxlint": "^1.90.0",
+    "staticrypt": "^3.5.4",
+    "typescript": "~7.0.2",
+    "vite": "^8.3.6",
+    "vite-plugin-singlefile": "^2.3.4"
+  }
+}

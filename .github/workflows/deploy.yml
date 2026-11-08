@@ -1,0 +1,78 @@
+# Baut die App bei jedem Hochladen auf den Branch "main"
+# und veröffentlicht sie automatisch auf GitHub Pages.
+name: Veröffentlichen auf GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  # Erlaubt zusätzlich einen Start per Knopfdruck im Reiter "Actions".
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# Nie zwei Veröffentlichungen gleichzeitig.
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Code holen
+        uses: actions/checkout@v4
+
+      - name: Node.js einrichten
+        uses: actions/setup-node@v4
+        with:
+          node-version: lts/*
+          cache: npm
+
+      - name: Pakete installieren
+        run: npm ci
+
+      - name: App bauen (als eine einzige Datei)
+        run: npm run build
+
+      # Das Passwort kommt aus dem GitHub-Secret STATICRYPT_PASSWORD –
+      # es steht nirgends im Code und wird in den Protokollen als *** ausgeblendet.
+      - name: Passwort prüfen
+        env:
+          STATICRYPT_PASSWORD: ${{ secrets.STATICRYPT_PASSWORD }}
+        run: |
+          if [ -z "$STATICRYPT_PASSWORD" ]; then
+            echo "::error::Das Secret STATICRYPT_PASSWORD fehlt. Bitte unter Settings → Secrets and variables → Actions anlegen."
+            exit 1
+          fi
+          if [ ${#STATICRYPT_PASSWORD} -lt 16 ]; then
+            echo "::error::Das Passwort ist zu kurz (mindestens 16 Zeichen). Bitte ein längeres Secret hinterlegen."
+            exit 1
+          fi
+
+      - name: App verschlüsseln (StatiCrypt)
+        env:
+          STATICRYPT_PASSWORD: ${{ secrets.STATICRYPT_PASSWORD }}
+        run: npm run encrypt
+
+      - name: GitHub Pages vorbereiten
+        uses: actions/configure-pages@v5
+
+      # Hochgeladen wird NUR die verschlüsselte Datei, nie die unverschlüsselte.
+      - name: Verschlüsselte App hochladen
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: dist-encrypted
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Veröffentlichen
+        id: deployment
+        uses: actions/deploy-pages@v4
