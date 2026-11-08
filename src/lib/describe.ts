@@ -127,19 +127,32 @@ function windSentence(day: DaySummary, place: Place): string {
   return `${s}.`
 }
 
-/** Satz 5: Inversion / Hochnebel */
-function inversionSentence(inv: DayInversion | null, place: Place): string {
+/** Höhe auf 50 m gerundet, z. B. „900 m“ */
+function meters(h: number): string {
+  return `${Math.round(h / 50) * 50} m`
+}
+
+/** Satz 5: Inversion / Nebel – aus dem Temperaturprofil am Standort */
+function inversionSentence(inv: DayInversion | null, place: Place, elevation: number | undefined): string {
   if (!inv || inv.hours < 3) return ''
   const when = inv.parts.length ? ` ${joinParts(inv.parts)}` : ''
-  if (inv.fog) {
-    return place === 'valley'
-      ? 'Inversion: Hochnebel oder Nebel im Tal möglich, oben sonnig und mild.'
-      : 'Über der Inversion: sonnig und mild – mit etwas Glück Blick aufs Nebelmeer.'
+  const strength = inv.maxStrength !== null && inv.maxStrength >= 1 ? ` (oben bis zu ${num(inv.maxStrength, 1)} °C wärmer)` : ''
+
+  if (inv.fog && inv.fogTop !== null) {
+    const kind = inv.fogFromGround ? 'Nebel' : 'Hochnebel'
+    if (place === 'valley') {
+      return `Inversion${when}: ${kind} möglich, Obergrenze etwa ${meters(inv.fogTop)} – darüber sonnig und mild${strength}.`
+    }
+    if (elevation === undefined) return 'Über der Inversion: sonnig und mild.'
+    return elevation > inv.fogTop + 100
+      ? `Der Gipfel liegt über der Nebelobergrenze (etwa ${meters(inv.fogTop)}): sonnig und mild, mit etwas Glück Blick aufs Nebelmeer.`
+      : `Die Nebelobergrenze liegt etwa bei ${meters(inv.fogTop)} – der Gipfel steckt wohl selbst im Nebel.`
   }
-  const diff = inv.maxDiff !== null && inv.maxDiff >= 0.5 ? ` (bis zu ${num(inv.maxDiff, 1)} °C)` : ''
+
+  const top = inv.top !== null ? ` bis etwa ${meters(inv.top)}` : ''
   return place === 'valley'
-    ? `Inversion: Am Berg ist es${when} wärmer als im Tal${diff} – kalte Luft sammelt sich im Tal.`
-    : `Inversion: Am Gipfel ist es${when} milder als im Tal${diff}.`
+    ? `Inversion${when}: Kalte Luft sammelt sich im Tal, nach oben wird es${top} wärmer${strength}.`
+    : `Inversion${when}: Oben ist es milder als im Tal${strength}.`
 }
 
 /** Satz 6: Unsicherheit */
@@ -152,10 +165,17 @@ function uncertaintySentence(day: DaySummary): string {
 }
 
 /** Tagesbeschreibung als Liste von Sätzen. */
-export function describeDay(day: DaySummary, hours: HourSummary[], place: Place, inversion: DayInversion | null): string[] {
+export function describeDay(
+  day: DaySummary,
+  hours: HourSummary[],
+  place: Place,
+  inversion: DayInversion | null,
+  /** Höhe des Orts (m) – für „Gipfel über/unter der Nebelobergrenze“ */
+  elevation?: number,
+): string[] {
   return [
     skySentence(day, hours),
-    inversionSentence(inversion, place),
+    inversionSentence(inversion, place, elevation),
     precipSentence(day),
     tempSentence(day, place),
     windSentence(day, place),

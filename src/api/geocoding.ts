@@ -1,4 +1,5 @@
 import type { WeatherLocation } from '../types/location'
+import { openMeteoError } from './errors'
 
 const GEOCODING_URL = 'https://geocoding-api.open-meteo.com/v1/search'
 
@@ -43,9 +44,7 @@ export async function searchLocations(query: string, signal?: AbortSignal): Prom
   })
 
   const response = await fetch(`${GEOCODING_URL}?${params.toString()}`, { signal })
-  if (!response.ok) {
-    throw new Error(`Ortssuche fehlgeschlagen (HTTP ${response.status})`)
-  }
+  if (!response.ok) throw await openMeteoError(response, 'Ortssuche fehlgeschlagen')
 
   const data = (await response.json()) as GeocodingResponse
   return (data.results ?? []).map((r) => ({

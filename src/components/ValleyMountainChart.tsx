@@ -59,7 +59,13 @@ function VMTooltip({
       <p>
         <span className="swatch vm-mountain" /> {mountainName}: <strong>{fmt(h.mountain)}</strong>
       </p>
-      {h.inversion && <p className="vm-inv-text">Inversion: oben {fmt(h.diff)} wärmer</p>}
+      {h.inversion && (
+        <p className="vm-inv-text">
+          Inversion: nach oben {fmt(h.strength)} wärmer
+          {h.top !== null && `, bis ca. ${Math.round(h.top / 50) * 50} m`}
+          {h.fogTop !== null && ` · Nebel bis ca. ${Math.round(h.fogTop / 50) * 50} m`}
+        </p>
+      )}
     </div>
   )
 }
@@ -77,7 +83,7 @@ export function ValleyMountainChart({ hours, valleyName, mountainName, ticks, no
       </h3>
       <p className="muted small chart-note">
         <span className="swatch vm-valley" /> {valleyName} &nbsp; <span className="swatch vm-mountain" /> {mountainName} &nbsp;
-        <span className="swatch vm-inv" /> Inversion (oben wärmer als unten)
+        <span className="swatch vm-inv" /> Inversion laut Temperaturprofil (oben wärmer als unten)
       </p>
       <div className="chart">
         <ResponsiveContainer width="100%" height="100%">

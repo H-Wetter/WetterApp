@@ -2,6 +2,7 @@ import type { HourlyVariable, MultiModelForecast, Series } from '../types/foreca
 import type { WeatherLocation } from '../types/location'
 import { PRESSURE_LEVELS, WIND_LEVELS, type CloudProfileRaw } from '../types/clouds'
 import { isPlausibleElevation } from './geocoding'
+import { openMeteoError } from './errors'
 
 const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast'
 
@@ -43,11 +44,6 @@ function parseSunTimes(daily: ForecastResponse['daily']): MultiModelForecast['su
       sunset: set ? parseLocalTime(set) : null,
     }
   })
-}
-
-interface ErrorResponse {
-  error: true
-  reason: string
 }
 
 /** Variablen für den Wolkenschnitt (Etappe 4). */
@@ -92,7 +88,7 @@ export async function fetchCloudProfile(
   }
 
   const response = await fetch(`${FORECAST_URL}?${params.toString()}`, { signal })
-  if (!response.ok) throw new Error(`Höhendaten konnten nicht geladen werden (HTTP ${response.status}).`)
+  if (!response.ok) throw await openMeteoError(response, 'Höhendaten konnten nicht geladen werden')
 
   const raw = (await response.json()) as ForecastResponse & { elevation: number }
   const data: CloudProfileRaw['data'] = {}
@@ -153,16 +149,7 @@ export async function fetchMultiModelForecast(
   }
 
   const response = await fetch(`${FORECAST_URL}?${params.toString()}`, { signal })
-  if (!response.ok) {
-    let reason = `HTTP ${response.status}`
-    try {
-      const err = (await response.json()) as ErrorResponse
-      if (err.reason) reason = err.reason
-    } catch {
-      // Antwort war kein JSON – dann bleibt es beim HTTP-Status.
-    }
-    throw new Error(`Wetterdaten konnten nicht geladen werden (${reason}).`)
-  }
+  if (!response.ok) throw await openMeteoError(response, 'Wetterdaten konnten nicht geladen werden')
 
   const raw = (await response.json()) as ForecastResponse
   const times = raw.hourly.time.map(parseLocalTime)

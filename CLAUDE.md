@@ -55,6 +55,9 @@ API-Aufrufe nur in `src/api/`, Berechnungen nur in `src/lib/` – nie direkt in 
 ### Luftqualität & Pollen – `https://air-quality-api.open-meteo.com/v1/air-quality`
 - `pm10, pm2_5, ozone, dust, uv_index, alder_pollen, birch_pollen, grass_pollen, mugwort_pollen, olive_pollen, ragweed_pollen` (Pollen nur Europa, saisonal).
 
+### Geländehöhe – `https://api.open-meteo.com/v1/elevation?latitude=…&longitude=…`
+- Höhenmodell mit 90 m Auflösung, bis 100 Punkte pro Anfrage. **Jeder Punkt zählt als ein Aufruf** (Minutenlimit 600!) → Raster grob anlegen, Ergebnis dauerhaft cachen (Gelände ändert sich nicht).
+
 ### Ortssuche – `https://geocoding-api.open-meteo.com/v1/search?name=…&language=de`
 Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
 
@@ -66,7 +69,7 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
 - **Prognosehorizont:** Tag 1–3 hochauflösend (ICON-D2, AROME), Tag 1–7 Modellvergleich, Tag 8–16 nur Ensemble-Trend.
 - **Wolkenbasis (Schätzung):** Höhe ≈ 125 m × (T − Td) über Grund.
 - **Wolkenschichten:** tief < ca. 2 km, mittel 2–6 km, hoch > 6 km.
-- **Inversion:** wenn Temperatur am Bergpunkt höher als im Tal (oder T850 > T2m bei Tallage) → Hinweis „Inversion, Hochnebel/Nebel im Tal möglich, oben sonnig/mild“.
+- **Inversion:** wenn die Temperatur im Profil der Druckniveaus 1000–850 hPa am Standort nach oben zunimmt (oben wärmer als unten) → Hinweis „Inversion, Hochnebel/Nebel im Tal möglich, oben sonnig/mild“, mit geschätzter Nebelobergrenze (siehe Etappe 5).
 - **Gewitter-Hinweis:** CAPE > 500 J/kg leicht, > 1000 deutlich, > 2000 kräftig; zusammen mit Wettercode prüfen.
 - **Wetterbeschreibung:** zuerst regelbasiert (Textbausteine aus Zahlen). Später optional Claude API – dann nur über ein kleines Backend, nie mit API-Schlüssel im Frontend (kostet Geld!).
 - **Modellunsicherheit** immer sichtbar machen (Streuung), nie nur eine Zahl.
@@ -76,7 +79,11 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
 2. **Modellvergleich:** 7-Tage-Temperatur/Niederschlag/Wind, eine Linie pro Modell + Mittelwert + Streuband.
 3. **Wetter-Kacheln:** heute/morgen kompakt (Symbol aus `weather_code`, Max/Min, Regen, Wind, Böen).
 4. **Wolkenschnitt:** Höhen-Zeit-Diagramm aus `cloud_cover_…hPa`, Wolkenbasis, Zugrichtung.
-5. **Berg & Tal:** zweiter Punkt (Berg), Vergleich, Inversionserkennung, Textbeschreibung für beide Lagen.
+5. **Berg & Tal:** Berg und Tal automatisch finden, Vergleich, Inversionserkennung, Textbeschreibung für beide Lagen.
+   - **Berg:** höchster Punkt im Umkreis des Standorts, ermittelt über die Open-Meteo Elevation API (Raster im Umkreis). Umkreis Standard 15 km, einstellbar 5–30 km. Mindest-Höhendifferenz zum Tal 300 m – sonst Hinweis „kein Berg im Umkreis“.
+   - **Tal:** der Standort selbst bzw. der tiefste Punkt im Umkreis von 5 km.
+   - **Inversionserkennung NICHT über den `elevation`-Parameter** (der rechnet nur mit Standard-Temperaturabnahme um), sondern über das Temperaturprofil der Druckniveaus 1000–850 hPa am Standort.
+   - **Nebelobergrenze:** aus der Luftfeuchte der Druckniveaus abschätzen (feuchte Schicht unter der Inversion).
 6. **Warnungen:** Gewitter (CAPE/Lifted Index), Sturmböen, Schneefall, Nullgradgrenze.
 7. **Umwelt:** Pollen, Feinstaub, UV, Saharastaub.
 8. **Ensemble 8–16 Tage:** Trend mit Unsicherheitsband.

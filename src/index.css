@@ -456,3 +456,13 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
 .radar-scale { display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem; margin-bottom: 0.4rem; }
 .radar-scale span { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.82rem; cursor: help; }
 .radar-scale i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0, 0, 0, 0.15); }
+
+/* Berg & Tal: automatische Suche */
+.terrain-card { display: flex; flex-direction: column; gap: 0.6rem; }
+.terrain-card p { margin: 0; }
+.terrain-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.8rem; }
+.terrain-head .segmented button { padding: 0.3rem 0.65rem; }
+.terrain-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.terrain-list .swatch { vertical-align: middle; }
+.terrain-map { width: 100%; height: 260px; border-radius: 8px; border: 1px solid var(--border); z-index: 0; }
+.terrain-map .leaflet-tile-pane { filter: grayscale(0.6); }

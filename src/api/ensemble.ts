@@ -2,17 +2,13 @@ import { ENSEMBLE_VARIABLES, type EnsembleData, type EnsembleMember, type Ensemb
 import type { Series } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
 import { isPlausibleElevation } from './geocoding'
+import { openMeteoError } from './errors'
 
 const ENSEMBLE_URL = 'https://ensemble-api.open-meteo.com/v1/ensemble'
 
 interface EnsembleResponse {
   utc_offset_seconds: number
   hourly: { time: string[] } & Record<string, Series | string[]>
-}
-
-interface ErrorResponse {
-  error: true
-  reason: string
 }
 
 /**
@@ -41,16 +37,7 @@ export async function fetchEnsemble(
   }
 
   const response = await fetch(`${ENSEMBLE_URL}?${params.toString()}`, { signal })
-  if (!response.ok) {
-    let reason = `HTTP ${response.status}`
-    try {
-      const err = (await response.json()) as ErrorResponse
-      if (err.reason) reason = err.reason
-    } catch {
-      // Antwort war kein JSON – dann bleibt es beim HTTP-Status.
-    }
-    throw new Error(`Ensemble-Daten konnten nicht geladen werden (${reason}).`)
-  }
+  if (!response.ok) throw await openMeteoError(response, 'Ensemble-Daten konnten nicht geladen werden')
 
   const raw = (await response.json()) as EnsembleResponse
   const length = raw.hourly.time.length

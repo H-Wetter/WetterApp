@@ -1,5 +1,6 @@
 import { AQ_VARIABLES, type AirQualityData, type AqVariable } from '../types/airQuality'
 import type { WeatherLocation } from '../types/location'
+import { openMeteoError } from './errors'
 
 const AIR_QUALITY_URL = 'https://air-quality-api.open-meteo.com/v1/air-quality'
 
@@ -20,7 +21,7 @@ export async function fetchAirQuality(location: WeatherLocation, days: number, s
     timezone: 'auto',
   })
   const response = await fetch(`${AIR_QUALITY_URL}?${params.toString()}`, { signal })
-  if (!response.ok) throw new Error(`Luftqualitätsdaten konnten nicht geladen werden (HTTP ${response.status}).`)
+  if (!response.ok) throw await openMeteoError(response, 'Luftqualitätsdaten konnten nicht geladen werden')
 
   const raw = (await response.json()) as AirQualityResponse
   const data = {} as AirQualityData['data']

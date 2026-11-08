@@ -1,6 +1,5 @@
 import { useState } from 'react'
 import { ErrorBoundary } from './components/ErrorBoundary'
-import { DEFAULT_MOUNTAIN } from './lib/defaults'
 import { LocalPage } from './pages/LocalPage'
 import { MountainPage } from './pages/MountainPage'
 import { SynopticPage } from './pages/SynopticPage'
@@ -20,8 +19,6 @@ function App() {
   const [page, setPage] = useState<Page>('local')
   // Gewählter Ort (Tal) – gilt für alle Seiten
   const [location, setLocation] = useState<WeatherLocation | null>(null)
-  // Bergpunkt – vorerst fest der Schöckl, später wählbar
-  const [mountain] = useState<WeatherLocation>(DEFAULT_MOUNTAIN)
 
   return (
     <>
@@ -50,7 +47,7 @@ function App() {
         )}
         {page === 'mountain' && (
           <ErrorBoundary label="Die Seite „Berg & Tal“" resetKey={location ? `${location.latitude},${location.longitude}` : ''}>
-            <MountainPage valley={location} mountain={mountain} onChooseValley={() => setPage('local')} />
+            <MountainPage valley={location} onChooseValley={() => setPage('local')} />
           </ErrorBoundary>
         )}
         {page === 'radar' && (

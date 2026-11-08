@@ -1,4 +1,5 @@
 import type { SynopticGrid } from '../types/synoptic'
+import { openMeteoError } from './errors'
 
 const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast'
 
@@ -109,10 +110,7 @@ async function fetchGrid(signal?: AbortSignal): Promise<SynopticGrid> {
     timezone: 'GMT',
   })
   const response = await fetch(FORECAST_URL, { method: 'POST', body, signal })
-  if (response.status === 429) {
-    throw new Error('Open-Meteo meldet zu viele Anfragen (Tageslimit erreicht). Bitte später erneut versuchen.')
-  }
-  if (!response.ok) throw new Error(`Kartendaten konnten nicht geladen werden (HTTP ${response.status}).`)
+  if (!response.ok) throw await openMeteoError(response, 'Kartendaten konnten nicht geladen werden')
 
   const raw = (await response.json()) as PointResponse[]
   if (!Array.isArray(raw) || raw.length !== lats.length) throw new Error('Kartendaten sind unvollständig.')
