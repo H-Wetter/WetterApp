@@ -1,5 +1,6 @@
 import type { HourlyVariable, MultiModelForecast, Series } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
+import { PRESSURE_LEVELS, WIND_LEVELS, type CloudProfileRaw } from '../types/clouds'
 
 const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast'
 
@@ -46,6 +47,71 @@ function parseSunTimes(daily: ForecastResponse['daily']): MultiModelForecast['su
 interface ErrorResponse {
   error: true
   reason: string
+}
+
+/** Variablen für den Wolkenschnitt (Etappe 4). */
+export function cloudProfileVariables(): string[] {
+  return [
+    ...PRESSURE_LEVELS.map((l) => `cloud_cover_${l}hPa`),
+    ...PRESSURE_LEVELS.map((l) => `geopotential_height_${l}hPa`),
+    ...WIND_LEVELS.flatMap((l) => [`wind_speed_${l}hPa`, `wind_direction_${l}hPa`]),
+    'temperature_2m',
+    'dew_point_2m',
+    'cloud_cover_low',
+  ]
+}
+
+/**
+ * Holt die Bewölkung auf den Druckniveaus samt deren Höhe, dazu Wind in der Höhe
+ * und Temperatur/Taupunkt am Boden (für die Wolkenbasis). Eigene Anfrage, damit die
+ * übrige Vorhersage nicht auf diese größere Datenmenge warten muss.
+ */
+export async function fetchCloudProfile(
+  location: WeatherLocation,
+  modelIds: string[],
+  days: number,
+  signal?: AbortSignal,
+): Promise<CloudProfileRaw> {
+  const variables = cloudProfileVariables()
+  const params = new URLSearchParams({
+    latitude: location.latitude.toFixed(4),
+    longitude: location.longitude.toFixed(4),
+    hourly: variables.join(','),
+    models: modelIds.join(','),
+    forecast_days: String(days),
+    timezone: 'auto',
+  })
+  if (location.elevation !== undefined && location.source !== 'gps') {
+    params.set('elevation', String(Math.round(location.elevation)))
+  }
+
+  const response = await fetch(`${FORECAST_URL}?${params.toString()}`, { signal })
+  if (!response.ok) throw new Error(`Höhendaten konnten nicht geladen werden (HTTP ${response.status}).`)
+
+  const raw = (await response.json()) as ForecastResponse & { elevation: number }
+  const data: CloudProfileRaw['data'] = {}
+  const available = new Set<string>()
+
+  for (const variable of variables) {
+    data[variable] = {}
+    for (const modelId of modelIds) {
+      const key = modelIds.length === 1 ? variable : `${variable}_${modelId}`
+      const values = raw.hourly[key] as Series | undefined
+      if (!values) continue
+      data[variable][modelId] = values
+      if (variable.startsWith('cloud_cover_') && variable.endsWith('hPa') && values.some((v) => v !== null)) {
+        available.add(modelId)
+      }
+    }
+  }
+
+  return {
+    times: raw.hourly.time.map(parseLocalTime),
+    utcOffsetSeconds: raw.utc_offset_seconds,
+    elevation: raw.elevation,
+    data,
+    availableModels: modelIds.filter((id) => available.has(id)),
+  }
 }
 
 /** „2026-11-08T14:00“ (Ortszeit) → Zahl in ms, als UTC gelesen (siehe MultiModelForecast.times). */

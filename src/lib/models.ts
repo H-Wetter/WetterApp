@@ -27,6 +27,13 @@ export const COMPARISON_MODELS: ModelInfo[] = [
   { id: 'dmi_harmonie_arome_europe', label: 'DMI Harmonie', provider: 'Dänemark', color: '#4169e1' },
 ]
 
+/**
+ * Modelle, die Bewölkung auf Druckniveaus liefern (für den Wolkenschnitt). Am 08.11.2026 geprüft:
+ * ECMWF IFS, MeteoSwiss und DMI liefern dort nichts – die fragen wir gar nicht erst ab.
+ */
+const NO_PRESSURE_LEVEL_CLOUDS = new Set(['ecmwf_ifs', 'meteoswiss_icon_seamless', 'dmi_harmonie_arome_europe'])
+export const CLOUD_PROFILE_MODELS = COMPARISON_MODELS.filter((m) => !NO_PRESSURE_LEVEL_CLOUDS.has(m.id))
+
 export function findModel(id: string): ModelInfo | undefined {
   return COMPARISON_MODELS.find((m) => m.id === id)
 }

@@ -8,6 +8,10 @@
   --error: #b42318;
   --notice-bg: #fff5d6;
   --drop: #2f7fe0;
+  --sky: #d6e8fb;
+  --cloud-fill: #6f7b8c;
+  --ground: #b49a7a;
+  --cloud-base: #e8590c;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
   color: var(--text);
@@ -25,6 +29,10 @@
     --error: #ff8a80;
     --notice-bg: #3a3218;
     --drop: #5aa2ff;
+    --sky: #17263a;
+    --cloud-fill: #e3e8ef;
+    --ground: #6b5a45;
+    --cloud-base: #ff8c42;
   }
 }
 
@@ -190,6 +198,26 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
   .tiles { grid-template-columns: repeat(2, 1fr); }
   .h-label { display: none; }
 }
+
+/* ---------- Wolkenschnitt ---------- */
+.cs-wrap { position: relative; width: 100%; touch-action: pan-y; }
+.cs-motion { margin: 0 0 0.4rem; }
+.cs-sky { fill: var(--sky); }
+.cs-cloud { fill: var(--cloud-fill); }
+.cs-ground { fill: var(--ground); }
+.cs-grid { stroke: var(--text); stroke-opacity: 0.12; stroke-dasharray: 3 3; }
+.cs-label { fill: var(--muted); font-size: 11px; }
+.cs-base { fill: none; stroke: var(--cloud-base); stroke-width: 2.5; stroke-dasharray: 5 3; }
+.cs-arrow path { fill: var(--text); fill-opacity: 0.75; }
+.cs-now { stroke: var(--accent); stroke-width: 1.5; stroke-dasharray: 4 3; }
+.cs-hover { fill: var(--accent); }
+.cs-tooltip { position: absolute; pointer-events: none; z-index: 2; width: 210px; }
+.cs-legend { list-style: none; padding: 0; margin: 0.5rem 0 0; display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; }
+.cs-legend li { display: inline-flex; align-items: center; gap: 0.35rem; }
+.cs-key { display: inline-block; width: 18px; height: 10px; border-radius: 2px; }
+.cs-key-cloud { background: linear-gradient(90deg, var(--sky), var(--cloud-fill)); }
+.cs-key-base { height: 0; border-top: 2.5px dashed var(--cloud-base); border-radius: 0; }
+.cs-key-ground { background: var(--ground); }
 
 /* ---------- Modellvergleich ---------- */
 .comparison { padding: 0; }

@@ -3,6 +3,8 @@ import { sliceForecast } from '../lib/chartData'
 import { FEW_MODELS, summarizeHours, type DaySummary, type HourSummary } from '../lib/daily'
 import { formatDate, formatHour, hourTicks, relativeDayName } from '../lib/time'
 import type { ModelInfo, MultiModelForecast } from '../types/forecast'
+import type { CloudProfileRaw } from '../types/clouds'
+import { CloudSectionBlock } from './CloudSectionBlock'
 import { ForecastCharts } from './ForecastCharts'
 import { MoonIcon, SmallIcon, WeatherIcon } from './WeatherIcon'
 import { WindArrow } from './WindArrow'
@@ -15,6 +17,9 @@ interface Props {
   statIds: string[]
   /** Modelle mit eigener Linie (nur bei aufgeklapptem Modellvergleich) */
   lineModels: ModelInfo[]
+  /** Höhendaten für den Wolkenschnitt (`null` = lädt noch oder Fehler) */
+  cloudProfile: CloudProfileRaw | null
+  cloudError: string | null
   onClose: () => void
 }
 
@@ -34,7 +39,7 @@ function formatTime(ms: number): string {
 const STRIP_STEP = 3
 
 /** Stundenansicht eines Tages: gleiche Diagramme wie der 7-Tage-Verlauf, nur für 24 Stunden. */
-export function DayDetail({ forecast, day, now, statIds, lineModels, onClose }: Props) {
+export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfile, cloudError, onClose }: Props) {
   const dayForecast = useMemo(() => sliceForecast(forecast, day.startIndex, day.endIndex), [forecast, day])
   const hours = useMemo(() => summarizeHours(forecast, day), [forecast, day])
   const ticks = useMemo(() => hourTicks(dayForecast.times, 3), [dayForecast])
@@ -139,6 +144,18 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, onClose }: 
           tickFormatter={formatHour}
           compact
           now={now}
+        />
+        <CloudSectionBlock
+          profile={cloudProfile}
+          error={cloudError}
+          modelIds={statIds}
+          from={day.startIndex}
+          to={day.endIndex}
+          ticks={ticks}
+          tickFormatter={formatHour}
+          arrowStep={3}
+          now={now}
+          compact
         />
       </div>
 

@@ -1,8 +1,10 @@
 import { useEffect, useMemo, useState } from 'react'
-import { fetchMultiModelForecast } from '../api/openMeteo'
+import { fetchCloudProfile, fetchMultiModelForecast } from '../api/openMeteo'
+import type { CloudProfileRaw } from '../types/clouds'
+import { CloudSectionBlock } from './CloudSectionBlock'
 import { reachInDays, sliceForecast } from '../lib/chartData'
 import { summarizeDays } from '../lib/daily'
-import { COMPARISON_MODELS } from '../lib/models'
+import { CLOUD_PROFILE_MODELS, COMPARISON_MODELS } from '../lib/models'
 import { dayStarts, localNow } from '../lib/time'
 import type { ModelInfo, MultiModelForecast } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
@@ -17,6 +19,7 @@ const CHART_DAYS = 7
 const OPEN_KEY = 'wetter-app.comparison-open'
 
 type Result = { key: string; forecast: MultiModelForecast } | { key: string; error: string }
+type CloudResult = { key: string; profile: CloudProfileRaw } | { key: string; error: string }
 
 function readOpen(): boolean {
   try {
@@ -34,6 +37,7 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
   // Modellvergleich: aufgeklappt? Welche Modelle ausgeblendet? Gilt für alle Diagramme (auch Stundenansicht).
   const [compareOpen, setCompareOpen] = useState(readOpen)
   const [hidden, setHidden] = useState<Set<string>>(new Set())
+  const [cloudResult, setCloudResult] = useState<CloudResult | null>(null)
 
   // Eindeutiger Schlüssel der aktuellen Anfrage. Passt das Ergebnis nicht dazu, laden wir gerade.
   const requestKey = `${location.latitude},${location.longitude},${location.elevation ?? ''},${reload}`
@@ -50,11 +54,21 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
         const message = err instanceof Error ? err.message : 'Unbekannter Fehler.'
         setResult({ key: requestKey, error: message })
       })
+    // Wolkenschnitt: eigene Anfrage, läuft parallel. Ein Fehler hier betrifft nur dieses Diagramm.
+    fetchCloudProfile(location, CLOUD_PROFILE_MODELS.map((m) => m.id), CHART_DAYS, controller.signal)
+      .then((profile) => setCloudResult({ key: requestKey, profile }))
+      .catch((err: unknown) => {
+        if (controller.signal.aborted) return
+        const message = err instanceof Error ? err.message : 'Unbekannter Fehler.'
+        setCloudResult({ key: requestKey, error: message })
+      })
     return () => controller.abort()
   }, [requestKey, location])
 
   const current = result && result.key === requestKey ? result : null
   const forecast = current && 'forecast' in current ? current.forecast : null
+  const cloudCurrent = cloudResult && cloudResult.key === requestKey ? cloudResult : null
+  const cloudProfile = cloudCurrent && 'profile' in cloudCurrent ? cloudCurrent.profile : null
 
   const days = useMemo(() => (forecast ? summarizeDays(forecast) : []), [forecast])
   const chartForecast = useMemo(() => (forecast ? sliceForecast(forecast, 0, CHART_DAYS * 24) : null), [forecast])
@@ -135,6 +149,8 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
           now={now}
           statIds={statIds}
           lineModels={lineModels}
+          cloudProfile={cloudProfile}
+          cloudError={cloudCurrent && 'error' in cloudCurrent ? cloudCurrent.error : null}
           onClose={() => setSelectedDay(null)}
         />
       )}
@@ -160,6 +176,16 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
           statIds={statIds}
           lineModels={lineModels}
           ticks={dayStarts(chartForecast.times)}
+          now={now}
+        />
+        <CloudSectionBlock
+          profile={cloudProfile}
+          error={cloudCurrent && 'error' in cloudCurrent ? cloudCurrent.error : null}
+          modelIds={statIds}
+          from={0}
+          to={CHART_DAYS * 24}
+          ticks={dayStarts(chartForecast.times)}
+          arrowStep={12}
           now={now}
         />
       </section>
