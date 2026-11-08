@@ -9,6 +9,7 @@ import { dayStarts, localNow } from '../lib/time'
 import type { ModelInfo, MultiModelForecast } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
 import { DailyTiles } from './DailyTiles'
+import { ErrorBoundary } from './ErrorBoundary'
 import { DayDetail } from './DayDetail'
 import { ForecastCharts } from './ForecastCharts'
 import { ModelComparison } from './ModelComparison'
@@ -135,24 +136,28 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
 
   return (
     <>
-      <DailyTiles
-        days={days}
-        now={now}
-        selectedIndex={selectedDay}
-        onSelect={(i) => setSelectedDay((prev) => (prev === i ? null : i))}
-      />
+      <ErrorBoundary label="Die Tageskacheln" resetKey={requestKey}>
+        <DailyTiles
+          days={days}
+          now={now}
+          selectedIndex={selectedDay}
+          onSelect={(i) => setSelectedDay((prev) => (prev === i ? null : i))}
+        />
+      </ErrorBoundary>
 
       {selected && (
-        <DayDetail
-          forecast={forecast}
-          day={selected}
-          now={now}
-          statIds={statIds}
-          lineModels={lineModels}
-          cloudProfile={cloudProfile}
-          cloudError={cloudCurrent && 'error' in cloudCurrent ? cloudCurrent.error : null}
-          onClose={() => setSelectedDay(null)}
-        />
+        <ErrorBoundary label="Die Stundenansicht" resetKey={`${requestKey}-${selected.dayStart}`}>
+          <DayDetail
+            forecast={forecast}
+            day={selected}
+            now={now}
+            statIds={statIds}
+            lineModels={lineModels}
+            cloudProfile={cloudProfile}
+            cloudError={cloudCurrent && 'error' in cloudCurrent ? cloudCurrent.error : null}
+            onClose={() => setSelectedDay(null)}
+          />
+        </ErrorBoundary>
       )}
 
       <section className="trend">
@@ -161,33 +166,39 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
           Dicke Linie = Mittelwert aller Modelle, graue Fläche = Spanne vom niedrigsten bis zum höchsten Modell. Je breiter die Fläche,
           desto unsicherer die Vorhersage.
         </p>
-        <ModelComparison
-          open={compareOpen}
-          onToggleOpen={toggleCompare}
-          models={available}
-          hidden={hidden}
-          reach={reach}
-          onToggleModel={toggleModel}
-          onShowAll={() => setHidden(new Set())}
-          onHideAll={() => setHidden(new Set(available.map((m) => m.id)))}
-        />
-        <ForecastCharts
-          forecast={chartForecast}
-          statIds={statIds}
-          lineModels={lineModels}
-          ticks={dayStarts(chartForecast.times)}
-          now={now}
-        />
-        <CloudSectionBlock
-          profile={cloudProfile}
-          error={cloudCurrent && 'error' in cloudCurrent ? cloudCurrent.error : null}
-          modelIds={statIds}
-          from={0}
-          to={CHART_DAYS * 24}
-          ticks={dayStarts(chartForecast.times)}
-          arrowStep={12}
-          now={now}
-        />
+        <ErrorBoundary label="Der Modellvergleich" resetKey={requestKey}>
+          <ModelComparison
+            open={compareOpen}
+            onToggleOpen={toggleCompare}
+            models={available}
+            hidden={hidden}
+            reach={reach}
+            onToggleModel={toggleModel}
+            onShowAll={() => setHidden(new Set())}
+            onHideAll={() => setHidden(new Set(available.map((m) => m.id)))}
+          />
+        </ErrorBoundary>
+        <ErrorBoundary label="Die Verlaufsdiagramme" resetKey={requestKey}>
+          <ForecastCharts
+            forecast={chartForecast}
+            statIds={statIds}
+            lineModels={lineModels}
+            ticks={dayStarts(chartForecast.times)}
+            now={now}
+          />
+        </ErrorBoundary>
+        <ErrorBoundary label="Wolken nach Höhe" resetKey={requestKey}>
+          <CloudSectionBlock
+            profile={cloudProfile}
+            error={cloudCurrent && 'error' in cloudCurrent ? cloudCurrent.error : null}
+            modelIds={statIds}
+            from={0}
+            to={CHART_DAYS * 24}
+            ticks={dayStarts(chartForecast.times)}
+            arrowStep={12}
+            now={now}
+          />
+        </ErrorBoundary>
       </section>
     </>
   )

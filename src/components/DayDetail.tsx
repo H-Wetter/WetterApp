@@ -5,6 +5,7 @@ import { formatDate, formatHour, hourTicks, relativeDayName } from '../lib/time'
 import type { ModelInfo, MultiModelForecast } from '../types/forecast'
 import type { CloudProfileRaw } from '../types/clouds'
 import { CloudSectionBlock } from './CloudSectionBlock'
+import { ErrorBoundary } from './ErrorBoundary'
 import { ForecastCharts } from './ForecastCharts'
 import { MoonIcon, SmallIcon, WeatherIcon } from './WeatherIcon'
 import { WindArrow } from './WindArrow'
@@ -136,27 +137,31 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfil
       </ol>
 
       <div className="detail-charts">
-        <ForecastCharts
-          forecast={dayForecast}
-          statIds={dayStatIds}
-          lineModels={dayLineModels}
-          ticks={ticks}
-          tickFormatter={formatHour}
-          compact
-          now={now}
-        />
-        <CloudSectionBlock
-          profile={cloudProfile}
-          error={cloudError}
-          modelIds={statIds}
-          from={day.startIndex}
-          to={day.endIndex}
-          ticks={ticks}
-          tickFormatter={formatHour}
-          arrowStep={3}
-          now={now}
-          compact
-        />
+        <ErrorBoundary label="Die Stundendiagramme" resetKey={day.dayStart}>
+          <ForecastCharts
+            forecast={dayForecast}
+            statIds={dayStatIds}
+            lineModels={dayLineModels}
+            ticks={ticks}
+            tickFormatter={formatHour}
+            compact
+            now={now}
+          />
+        </ErrorBoundary>
+        <ErrorBoundary label="Wolken nach Höhe" resetKey={day.dayStart}>
+          <CloudSectionBlock
+            profile={cloudProfile}
+            error={cloudError}
+            modelIds={statIds}
+            from={day.startIndex}
+            to={day.endIndex}
+            ticks={ticks}
+            tickFormatter={formatHour}
+            arrowStep={3}
+            now={now}
+            compact
+          />
+        </ErrorBoundary>
       </div>
 
       <details className="hour-table">

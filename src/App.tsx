@@ -1,4 +1,5 @@
 import { useState } from 'react'
+import { ErrorBoundary } from './components/ErrorBoundary'
 import { DEFAULT_MOUNTAIN } from './lib/defaults'
 import { LocalPage } from './pages/LocalPage'
 import { MountainPage } from './pages/MountainPage'
@@ -37,9 +38,16 @@ function App() {
         </nav>
       </header>
       <main>
-        {page === 'local' && <LocalPage location={location} setLocation={setLocation} />}
+        {/* Äußerste Fehlergrenze je Seite: Selbst wenn eine Seite scheitert, bleiben Kopfzeile und andere Seite nutzbar. */}
+        {page === 'local' && (
+          <ErrorBoundary label="Die Seite „Lokal“" resetKey={location ? `${location.latitude},${location.longitude}` : ''}>
+            <LocalPage location={location} setLocation={setLocation} />
+          </ErrorBoundary>
+        )}
         {page === 'mountain' && (
-          <MountainPage valley={location} mountain={mountain} onChooseValley={() => setPage('local')} />
+          <ErrorBoundary label="Die Seite „Berg & Tal“" resetKey={location ? `${location.latitude},${location.longitude}` : ''}>
+            <MountainPage valley={location} mountain={mountain} onChooseValley={() => setPage('local')} />
+          </ErrorBoundary>
         )}
       </main>
     </>

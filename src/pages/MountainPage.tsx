@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fetchMultiModelForecast } from '../api/openMeteo'
+import { ErrorBoundary } from '../components/ErrorBoundary'
 import { PlaceDayCard } from '../components/PlaceDayCard'
 import { ValleyMountainChart } from '../components/ValleyMountainChart'
 import { summarizeDays, summarizeHours } from '../lib/daily'
@@ -139,19 +140,25 @@ export function MountainPage({ valley: chosenValley, mountain, onChooseValley }:
           )}
 
           <div className="place-grid">
-            <PlaceDayCard title="Tal" location={valley} elevation={valley.elevation} day={vDay} sentences={valleyText} variant="valley" />
+            <ErrorBoundary label="Die Tal-Karte" resetKey={`${key}-${selected}`}>
+              <PlaceDayCard title="Tal" location={valley} elevation={valley.elevation} day={vDay} sentences={valleyText} variant="valley" />
+            </ErrorBoundary>
             {mDay && (
-              <PlaceDayCard title="Berg" location={mountain} elevation={mountain.elevation} day={mDay} sentences={mountainText} variant="mountain" />
+              <ErrorBoundary label="Die Berg-Karte" resetKey={`${key}-${selected}`}>
+                <PlaceDayCard title="Berg" location={mountain} elevation={mountain.elevation} day={mDay} sentences={mountainText} variant="mountain" />
+              </ErrorBoundary>
             )}
           </div>
 
-          <ValleyMountainChart
-            hours={comparison}
-            valleyName={valley.name}
-            mountainName={mountain.name}
-            ticks={dayStarts(data.valley.times)}
-            now={now}
-          />
+          <ErrorBoundary label="Das Tal-Berg-Diagramm" resetKey={key}>
+            <ValleyMountainChart
+              hours={comparison}
+              valleyName={valley.name}
+              mountainName={mountain.name}
+              ticks={dayStarts(data.valley.times)}
+              now={now}
+            />
+          </ErrorBoundary>
 
           <p className="muted small">
             <strong>So wird gerechnet:</strong> Für den Gipfel nehmen wir Temperatur und Wind aus der „freien Atmosphäre“ in
