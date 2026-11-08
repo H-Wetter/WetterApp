@@ -451,3 +451,8 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
   .nav { gap: 0.15rem; }
   .nav-item { padding: 0.3rem 0.55rem; font-size: 0.88rem; }
 }
+
+/* Radar */
+.radar-scale { display: flex; flex-wrap: wrap; gap: 0.3rem 0.8rem; margin-bottom: 0.4rem; }
+.radar-scale span { display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.82rem; cursor: help; }
+.radar-scale i { display: inline-block; width: 14px; height: 14px; border-radius: 3px; border: 1px solid rgba(0, 0, 0, 0.15); }

@@ -4,13 +4,15 @@ import { DEFAULT_MOUNTAIN } from './lib/defaults'
 import { LocalPage } from './pages/LocalPage'
 import { MountainPage } from './pages/MountainPage'
 import { SynopticPage } from './pages/SynopticPage'
+import { RadarPage } from './pages/RadarPage'
 import type { WeatherLocation } from './types/location'
 
-type Page = 'local' | 'mountain' | 'synoptic'
+type Page = 'local' | 'mountain' | 'radar' | 'synoptic'
 
 const PAGES: { id: Page; label: string }[] = [
   { id: 'local', label: 'Lokal' },
   { id: 'mountain', label: 'Berg & Tal' },
+  { id: 'radar', label: 'Radar' },
   { id: 'synoptic', label: 'Großwetterlage' },
 ]
 
@@ -49,6 +51,11 @@ function App() {
         {page === 'mountain' && (
           <ErrorBoundary label="Die Seite „Berg & Tal“" resetKey={location ? `${location.latitude},${location.longitude}` : ''}>
             <MountainPage valley={location} mountain={mountain} onChooseValley={() => setPage('local')} />
+          </ErrorBoundary>
+        )}
+        {page === 'radar' && (
+          <ErrorBoundary label="Die Seite „Radar“">
+            <RadarPage location={location} />
           </ErrorBoundary>
         )}
         {page === 'synoptic' && (
