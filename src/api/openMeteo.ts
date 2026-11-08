@@ -58,6 +58,9 @@ export function cloudProfileVariables(): string[] {
     'temperature_2m',
     'dew_point_2m',
     'cloud_cover_low',
+    // für die Niederschlagsbalken unter dem Wolkenschnitt
+    'precipitation',
+    'snowfall',
   ]
 }
 

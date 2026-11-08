@@ -37,7 +37,14 @@ export interface CloudColumn {
   /** geschätzte Wolkenbasis (m über dem Meer), `null` = keine nennenswerten tiefen Wolken */
   base: number | null
   winds: LevelWind[]
+  /** Niederschlag dieser Stunde in mm (Mittel der Modelle) */
+  precip: number | null
+  /** fällt der Niederschlag überwiegend als Schnee? */
+  snow: boolean
 }
+
+/** Laut Open-Meteo: 7 cm Schnee ≈ 10 mm Wasser (gleich wie in weatherSymbol.ts) */
+const MM_WATER_PER_CM_SNOW = 10 / 7
 
 export interface CloudSection {
   columns: CloudColumn[]
@@ -102,7 +109,11 @@ function column(at: Lookup, i: number, t: number, ground: number): CloudColumn {
     })
   }
 
-  return { t, cells, base, winds }
+  const precip = mean(nums(at('precipitation', i)))
+  const snowCm = mean(nums(at('snowfall', i)))
+  const snow = precip !== null && precip > 0 && snowCm !== null && (snowCm * MM_WATER_PER_CM_SNOW) / precip > 0.5
+
+  return { t, cells, base, winds, precip, snow }
 }
 
 /**
