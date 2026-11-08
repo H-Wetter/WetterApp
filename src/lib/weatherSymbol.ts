@@ -29,14 +29,21 @@ export type PrecipKind = 'rain' | 'snow' | 'sleet'
 /** 1 = leicht, 2 = mittel, 3 = stark */
 export type Intensity = 1 | 2 | 3
 
+/**
+ * Wetterlage – daraus wählt die Anzeige das passende Bild (siehe components/WeatherIcon.tsx).
+ * clear = klar/sonnig, partly = heiter, mostly = wolkig, cloudy = stark bewölkt, overcast = bedeckt
+ */
+export type Condition = 'clear' | 'partly' | 'mostly' | 'cloudy' | 'overcast' | 'fog' | 'thunder' | 'precip'
+
 export interface WeatherSymbol {
-  /** Emoji – für Symbole ohne eigene Grafik und als Textersatz */
-  icon: string
   label: string
-  /** Nur bei Niederschlag: Art und Stärke → eigene Grafik mit 1–3 Tropfen/Flocken */
+  condition: Condition
+  /** Tag oder Nacht – nachts zeigt das Symbol den Mond statt der Sonne */
+  isDay: boolean
+  /** Mondphase 0–1 (für klare Nächte) */
+  moonPhase: number
+  /** Nur bei Niederschlag: Art und Stärke */
   precip?: { kind: PrecipKind; intensity: Intensity }
-  /** Nur nachts bei klarem/aufgelockertem Himmel: Mond in seiner Phase, ggf. mit Wolke */
-  night?: { moonPhase: number; cloud: boolean }
 }
 
 /**
@@ -68,8 +75,6 @@ const LABELS: Record<PrecipKind, Record<Intensity, string>> = {
   sleet: { 1: 'Leichter Schneeregen', 2: 'Schneeregen', 3: 'Starker Schneeregen' },
 }
 
-const EMOJI: Record<PrecipKind, string> = { rain: '🌧️', snow: '🌨️', sleet: '🌨️' }
-
 /**
  * Regen, Schnee oder Schneeregen? Wir rechnen den Schnee in Wasser um und schauen,
  * welcher Anteil des Niederschlags als Schnee fällt:
@@ -88,8 +93,10 @@ export function weatherSymbol(input: SymbolInput, scale: 'day' | 'hour'): Weathe
   const precip = input.precipitation ?? 0
   const snow = input.snowfall ?? 0
   const cloud = input.cloudCover ?? 0
+  const base = { isDay: input.isDay, moonPhase: input.moonPhase ?? 0.5 }
+  const make = (condition: Condition, label: string): WeatherSymbol => ({ ...base, condition, label })
 
-  if (input.thunderShare >= 0.3) return { icon: '⛈️', label: 'Gewitter' }
+  if (input.thunderShare >= 0.3) return make('thunder', 'Gewitter')
 
   // Nur wenn mindestens 30 % der Modelle Niederschlag erwarten, zeigen wir ein Niederschlagssymbol.
   // Sonst würde ein einzelnes „nasses“ Modell den Mittelwert hochziehen und einen trockenen Tag verregnen.
@@ -97,26 +104,16 @@ export function weatherSymbol(input: SymbolInput, scale: 'day' | 'hour'): Weathe
     const kind = precipKind(precip, snow)
     // Stärke immer an der passenden Größe messen: Schnee in cm, Regen und Schneeregen in mm.
     const intensity = kind === 'snow' ? level(snow, t.snow) : level(precip, t.rain)
-    return { icon: EMOJI[kind], label: LABELS[kind][intensity], precip: { kind, intensity } }
+    return { ...make('precip', LABELS[kind][intensity]), precip: { kind, intensity } }
   }
 
-  if (input.fogShare >= 0.4) return { icon: '🌫️', label: 'Nebel' }
+  if (input.fogShare >= 0.4) return make('fog', 'Nebel')
 
-  if (!input.isDay) {
-    // Nachts: Mond (in der echten Phase) statt Sonne
-    const moonPhase = input.moonPhase ?? 0.5
-    if (cloud < 20) return { icon: '🌙', label: 'Klar', night: { moonPhase, cloud: false } }
-    if (cloud < 45) return { icon: '🌙', label: 'Leicht bewölkt', night: { moonPhase, cloud: true } }
-    if (cloud < 75) return { icon: '☁️', label: 'Wolkig', night: { moonPhase, cloud: true } }
-    if (cloud < 90) return { icon: '☁️', label: 'Stark bewölkt' }
-    return { icon: '☁️', label: 'Bedeckt' }
-  }
-
-  if (cloud < 20) return { icon: '☀️', label: 'Sonnig' }
-  if (cloud < 45) return { icon: '🌤️', label: 'Heiter' }
-  if (cloud < 75) return { icon: '⛅', label: 'Wolkig' }
-  if (cloud < 90) return { icon: '🌥️', label: 'Stark bewölkt' }
-  return { icon: '☁️', label: 'Bedeckt' }
+  if (cloud < 20) return make('clear', input.isDay ? 'Sonnig' : 'Klar')
+  if (cloud < 45) return make('partly', input.isDay ? 'Heiter' : 'Leicht bewölkt')
+  if (cloud < 75) return make('mostly', 'Wolkig')
+  if (cloud < 90) return make('cloudy', 'Stark bewölkt')
+  return make('overcast', 'Bedeckt')
 }
 
 export function isThunderCode(code: number): boolean {

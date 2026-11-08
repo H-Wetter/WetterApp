@@ -15,6 +15,7 @@ export const FORECAST_VARIABLES: HourlyVariable[] = [
   'apparent_temperature',
   'sunshine_duration',
   'precipitation_probability',
+  'wind_direction_10m',
 ]
 
 /** Rohantwort von Open-Meteo. Bei mehreren Modellen heißen die Felder z. B. „temperature_2m_ecmwf_ifs“. */

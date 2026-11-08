@@ -7,11 +7,7 @@
   --border: #d8dee6;
   --error: #b42318;
   --notice-bg: #fff5d6;
-  --wi-cloud: #a9b4c2;
-  --wi-drop: #2f7fe0;
-  --wi-flake: #3aa0d8;
-  --wi-moon: #f2c94c;
-  --wi-moon-dark: #4a5260;
+  --drop: #2f7fe0;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
   color: var(--text);
@@ -28,11 +24,7 @@
     --border: #2e3642;
     --error: #ff8a80;
     --notice-bg: #3a3218;
-    --wi-cloud: #c3cbd6;
-    --wi-drop: #5aa2ff;
-    --wi-flake: #9fd8ff;
-    --wi-moon: #f6dc7a;
-    --wi-moon-dark: #2b313b;
+    --drop: #5aa2ff;
   }
 }
 
@@ -115,14 +107,15 @@ h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
 .search-results button:hover { border-color: var(--accent); }
 
 /* ---------- Wettersymbole ---------- */
-.wi { display: inline-block; vertical-align: middle; overflow: visible; }
-.wi-cloud { fill: var(--wi-cloud); }
-.wi-drop { fill: var(--wi-drop); }
-.wi-flake { stroke: var(--wi-flake); stroke-width: 3.2; stroke-linecap: round; }
-.wi-emoji { display: inline-block; line-height: 1; vertical-align: middle; }
-.wi-moon { fill: var(--wi-moon); }
-.wi-star { fill: var(--wi-moon); }
-.wi-moon-dark { fill: var(--wi-moon-dark); stroke: var(--wi-moon); stroke-width: 1.5; stroke-opacity: 0.5; }
+/* Meteocons (https://meteocons.com, MIT-Lizenz). Die Bilder haben viel Rand – darum etwas „herausgezoomt“. */
+.wi { position: relative; display: inline-block; vertical-align: middle; flex-shrink: 0; }
+.wi > img { display: block; transform: scale(1.25); }
+/* Abzeichen für „stark“ rechts unten, mit hellem Kreis dahinter, damit es sich abhebt */
+.wi > img.wi-badge {
+  position: absolute; right: -6%; bottom: -6%; transform: none;
+  background: var(--surface); border-radius: 50%; box-shadow: 0 0 0 1px var(--border);
+}
+.wi-small { display: inline-block; vertical-align: middle; flex-shrink: 0; }
 
 /* ---------- Tageskacheln ---------- */
 .tiles-section { display: flex; flex-direction: column; gap: 0.75rem; }
@@ -151,7 +144,8 @@ h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
 .tile-temps { display: flex; gap: 0.5rem; align-items: baseline; margin-top: 0.15rem; }
 .t-max { font-size: 1.3rem; }
 .t-min { color: var(--muted); font-size: 1rem; }
-.tile-row { white-space: nowrap; }
+.tile-row { white-space: nowrap; display: inline-flex; align-items: center; gap: 0.15rem; }
+.tile-date { display: inline-flex; align-items: center; gap: 0.25rem; }
 .tile-models { margin-top: 0.2rem; }
 .tile-models.warn { color: var(--error); }
 .tiles-help { margin: 0; }
@@ -175,7 +169,10 @@ h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
   display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; color: var(--text);
 }
 .day-facts li { display: inline-flex; align-items: center; gap: 0.3rem; }
-.strip-prob { color: var(--wi-drop); }
+.wind-dir { display: inline-flex; align-items: center; gap: 0.15rem; font-weight: 600; color: var(--text); }
+.wind-dir svg { transition: transform 0.2s; }
+.strip-wind { display: inline-flex; align-items: center; gap: 0.15rem; white-space: nowrap; }
+.strip-prob { color: var(--drop); display: inline-flex; align-items: center; gap: 0.1rem; }
 .hour-table summary { cursor: pointer; color: var(--accent); font-size: 0.9rem; }
 .detail-head { display: flex; justify-content: space-between; align-items: center; gap: 0.5rem; }
 .detail-head h3 { margin: 0; }

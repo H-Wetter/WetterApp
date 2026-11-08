@@ -11,6 +11,7 @@ export type HourlyVariable =
   | 'apparent_temperature'
   | 'sunshine_duration'
   | 'precipitation_probability'
+  | 'wind_direction_10m'
 
 /** Sonnenauf- und -untergang eines Tages (Ortszeit, gleiches Format wie MultiModelForecast.times). */
 export interface SunTimes {

@@ -4,7 +4,8 @@ import { FEW_MODELS, summarizeHours, type DaySummary, type HourSummary } from '.
 import { formatDate, formatHour, hourTicks, relativeDayName } from '../lib/time'
 import type { ModelInfo, MultiModelForecast } from '../types/forecast'
 import { ForecastCharts } from './ForecastCharts'
-import { MoonIcon, WeatherIcon } from './WeatherIcon'
+import { MoonIcon, SmallIcon, WeatherIcon } from './WeatherIcon'
+import { WindArrow } from './WindArrow'
 
 interface Props {
   forecast: MultiModelForecast
@@ -65,11 +66,19 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, onClose }: 
         </button>
       </div>
       <ul className="day-facts small">
-        {day.sunrise !== null && <li>🌅 Aufgang {formatTime(day.sunrise)}</li>}
-        {day.sunset !== null && <li>🌇 Untergang {formatTime(day.sunset)}</li>}
+        {day.sunrise !== null && (
+          <li>
+            <SmallIcon name="sunrise" size={24} /> Aufgang {formatTime(day.sunrise)}
+          </li>
+        )}
+        {day.sunset !== null && (
+          <li>
+            <SmallIcon name="sunset" size={24} /> Untergang {formatTime(day.sunset)}
+          </li>
+        )}
         {day.sunshineHours.mean !== null && (
           <li title="Mittel der Modelle (Spanne)">
-            ☀️ {day.sunshineHours.mean.toFixed(1)} h Sonne
+            <SmallIcon name="sun" size={24} /> {day.sunshineHours.mean.toFixed(1)} h Sonne
             {day.sunshineHours.min !== null && day.sunshineHours.max !== null && day.sunshineHours.count > 1 && (
               <span className="muted"> ({day.sunshineHours.min.toFixed(1)}–{day.sunshineHours.max.toFixed(1)})</span>
             )}
@@ -77,11 +86,11 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, onClose }: 
         )}
         {day.feelsMax.mean !== null && (
           <li>
-            🌡️ gefühlt {Math.round(day.feelsMax.mean)}° / {Math.round(day.feelsMin.mean ?? 0)}°
+            <SmallIcon name="thermometer" size={24} /> gefühlt {Math.round(day.feelsMax.mean)}° / {Math.round(day.feelsMin.mean ?? 0)}°
           </li>
         )}
         <li>
-          <MoonIcon phase={day.moon.phase} size={16} label={day.moon.name} /> {day.moon.name} (
+          <MoonIcon phase={day.moon.phase} size={24} label={day.moon.name} /> {day.moon.name} (
           {Math.round(day.moon.illumination * 100)} % beleuchtet)
         </li>
       </ul>
@@ -107,9 +116,15 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, onClose }: 
                 {h.feels.mean === null ? ' ' : `gef. ${Math.round(h.feels.mean)}°`}
               </span>
               <span className="small strip-prob" title="Niederschlagswahrscheinlichkeit">
-                💧 {Math.round(hourProbability(h))} %
+                <SmallIcon name="raindrop" size={14} /> {Math.round(hourProbability(h))} %
               </span>
               <span className="muted small">{(h.precip.mean ?? 0) >= 0.05 ? `${(h.precip.mean ?? 0).toFixed(1)} mm` : ' '}</span>
+              <span className="small strip-wind" title="Wind (Mittel) und Richtung">
+                <WindArrow wind={h.windDirection} size={13} showName={false} /> {Math.round(h.wind.mean ?? 0)}
+                {h.windDirection.degrees !== null && h.windDirection.name !== 'wechselnd' && h.windDirection.name !== 'still'
+                  ? ` ${h.windDirection.name}`
+                  : ''}
+              </span>
             </li>
           )
         })}
@@ -167,10 +182,10 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, onClose }: 
                     <td>
                       {(h.precip.mean ?? 0).toFixed(1)} mm
                       <span className="muted small"> · {Math.round(hourProbability(h))} %</span>
-                      {h.snow !== null && h.snow >= 0.1 && <span className="small"> ❄️ {h.snow.toFixed(1)} cm</span>}
+                      {h.snow !== null && h.snow >= 0.1 && <span className="small"> · Schnee {h.snow.toFixed(1)} cm</span>}
                     </td>
                     <td>
-                      {Math.round(h.wind.mean ?? 0)} / {Math.round(h.gust.mean ?? 0)}
+                      <WindArrow wind={h.windDirection} size={13} /> {Math.round(h.wind.mean ?? 0)} / {Math.round(h.gust.mean ?? 0)}
                       <span className="muted small"> km/h</span>
                     </td>
                     <td>{h.cloud === null ? '–' : `${Math.round(h.cloud)} %`}</td>

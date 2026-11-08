@@ -1,7 +1,8 @@
 import { useState } from 'react'
 import { FEW_MODELS, type DaySummary } from '../lib/daily'
 import { formatDate, relativeDayName } from '../lib/time'
-import { MoonIcon, WeatherIcon } from './WeatherIcon'
+import { MoonIcon, SmallIcon, WeatherIcon } from './WeatherIcon'
+import { WindArrow } from './WindArrow'
 
 interface Props {
   days: DaySummary[]
@@ -72,7 +73,7 @@ export function DailyTiles({ days, now, selectedIndex, onSelect }: Props) {
               <button type="button" className={classes} aria-pressed={i === selectedIndex} onClick={() => onSelect(i)}>
                 <span className="tile-day">{relativeDayName(d.dayStart, now)}</span>
                 <span className="tile-date muted small">
-                  {formatDate(d.dayStart)} <MoonIcon phase={d.moon.phase} size={13} label={`Mond: ${d.moon.name}`} />
+                  {formatDate(d.dayStart)} <MoonIcon phase={d.moon.phase} size={18} label={`Mond: ${d.moon.name}`} />
                 </span>
                 <span className="tile-icon">
                   <WeatherIcon symbol={d.symbol} size={44} />
@@ -88,23 +89,26 @@ export function DailyTiles({ days, now, selectedIndex, onSelect }: Props) {
                 </span>
                 {d.feelsMax.mean !== null && (
                   <span className="tile-row small" title="Gefühlte Temperatur (Wind, Luftfeuchte und Sonne eingerechnet): Höchst- / Tiefstwert">
-                    gefühlt {deg(d.feelsMax.mean)} / {deg(d.feelsMin.mean)}
+                    <SmallIcon name="thermometer" /> gefühlt {deg(d.feelsMax.mean)} / {deg(d.feelsMin.mean)}
                   </span>
                 )}
 
                 <span className="tile-row small" title="Niederschlag (Mittel) · Niederschlagswahrscheinlichkeit">
-                  💧 {(d.precipSum.mean ?? 0).toFixed(1)} mm · {Math.round(probability(d))} %
+                  <SmallIcon name="raindrop" /> {(d.precipSum.mean ?? 0).toFixed(1)} mm · {Math.round(probability(d))} %
                 </span>
                 {d.snowSum !== null && d.snowSum >= 0.5 && (
-                  <span className="tile-row small">❄️ {d.snowSum.toFixed(1)} cm</span>
+                  <span className="tile-row small">Neuschnee {d.snowSum.toFixed(1)} cm</span>
                 )}
                 {d.sunshineHours.mean !== null && (
                   <span className="tile-row small" title="Sonnenstunden (Mittel der Modelle)">
-                    ☀️ {d.sunshineHours.mean.toFixed(1)} h Sonne
+                    <SmallIcon name="sun" /> {d.sunshineHours.mean.toFixed(1)} h Sonne
                   </span>
                 )}
                 <span className="tile-row small" title="Wind (Mittel der Tageshöchstwerte) · Böen">
-                  💨 {Math.round(d.windMax.mean ?? 0)} · Böen {Math.round(d.gustMax.mean ?? 0)} km/h
+                  <SmallIcon name="wind" /> {Math.round(d.windMax.mean ?? 0)} · Böen {Math.round(d.gustMax.mean ?? 0)} km/h
+                </span>
+                <span className="tile-row small muted">
+                  Wind aus <WindArrow wind={d.windDirection} />
                 </span>
 
                 <span className={uncertain ? 'tile-models warn small' : 'tile-models muted small'}>

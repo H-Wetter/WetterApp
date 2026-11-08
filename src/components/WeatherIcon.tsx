@@ -1,4 +1,103 @@
-import type { PrecipKind, WeatherSymbol } from '../lib/weatherSymbol'
+/**
+ * Wettersymbole aus „Meteocons“ von Bas Milius (https://meteocons.com), MIT-Lizenz.
+ * Wir verwenden die statischen Versionen im Stil „fill“ aus dem Paket @bybas/weather-icons.
+ * Beim Bauen werden die Bilder direkt in die App eingebettet (kein Nachladen aus dem Internet).
+ */
+import clearDay from '@bybas/weather-icons/design/fill/export/wi_clear-day.svg'
+import cloudy from '@bybas/weather-icons/design/fill/export/wi_cloudy.svg'
+import drizzle from '@bybas/weather-icons/design/fill/export/wi_drizzle.svg'
+import fog from '@bybas/weather-icons/design/fill/export/wi_fog.svg'
+import moonFirstQuarter from '@bybas/weather-icons/design/fill/export/wi_moon-first-quarter.svg'
+import moonFull from '@bybas/weather-icons/design/fill/export/wi_moon-full.svg'
+import moonLastQuarter from '@bybas/weather-icons/design/fill/export/wi_moon-last-quarter.svg'
+import moonNew from '@bybas/weather-icons/design/fill/export/wi_moon-new.svg'
+import moonWaningCrescent from '@bybas/weather-icons/design/fill/export/wi_moon-waning-crescent.svg'
+import moonWaningGibbous from '@bybas/weather-icons/design/fill/export/wi_moon-waning-gibbous.svg'
+import moonWaxingCrescent from '@bybas/weather-icons/design/fill/export/wi_moon-waxing-crescent.svg'
+import moonWaxingGibbous from '@bybas/weather-icons/design/fill/export/wi_moon-waxing-gibbous.svg'
+import overcast from '@bybas/weather-icons/design/fill/export/wi_overcast.svg'
+import overcastDay from '@bybas/weather-icons/design/fill/export/wi_overcast-day.svg'
+import overcastNight from '@bybas/weather-icons/design/fill/export/wi_overcast-night.svg'
+import partlyDay from '@bybas/weather-icons/design/fill/export/wi_partly-cloudy-day.svg'
+import partlyDaySleet from '@bybas/weather-icons/design/fill/export/wi_partly-cloudy-day-sleet.svg'
+import partlyDaySnow from '@bybas/weather-icons/design/fill/export/wi_partly-cloudy-day-snow.svg'
+import partlyNight from '@bybas/weather-icons/design/fill/export/wi_partly-cloudy-night.svg'
+import partlyNightSleet from '@bybas/weather-icons/design/fill/export/wi_partly-cloudy-night-sleet.svg'
+import partlyNightSnow from '@bybas/weather-icons/design/fill/export/wi_partly-cloudy-night-snow.svg'
+import rain from '@bybas/weather-icons/design/fill/export/wi_rain.svg'
+import raindrop from '@bybas/weather-icons/design/fill/export/wi_raindrop.svg'
+import raindrops from '@bybas/weather-icons/design/fill/export/wi_raindrops.svg'
+import sleet from '@bybas/weather-icons/design/fill/export/wi_sleet.svg'
+import starryNight from '@bybas/weather-icons/design/fill/export/wi_starry-night.svg'
+import snow from '@bybas/weather-icons/design/fill/export/wi_snow.svg'
+import snowflake from '@bybas/weather-icons/design/fill/export/wi_snowflake.svg'
+import sunrise from '@bybas/weather-icons/design/fill/export/wi_sunrise.svg'
+import sunset from '@bybas/weather-icons/design/fill/export/wi_sunset.svg'
+import thermometer from '@bybas/weather-icons/design/fill/export/wi_thermometer.svg'
+import thunder from '@bybas/weather-icons/design/fill/export/wi_thunderstorms-rain.svg'
+import wind from '@bybas/weather-icons/design/fill/export/wi_wind.svg'
+import type { WeatherSymbol } from '../lib/weatherSymbol'
+
+/** Mondphasen in der Reihenfolge des Zyklus (Neumond → … → abnehmende Sichel). */
+const MOON_PHASES = [
+  moonNew,
+  moonWaxingCrescent,
+  moonFirstQuarter,
+  moonWaxingGibbous,
+  moonFull,
+  moonWaningGibbous,
+  moonLastQuarter,
+  moonWaningCrescent,
+]
+
+/** Bild für eine Mondphase 0–1 (auf die nächste der 8 Phasen gerundet). */
+function moonImage(phase: number): string {
+  return MOON_PHASES[Math.round(phase * 8) % 8]
+}
+
+/** Hauptbild und optional ein kleines Abzeichen (für „stark“) zu einem Wettersymbol. */
+function pickImages(symbol: WeatherSymbol): { main: string; badge?: string } {
+  const day = symbol.isDay
+  switch (symbol.condition) {
+    case 'thunder':
+      return { main: thunder }
+    case 'fog':
+      return { main: fog }
+    case 'clear': {
+      if (day) return { main: clearDay }
+      // Klare Nacht: der Mond in seiner tatsächlichen Phase.
+      // Bei Neumond ist der Mond unsichtbar (nur ein blasser Kreis) – dann lieber die Sternennacht.
+      const moon = moonImage(symbol.moonPhase)
+      return { main: moon === moonNew ? starryNight : moon }
+    }
+    case 'partly':
+      return { main: day ? partlyDay : partlyNight }
+    case 'mostly':
+      return { main: day ? overcastDay : overcastNight }
+    case 'cloudy':
+      return { main: cloudy }
+    case 'overcast':
+      return { main: overcast }
+    case 'precip': {
+      const p = symbol.precip
+      if (!p) return { main: rain }
+      if (p.kind === 'rain') {
+        if (p.intensity === 1) return { main: drizzle }
+        if (p.intensity === 2) return { main: rain }
+        return { main: rain, badge: raindrops }
+      }
+      if (p.kind === 'snow') {
+        if (p.intensity === 1) return { main: day ? partlyDaySnow : partlyNightSnow }
+        if (p.intensity === 2) return { main: snow }
+        return { main: snow, badge: snowflake }
+      }
+      // Schneeregen
+      if (p.intensity === 1) return { main: day ? partlyDaySleet : partlyNightSleet }
+      if (p.intensity === 2) return { main: sleet }
+      return { main: sleet, badge: raindrops }
+    }
+  }
+}
 
 interface Props {
   symbol: WeatherSymbol
@@ -6,150 +105,26 @@ interface Props {
   size?: number
 }
 
-/** Ein Regentropfen mit Mittelpunkt (x, y). */
-function Drop({ x, y }: { x: number; y: number }) {
-  return (
-    <path
-      className="wi-drop"
-      d={`M ${x} ${y - 8} C ${x + 6} ${y}, ${x + 5.5} ${y + 8}, ${x} ${y + 8} C ${x - 5.5} ${y + 8}, ${x - 6} ${y}, ${x} ${y - 8} Z`}
-    />
-  )
-}
-
-/** Eine Schneeflocke (sechs Arme) mit Mittelpunkt (x, y). */
-function Flake({ x, y }: { x: number; y: number }) {
-  const r = 7.5
-  const arms = [0, 60, 120].map((deg) => {
-    const rad = (deg * Math.PI) / 180
-    const dx = r * Math.cos(rad)
-    const dy = r * Math.sin(rad)
-    return <line key={deg} x1={x - dx} y1={y - dy} x2={x + dx} y2={y + dy} />
-  })
-  return <g className="wi-flake">{arms}</g>
-}
-
-/** Positionen der Tropfen/Flocken je nach Anzahl (leicht versetzt, damit es nach Fallen aussieht). */
-const POSITIONS: Record<1 | 2 | 3, { x: number; y: number }[]> = {
-  1: [{ x: 32, y: 50 }],
-  2: [{ x: 23, y: 48 }, { x: 41, y: 53 }],
-  3: [{ x: 14, y: 47 }, { x: 32, y: 53 }, { x: 50, y: 47 }],
-}
-
-function Particles({ kind, count }: { kind: PrecipKind; count: 1 | 2 | 3 }) {
-  if (kind === 'sleet') {
-    // Schneeregen: immer ein Tropfen und eine Flocke
-    return (
-      <>
-        <Drop x={22} y={49} />
-        <Flake x={42} y={52} />
-      </>
-    )
-  }
-  const Item = kind === 'rain' ? Drop : Flake
-  return (
-    <>
-      {POSITIONS[count].map((p) => (
-        <Item key={`${p.x}-${p.y}`} x={p.x} y={p.y} />
-      ))}
-    </>
-  )
-}
-
-/**
- * Mondscheibe in der richtigen Phase.
- * Dunkle Scheibe + beleuchteter Teil. Der beleuchtete Teil besteht aus einem Halbkreis (Mondrand)
- * und einer Halb-Ellipse (Licht-Schatten-Grenze). Zunehmend ist (bei uns) rechts hell, abnehmend links.
- */
-export function MoonDisc({ cx, cy, r, phase }: { cx: number; cy: number; r: number; phase: number }) {
-  const rx = Math.abs(Math.cos(2 * Math.PI * phase)) * r
-  const top = `${cx} ${cy - r}`
-  const bottom = `${cx} ${cy + r}`
-  const waxing = phase < 0.5
-  const d = waxing
-    ? `M ${top} A ${r} ${r} 0 0 1 ${bottom} A ${rx} ${r} 0 0 ${phase < 0.25 ? 0 : 1} ${top} Z`
-    : `M ${top} A ${r} ${r} 0 0 0 ${bottom} A ${rx} ${r} 0 0 ${phase > 0.75 ? 1 : 0} ${top} Z`
-  return (
-    <g>
-      <circle className="wi-moon-dark" cx={cx} cy={cy} r={r} />
-      <path className="wi-moon" d={d} />
-    </g>
-  )
-}
-
-/** Kleiner vierzackiger Stern. */
-function Star({ x, y, r }: { x: number; y: number; r: number }) {
-  const s = r * 0.3
-  return (
-    <path
-      className="wi-star"
-      d={`M ${x} ${y - r} L ${x + s} ${y - s} L ${x + r} ${y} L ${x + s} ${y + s} L ${x} ${y + r} L ${x - s} ${y + s} L ${x - r} ${y} L ${x - s} ${y - s} Z`}
-    />
-  )
-}
-
-/** Kleines Mondsymbol (z. B. in den Kacheln). */
-export function MoonIcon({ phase, size = 16, label }: { phase: number; size?: number; label: string }) {
-  return (
-    <svg className="wi" width={size} height={size} viewBox="0 0 64 64" role="img" aria-label={label}>
-      <title>{label}</title>
-      <MoonDisc cx={32} cy={32} r={28} phase={phase} />
-    </svg>
-  )
-}
-
-/** Wolke aus drei Kreisen und einem abgerundeten Rechteck; `dy` verschiebt sie nach unten. */
-function Cloud({ dy = 0 }: { dy?: number }) {
-  return (
-    <g className="wi-cloud" transform={`translate(0 ${dy})`}>
-      <circle cx="20" cy="21" r="9" />
-      <circle cx="33" cy="15" r="12" />
-      <circle cx="46" cy="22" r="9" />
-      <rect x="10" y="20" width="46" height="13" rx="6.5" />
-    </g>
-  )
-}
-
-/**
- * Wettersymbol: Bei Niederschlag eine eigene Grafik (Wolke + 1–3 Tropfen/Flocken),
- * nachts der Mond in seiner Phase (ggf. mit Wolke), sonst das passende Emoji.
- */
+/** Wettersymbol (Meteocons). Bei „stark“ kommt ein kleines Abzeichen rechts unten dazu. */
 export function WeatherIcon({ symbol, size = 32 }: Props) {
-  if (symbol.night) {
-    const { moonPhase, cloud } = symbol.night
-    return (
-      <svg className="wi" width={size} height={size} viewBox="0 0 64 64" role="img" aria-label={symbol.label}>
-        <title>{symbol.label}</title>
-        {cloud ? (
-          <>
-            <MoonDisc cx={40} cy={22} r={16} phase={moonPhase} />
-            <Cloud dy={20} />
-          </>
-        ) : (
-          <>
-            <MoonDisc cx={30} cy={34} r={20} phase={moonPhase} />
-            {/* Zwei Sterne – damit „Nacht“ auch bei Neumond (dunkle Scheibe) sofort erkennbar ist */}
-            <Star x={53} y={12} r={5} />
-            <Star x={57} y={30} r={3} />
-          </>
-        )}
-      </svg>
-    )
-  }
-
-  if (!symbol.precip) {
-    return (
-      <span className="wi-emoji" style={{ fontSize: size * 0.85 }} role="img" aria-label={symbol.label}>
-        {symbol.icon}
-      </span>
-    )
-  }
-
-  const { kind, intensity } = symbol.precip
+  const { main, badge } = pickImages(symbol)
   return (
-    <svg className="wi" width={size} height={size} viewBox="0 0 64 64" role="img" aria-label={symbol.label}>
-      <title>{symbol.label}</title>
-      <Cloud />
-      <Particles kind={kind} count={intensity} />
-    </svg>
+    <span className="wi" style={{ width: size, height: size }} role="img" aria-label={symbol.label} title={symbol.label}>
+      <img src={main} width={size} height={size} alt="" draggable={false} />
+      {badge && <img className="wi-badge" src={badge} width={size * 0.5} height={size * 0.5} alt="" draggable={false} />}
+    </span>
   )
+}
+
+/** Mondphasen-Symbol (z. B. in den Kacheln). */
+export function MoonIcon({ phase, size = 16, label }: { phase: number; size?: number; label: string }) {
+  return <img className="wi-small" src={moonImage(phase)} width={size} height={size} alt={label} title={label} />
+}
+
+/** Kleine Zusatzsymbole für Kacheln und Stundenansicht. */
+const SMALL = { raindrop, sun: clearDay, wind, thermometer, sunrise, sunset } as const
+export type SmallIconName = keyof typeof SMALL
+
+export function SmallIcon({ name, size = 18, label }: { name: SmallIconName; size?: number; label?: string }) {
+  return <img className="wi-small" src={SMALL[name]} width={size} height={size} alt={label ?? ''} aria-hidden={label ? undefined : true} />
 }

@@ -2,6 +2,19 @@ import type { HourStats, HourlyVariable, MultiModelForecast } from '../types/for
 import { moonInfo, type MoonInfo } from './moon'
 import { statsForValues } from './statistics'
 import { isFogCode, isThunderCode, weatherSymbol, type WeatherSymbol } from './weatherSymbol'
+import { meanWindDirection, type WindDirection } from './wind'
+
+/** Paare (Richtung, Stärke) für die Richtungsmittelung – über Modelle und Stunden. */
+function windPairs(forecast: MultiModelForecast, modelIds: string[], from: number, to: number) {
+  const pairs: { direction: number | null; speed: number | null }[] = []
+  for (const id of modelIds) {
+    const dirs = forecast.data.wind_direction_10m[id]
+    const speeds = forecast.data.wind_speed_10m[id]
+    if (!dirs || !speeds) continue
+    for (let i = from; i < to; i++) pairs.push({ direction: dirs[i] ?? null, speed: speeds[i] ?? null })
+  }
+  return pairs
+}
 
 /** Ab wie vielen Modellen gilt ein Tag als „gut abgesichert“? Darunter zeigen wir einen Hinweis. */
 export const FEW_MODELS = 5
@@ -32,6 +45,8 @@ export interface DaySummary {
   snowSum: number | null
   windMax: HourStats
   gustMax: HourStats
+  /** vorherrschende Windrichtung des Tages (alle Modelle und Stunden, nach Windstärke gewichtet) */
+  windDirection: WindDirection
   /** Sonnenstunden des Tages */
   sunshineHours: HourStats
   sunrise: number | null
@@ -54,6 +69,8 @@ export interface HourSummary {
   snow: number | null
   wind: HourStats
   gust: HourStats
+  /** mittlere Windrichtung über die Modelle */
+  windDirection: WindDirection
   cloud: number | null
   /** Sonnenschein in dieser Stunde, in Minuten */
   sunshineMinutes: number | null
@@ -160,6 +177,7 @@ export function summarizeDays(forecast: MultiModelForecast): DaySummary[] {
       snowSum,
       windMax: statsForValues(perModel.map((m) => m.windMax)),
       gustMax: statsForValues(perModel.map((m) => m.gustMax)),
+      windDirection: meanWindDirection(windPairs(forecast, forecast.availableModels, start, end)),
       sunshineHours: statsForValues(perModel.map((m) => m.sunshineHours)),
       sunrise: sun?.sunrise ?? null,
       sunset: sun?.sunset ?? null,
@@ -209,6 +227,7 @@ export function summarizeHours(forecast: MultiModelForecast, day: DaySummary): H
       snow,
       wind: statsForValues(at('wind_speed_10m', i)),
       gust: statsForValues(at('wind_gusts_10m', i)),
+      windDirection: meanWindDirection(windPairs(forecast, ids, i, i + 1)),
       cloud,
       sunshineMinutes: sunshine === null ? null : sunshine / 60,
       modelCount: temp.count,
