@@ -12,12 +12,34 @@ export const FORECAST_VARIABLES: HourlyVariable[] = [
   'cloud_cover',
   'snowfall',
   'is_day',
+  'apparent_temperature',
+  'sunshine_duration',
+  'precipitation_probability',
 ]
 
 /** Rohantwort von Open-Meteo. Bei mehreren Modellen heißen die Felder z. B. „temperature_2m_ecmwf_ifs“. */
 interface ForecastResponse {
   utc_offset_seconds: number
   hourly: { time: string[] } & Record<string, Series | string[]>
+  /** Tageswerte; bei mehreren Modellen z. B. „sunrise_ecmwf_ifs“ (für alle Modelle gleich, weil astronomisch) */
+  daily?: { time: string[] } & Record<string, (string | null)[]>
+}
+
+/** Sonnenauf-/-untergang aus den Tageswerten – wir nehmen das erste Modell, das Werte liefert. */
+function parseSunTimes(daily: ForecastResponse['daily']): MultiModelForecast['sun'] {
+  if (!daily) return []
+  const keys = Object.keys(daily)
+  const sunriseKey = keys.find((k) => k.startsWith('sunrise') && daily[k].some((v) => v !== null))
+  const sunsetKey = keys.find((k) => k.startsWith('sunset') && daily[k].some((v) => v !== null))
+  return daily.time.map((day, i) => {
+    const rise = sunriseKey ? daily[sunriseKey][i] : null
+    const set = sunsetKey ? daily[sunsetKey][i] : null
+    return {
+      dayStart: Date.parse(`${day}T00:00:00Z`),
+      sunrise: rise ? parseLocalTime(rise) : null,
+      sunset: set ? parseLocalTime(set) : null,
+    }
+  })
 }
 
 interface ErrorResponse {
@@ -44,6 +66,7 @@ export async function fetchMultiModelForecast(
     latitude: location.latitude.toFixed(4),
     longitude: location.longitude.toFixed(4),
     hourly: FORECAST_VARIABLES.join(','),
+    daily: 'sunrise,sunset',
     models: modelIds.join(','),
     forecast_days: String(days),
     timezone: 'auto',
@@ -102,5 +125,6 @@ export async function fetchMultiModelForecast(
     // Reihenfolge wie angefragt beibehalten.
     availableModels: modelIds.filter((id) => available.has(id)),
     lastIndex,
+    sun: parseSunTimes(raw.daily),
   }
 }

@@ -8,6 +8,16 @@ export type HourlyVariable =
   | 'cloud_cover'
   | 'snowfall'
   | 'is_day'
+  | 'apparent_temperature'
+  | 'sunshine_duration'
+  | 'precipitation_probability'
+
+/** Sonnenauf- und -untergang eines Tages (Ortszeit, gleiches Format wie MultiModelForecast.times). */
+export interface SunTimes {
+  dayStart: number
+  sunrise: number | null
+  sunset: number | null
+}
 
 /** Eine Zeitreihe: ein Wert pro Stunde, `null` = Modell liefert für diese Stunde nichts. */
 export type Series = (number | null)[]
@@ -36,6 +46,8 @@ export interface MultiModelForecast {
   availableModels: string[]
   /** Letzte Stunde mit Daten je Modell (Index in `times`), für „Reichweite“. */
   lastIndex: Record<string, number>
+  /** Sonnenauf-/-untergang je Tag */
+  sun: SunTimes[]
 }
 
 /** Statistik über alle (sichtbaren) Modelle für eine Stunde. */

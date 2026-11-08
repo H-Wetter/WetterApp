@@ -1,9 +1,10 @@
 import { useEffect, useMemo, useRef } from 'react'
 import { sliceForecast } from '../lib/chartData'
-import { FEW_MODELS, summarizeHours, type DaySummary } from '../lib/daily'
+import { FEW_MODELS, summarizeHours, type DaySummary, type HourSummary } from '../lib/daily'
 import { formatDate, formatHour, hourTicks, relativeDayName } from '../lib/time'
 import type { ModelInfo, MultiModelForecast } from '../types/forecast'
 import { ForecastCharts } from './ForecastCharts'
+import { MoonIcon, WeatherIcon } from './WeatherIcon'
 
 interface Props {
   forecast: MultiModelForecast
@@ -17,6 +18,17 @@ interface Props {
 }
 
 const HOUR_MS = 60 * 60 * 1000
+
+/** Niederschlagswahrscheinlichkeit in %; ohne Ensemble-Daten ersatzweise der Anteil der Modelle mit Niederschlag. */
+function hourProbability(h: HourSummary): number {
+  return h.precipProbability ?? h.precipShare * 100
+}
+
+/** z. B. „06:51“ */
+function formatTime(ms: number): string {
+  const d = new Date(ms)
+  return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`
+}
 /** Symbolleiste: alle 3 Stunden ein Symbol – passt auch aufs Handy. */
 const STRIP_STEP = 3
 
@@ -45,13 +57,35 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, onClose }: 
     <section className="card day-detail" ref={ref} aria-label="Stundenansicht">
       <div className="detail-head">
         <h3>
-          {day.symbol.icon} {relativeDayName(day.dayStart, now)}, {formatDate(day.dayStart)}{' '}
+          <WeatherIcon symbol={day.symbol} size={28} /> {relativeDayName(day.dayStart, now)}, {formatDate(day.dayStart)}{' '}
           <span className="muted small">– stündlich</span>
         </h3>
         <button type="button" onClick={onClose} aria-label="Stundenansicht schließen">
           ✕
         </button>
       </div>
+      <ul className="day-facts small">
+        {day.sunrise !== null && <li>🌅 Aufgang {formatTime(day.sunrise)}</li>}
+        {day.sunset !== null && <li>🌇 Untergang {formatTime(day.sunset)}</li>}
+        {day.sunshineHours.mean !== null && (
+          <li title="Mittel der Modelle (Spanne)">
+            ☀️ {day.sunshineHours.mean.toFixed(1)} h Sonne
+            {day.sunshineHours.min !== null && day.sunshineHours.max !== null && day.sunshineHours.count > 1 && (
+              <span className="muted"> ({day.sunshineHours.min.toFixed(1)}–{day.sunshineHours.max.toFixed(1)})</span>
+            )}
+          </li>
+        )}
+        {day.feelsMax.mean !== null && (
+          <li>
+            🌡️ gefühlt {Math.round(day.feelsMax.mean)}° / {Math.round(day.feelsMin.mean ?? 0)}°
+          </li>
+        )}
+        <li>
+          <MoonIcon phase={day.moon.phase} size={16} label={day.moon.name} /> {day.moon.name} (
+          {Math.round(day.moon.illumination * 100)} % beleuchtet)
+        </li>
+      </ul>
+
       {day.modelCount < FEW_MODELS && (
         <p className="notice small">
           Für diesen Tag rechnen nur {day.modelCount} Modelle. Die Stundenwerte sind ein grober Trend.
@@ -65,8 +99,16 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, onClose }: 
           return (
             <li key={h.t} className={isNow ? 'now' : ''} title={h.symbol.label}>
               <span className="muted small">{formatHour(h.t)}</span>
-              <span className="strip-icon" aria-label={h.symbol.label}>{h.symbol.icon}</span>
+              <span className="strip-icon">
+                <WeatherIcon symbol={h.symbol} size={34} />
+              </span>
               <strong>{h.temp.mean === null ? '–' : `${Math.round(h.temp.mean)}°`}</strong>
+              <span className="muted small" title="gefühlte Temperatur">
+                {h.feels.mean === null ? ' ' : `gef. ${Math.round(h.feels.mean)}°`}
+              </span>
+              <span className="small strip-prob" title="Niederschlagswahrscheinlichkeit">
+                💧 {Math.round(hourProbability(h))} %
+              </span>
               <span className="muted small">{(h.precip.mean ?? 0) >= 0.05 ? `${(h.precip.mean ?? 0).toFixed(1)} mm` : ' '}</span>
             </li>
           )
@@ -94,9 +136,11 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, onClose }: 
                 <th>Zeit</th>
                 <th>Wetter</th>
                 <th>Temp.</th>
-                <th title="Mittel · Anteil der Modelle mit mind. 0,1 mm">Niederschlag</th>
+                <th>Gefühlt</th>
+                <th title="Menge (Mittel) · Wahrscheinlichkeit">Niederschlag</th>
                 <th>Wind / Böen</th>
                 <th>Wolken</th>
+                <th title="Sonnenschein in dieser Stunde">Sonne</th>
               </tr>
             </thead>
             <tbody>
@@ -107,7 +151,7 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, onClose }: 
                   <tr key={h.t} className={isNow ? 'now' : isPast ? 'past' : ''}>
                     <td className="time">{formatHour(h.t)}</td>
                     <td>
-                      <span className="h-icon" aria-hidden="true">{h.symbol.icon}</span>{' '}
+                      <WeatherIcon symbol={h.symbol} size={22} />{' '}
                       <span className="h-label small">{h.symbol.label}</span>
                     </td>
                     <td>
@@ -119,9 +163,10 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, onClose }: 
                         </span>
                       )}
                     </td>
+                    <td>{h.feels.mean === null ? '–' : `${h.feels.mean.toFixed(1)}°`}</td>
                     <td>
                       {(h.precip.mean ?? 0).toFixed(1)} mm
-                      <span className="muted small"> · {Math.round(h.precipShare * 100)} %</span>
+                      <span className="muted small"> · {Math.round(hourProbability(h))} %</span>
                       {h.snow !== null && h.snow >= 0.1 && <span className="small"> ❄️ {h.snow.toFixed(1)} cm</span>}
                     </td>
                     <td>
@@ -129,6 +174,7 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, onClose }: 
                       <span className="muted small"> km/h</span>
                     </td>
                     <td>{h.cloud === null ? '–' : `${Math.round(h.cloud)} %`}</td>
+                    <td>{h.sunshineMinutes === null ? '–' : `${Math.round(h.sunshineMinutes)} min`}</td>
                   </tr>
                 )
               })}

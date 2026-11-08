@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import { FEW_MODELS, type DaySummary } from '../lib/daily'
 import { formatDate, relativeDayName } from '../lib/time'
+import { MoonIcon, WeatherIcon } from './WeatherIcon'
 
 interface Props {
   days: DaySummary[]
@@ -21,6 +22,11 @@ function readRange(): 7 | 14 {
 
 function deg(v: number | null): string {
   return v === null ? '–' : `${Math.round(v)}°`
+}
+
+/** Niederschlagswahrscheinlichkeit in %; ohne Ensemble-Daten ersatzweise der Anteil der Modelle mit Niederschlag. */
+function probability(d: DaySummary): number {
+  return d.precipProbability ?? d.precipShare * 100
 }
 
 function spread(min: number | null, max: number | null): string {
@@ -65,8 +71,12 @@ export function DailyTiles({ days, now, selectedIndex, onSelect }: Props) {
             <li key={d.dayStart}>
               <button type="button" className={classes} aria-pressed={i === selectedIndex} onClick={() => onSelect(i)}>
                 <span className="tile-day">{relativeDayName(d.dayStart, now)}</span>
-                <span className="tile-date muted small">{formatDate(d.dayStart)}</span>
-                <span className="tile-icon" aria-hidden="true">{d.symbol.icon}</span>
+                <span className="tile-date muted small">
+                  {formatDate(d.dayStart)} <MoonIcon phase={d.moon.phase} size={13} label={`Mond: ${d.moon.name}`} />
+                </span>
+                <span className="tile-icon">
+                  <WeatherIcon symbol={d.symbol} size={44} />
+                </span>
                 <span className="tile-label small">{d.symbol.label}</span>
 
                 <span className="tile-temps">
@@ -76,12 +86,22 @@ export function DailyTiles({ days, now, selectedIndex, onSelect }: Props) {
                 <span className="tile-spread muted small" title="Spanne der Höchstwerte über alle Modelle">
                   {spread(d.tempMax.min, d.tempMax.max)}
                 </span>
+                {d.feelsMax.mean !== null && (
+                  <span className="tile-row small" title="Gefühlte Temperatur (Wind, Luftfeuchte und Sonne eingerechnet): Höchst- / Tiefstwert">
+                    gefühlt {deg(d.feelsMax.mean)} / {deg(d.feelsMin.mean)}
+                  </span>
+                )}
 
-                <span className="tile-row small" title="Niederschlag (Mittel) · Anteil der Modelle mit mind. 1 mm">
-                  💧 {(d.precipSum.mean ?? 0).toFixed(1)} mm · {Math.round(d.precipShare * 100)} %
+                <span className="tile-row small" title="Niederschlag (Mittel) · Niederschlagswahrscheinlichkeit">
+                  💧 {(d.precipSum.mean ?? 0).toFixed(1)} mm · {Math.round(probability(d))} %
                 </span>
                 {d.snowSum !== null && d.snowSum >= 0.5 && (
                   <span className="tile-row small">❄️ {d.snowSum.toFixed(1)} cm</span>
+                )}
+                {d.sunshineHours.mean !== null && (
+                  <span className="tile-row small" title="Sonnenstunden (Mittel der Modelle)">
+                    ☀️ {d.sunshineHours.mean.toFixed(1)} h Sonne
+                  </span>
                 )}
                 <span className="tile-row small" title="Wind (Mittel der Tageshöchstwerte) · Böen">
                   💨 {Math.round(d.windMax.mean ?? 0)} · Böen {Math.round(d.gustMax.mean ?? 0)} km/h
@@ -97,8 +117,9 @@ export function DailyTiles({ days, now, selectedIndex, onSelect }: Props) {
       </ul>
 
       <p className="muted small tiles-help">
-        Werte = Mittel aller Modelle. Darunter die Spanne der Höchstwerte; % = Anteil der Modelle, die mindestens 1 mm Niederschlag
-        erwarten. Klicke auf einen Tag für die Stundenansicht.
+        Werte = Mittel aller Modelle. Darunter die Spanne der Höchstwerte. „gefühlt“ berücksichtigt Wind, Luftfeuchte und Sonne.
+        % = Niederschlagswahrscheinlichkeit (aus den Ensemble-Rechnungen von ICON, ECMWF, GFS, GEM, UKMO und MeteoSwiss). Das kleine
+        Mondsymbol zeigt die Mondphase der folgenden Nacht. Klicke auf einen Tag für die Stundenansicht.
         {hasUncertain && ' ⚠️ Ab etwa Tag 8 rechnen nur noch wenige Modelle – das ist ein grober Trend, keine genaue Vorhersage.'}
       </p>
     </section>
