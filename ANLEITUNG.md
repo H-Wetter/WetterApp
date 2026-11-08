@@ -37,8 +37,8 @@ claude
 Bei jeder Etappe gleich vorgehen:
 1. Prompt in Claude Code einfügen.
 2. Claude arbeiten lassen, Rückfragen beantworten.
-3. App testen (siehe „Testen“ unten).
-4. Funktioniert es → speichern mit Git (siehe „Sichern“).
+3. Ergebnis ansehen – Claude testet selbst im Browser, du kannst zusätzlich selbst testen (siehe „Testen“ unten).
+4. Passt es → am Ende auf **„Ja, hochladen“** klicken (siehe „Sichern“). Sonst sagen, was noch geändert werden soll.
 5. Erst dann zur nächsten Etappe.
 
 ### Etappe 1 – Grundgerüst
@@ -74,21 +74,32 @@ Bei jeder Etappe gleich vorgehen:
 ---
 
 ## Testen
+**Am PC (einfachste Art):** Doppelklick auf **„Wetter-App starten.bat“** im Projektordner. Die App öffnet sich im Browser, das Fenster dazu liegt minimiert in der Taskleiste. Zum Beenden das Fenster „Wetter-App“ schließen.
+
+Alternativ im Terminal:
 ```
 npm run dev
 ```
 Den angezeigten Link (meist http://localhost:5173) im Browser öffnen. Beenden mit `Strg + C`.
 
-Auf dem Handy testen (gleiches WLAN): Claude bitten „Wie kann ich die App im lokalen Netzwerk auf dem Handy öffnen?“
+**Am Handy / unterwegs:** die Online-Version öffnen (siehe „Online mit Passwort“): https://h-wetter.github.io/WetterApp/ – nach dem Hochladen dauert es 1–2 Minuten, bis die neue Version da ist. Falls noch die alte erscheint: Seite neu laden.
 
 ## Sichern (nach jeder funktionierenden Etappe)
-Einfach in Claude Code sagen:
-> Mach einen Git-Commit mit einer passenden Beschreibung.
+Am Ende jeder Etappe fragt Claude, ob hochgeladen werden soll. Ein Klick auf **„Ja, hochladen“** erledigt alles in einem Schritt:
+1. **Commit** mit passender Beschreibung (die Sicherung auf deinem PC),
+2. **Markierung** der Etappe, z. B. `etappe-7` – ein Lesezeichen, zu dem man jederzeit zurück kann,
+3. **Hochladen** zu GitHub – dadurch wird automatisch auch die Online-Version (mit Passwort) neu gebaut,
+4. **Prüfung**, ob die Online-Version erfolgreich veröffentlicht wurde.
+
+Ein zusätzliches „Mach einen Git-Commit“ ist danach **nicht nötig**. Sagst du es trotzdem, prüft Claude nur, ob noch etwas ungespeichert ist.
+
+Alle Markierungen siehst du auf GitHub unter https://github.com/H-Wetter/WetterApp/tags.
 
 ## Wenn etwas nicht klappt
 - **Fehlermeldung:** komplett kopieren und an Claude geben: „Dieser Fehler erscheint: …“
 - **Sieht falsch aus:** beschreiben, was du siehst und was du erwartest. Screenshots helfen.
-- **Alles kaputt:** „Setze auf den letzten Commit zurück.“ – genau dafür ist Git da.
+- **Ein Bereich zeigt „… konnte nicht angezeigt werden“:** Der Rest der App läuft weiter. „Erneut versuchen“ drücken; hilft das nicht, die technische Info an Claude geben.
+- **Alles kaputt:** „Setze auf den letzten Commit zurück.“ oder „Geh zurück auf etappe-6.“ – genau dafür sind Commits und Markierungen da.
 - **Claude verliert den Faden:** `/clear` eingeben und mit „Lies CLAUDE.md, wir sind bei Etappe X“ neu starten.
 
 ## Online mit Passwort (GitHub Pages + StatiCrypt)
