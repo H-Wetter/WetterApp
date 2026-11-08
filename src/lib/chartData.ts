@@ -1,4 +1,4 @@
-import type { HourlyVariable, MultiModelForecast } from '../types/forecast'
+import type { HourlyVariable, MultiModelForecast, Series } from '../types/forecast'
 import { hourlyStats, round1 } from './statistics'
 
 /**
@@ -47,6 +47,22 @@ export function buildChartRows(
     for (const id of visibleIds) row[id] = series[id]?.[i] ?? null
     return row
   })
+}
+
+/** Schneidet die Vorhersage auf die ersten `hours` Stunden zu (z. B. 7 Tage für den Modellvergleich). */
+export function sliceForecast(forecast: MultiModelForecast, hours: number): MultiModelForecast {
+  const data = {} as MultiModelForecast['data']
+  for (const [variable, byModel] of Object.entries(forecast.data) as [HourlyVariable, Record<string, Series>][]) {
+    data[variable] = Object.fromEntries(Object.entries(byModel).map(([id, s]) => [id, s.slice(0, hours)]))
+  }
+  const lastIndex: Record<string, number> = {}
+  for (const [id, last] of Object.entries(forecast.lastIndex)) lastIndex[id] = Math.min(last, hours - 1)
+  return {
+    ...forecast,
+    times: forecast.times.slice(0, hours),
+    data,
+    lastIndex,
+  }
 }
 
 /** Anzahl Tage, für die ein Modell Daten liefert (gerundet auf ½ Tag). */

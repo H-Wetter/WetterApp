@@ -1,5 +1,13 @@
 /** Stündliche Größen, die wir im Modellvergleich abfragen (Namen exakt wie bei Open-Meteo). */
-export type HourlyVariable = 'temperature_2m' | 'precipitation' | 'wind_speed_10m' | 'wind_gusts_10m'
+export type HourlyVariable =
+  | 'temperature_2m'
+  | 'precipitation'
+  | 'wind_speed_10m'
+  | 'wind_gusts_10m'
+  | 'weather_code'
+  | 'cloud_cover'
+  | 'snowfall'
+  | 'is_day'
 
 /** Eine Zeitreihe: ein Wert pro Stunde, `null` = Modell liefert für diese Stunde nichts. */
 export type Series = (number | null)[]

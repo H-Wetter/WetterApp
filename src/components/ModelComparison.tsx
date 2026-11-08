@@ -1,61 +1,77 @@
-import { useEffect, useMemo, useState } from 'react'
-import { fetchMultiModelForecast } from '../api/openMeteo'
+import { useMemo, useState } from 'react'
 import { buildChartRows, reachInDays } from '../lib/chartData'
 import { COMPARISON_MODELS } from '../lib/models'
 import { dayStarts, localNow } from '../lib/time'
 import type { ModelInfo, MultiModelForecast } from '../types/forecast'
-import type { WeatherLocation } from '../types/location'
 import { ModelChart } from './ModelChart'
 import { ModelLegend } from './ModelLegend'
 
-const DAYS = 7
+const OPEN_KEY = 'wetter-app.comparison-open'
 
-type Result =
-  | { key: string; forecast: MultiModelForecast }
-  | { key: string; error: string }
+function readOpen(): boolean {
+  try {
+    return localStorage.getItem(OPEN_KEY) === '1'
+  } catch {
+    return false
+  }
+}
 
-/** Modellvergleich für 7 Tage: Temperatur, Niederschlag, Wind. */
-export function ModelComparison({ location }: { location: WeatherLocation }) {
-  const [reload, setReload] = useState(0)
-  const [result, setResult] = useState<Result | null>(null)
+/**
+ * Modellvergleich: Temperatur, Niederschlag, Wind – eine Linie pro Modell, Mittelwert und Streuband.
+ * Standardmäßig zugeklappt (Detailinfo). Die Diagramme werden erst beim Aufklappen gezeichnet.
+ */
+export function ModelComparison({ forecast }: { forecast: MultiModelForecast }) {
+  const [open, setOpen] = useState(readOpen)
+
+  function toggleOpen() {
+    setOpen((prev) => {
+      const next = !prev
+      try {
+        localStorage.setItem(OPEN_KEY, next ? '1' : '0')
+      } catch {
+        // Speichern nicht möglich – dann gilt es nur bis zum Neuladen.
+      }
+      return next
+    })
+  }
+
+  const days = Math.round(forecast.times.length / 24)
+
+  return (
+    <section className="comparison card collapsible">
+      <button type="button" className="collapse-toggle" aria-expanded={open} onClick={toggleOpen}>
+        <span>
+          <strong>Modellvergleich – {days} Tage</strong>
+          <span className="muted small"> · {forecast.availableModels.length} Modelle im Detail</span>
+        </span>
+        <span className="chevron" aria-hidden="true">{open ? '▲' : '▼'}</span>
+      </button>
+      {open && <ComparisonContent forecast={forecast} />}
+    </section>
+  )
+}
+
+function ComparisonContent({ forecast }: { forecast: MultiModelForecast }) {
   const [hidden, setHidden] = useState<Set<string>>(new Set())
 
-  // Eindeutiger Schlüssel der aktuellen Anfrage. Passt das Ergebnis nicht dazu, laden wir gerade.
-  const requestKey = `${location.latitude},${location.longitude},${location.elevation ?? ''},${reload}`
-
-  useEffect(() => {
-    const controller = new AbortController()
-    fetchMultiModelForecast(location, COMPARISON_MODELS.map((m) => m.id), DAYS, controller.signal)
-      .then((forecast) => setResult({ key: requestKey, forecast }))
-      .catch((err: unknown) => {
-        if (controller.signal.aborted) return
-        const message = err instanceof Error ? err.message : 'Unbekannter Fehler.'
-        setResult({ key: requestKey, error: message })
-      })
-    return () => controller.abort()
-  }, [requestKey, location])
-
-  const current = result && result.key === requestKey ? result : null
-  const forecast = current && 'forecast' in current ? current.forecast : null
-
   const available: ModelInfo[] = useMemo(
-    () => (forecast ? COMPARISON_MODELS.filter((m) => forecast.availableModels.includes(m.id)) : []),
+    () => COMPARISON_MODELS.filter((m) => forecast.availableModels.includes(m.id)),
     [forecast],
   )
   const visible = useMemo(() => available.filter((m) => !hidden.has(m.id)), [available, hidden])
   const visibleIds = useMemo(() => visible.map((m) => m.id), [visible])
 
-  const charts = useMemo(() => {
-    if (!forecast) return null
-    return {
+  const charts = useMemo(
+    () => ({
       temperature: buildChartRows(forecast, 'temperature_2m', visibleIds),
       precipitation: buildChartRows(forecast, 'precipitation', visibleIds),
       wind: buildChartRows(forecast, 'wind_speed_10m', visibleIds, 'wind_gusts_10m'),
       ticks: dayStarts(forecast.times),
       now: localNow(forecast.utcOffsetSeconds),
       reach: Object.fromEntries(available.map((m) => [m.id, reachInDays(forecast, m.id)])),
-    }
-  }, [forecast, visibleIds, available])
+    }),
+    [forecast, visibleIds, available],
+  )
 
   function toggle(id: string) {
     setHidden((prev) => {
@@ -66,29 +82,12 @@ export function ModelComparison({ location }: { location: WeatherLocation }) {
     })
   }
 
-  if (!current) {
-    return <p className="hint">Wetterdaten von {COMPARISON_MODELS.length} Modellen werden geladen …</p>
-  }
-
-  if ('error' in current) {
-    return (
-      <div className="card">
-        <p className="error">{current.error}</p>
-        <p className="muted small">Prüfe deine Internetverbindung und versuche es noch einmal.</p>
-        <button type="button" onClick={() => setReload((r) => r + 1)}>
-          Erneut versuchen
-        </button>
-      </div>
-    )
-  }
-
-  if (!charts || available.length === 0) {
-    return <p className="notice">Für diesen Ort liefert leider kein Modell Daten.</p>
-  }
-
   return (
-    <div className="comparison">
-      <h2>Modellvergleich – 7 Tage</h2>
+    <div className="comparison-body">
+      <p className="muted small">
+        Hier siehst du jedes Modell einzeln. Dicke Linie = Mittelwert, graue Fläche = Spanne vom niedrigsten bis zum höchsten Modell.
+        Je breiter die Fläche, desto unsicherer die Vorhersage.
+      </p>
 
       <ModelLegend
         models={available}

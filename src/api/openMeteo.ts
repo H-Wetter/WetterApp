@@ -3,11 +3,15 @@ import type { WeatherLocation } from '../types/location'
 
 const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast'
 
-export const COMPARISON_VARIABLES: HourlyVariable[] = [
+export const FORECAST_VARIABLES: HourlyVariable[] = [
   'temperature_2m',
   'precipitation',
   'wind_speed_10m',
   'wind_gusts_10m',
+  'weather_code',
+  'cloud_cover',
+  'snowfall',
+  'is_day',
 ]
 
 /** Rohantwort von Open-Meteo. Bei mehreren Modellen heißen die Felder z. B. „temperature_2m_ecmwf_ifs“. */
@@ -39,7 +43,7 @@ export async function fetchMultiModelForecast(
   const params = new URLSearchParams({
     latitude: location.latitude.toFixed(4),
     longitude: location.longitude.toFixed(4),
-    hourly: COMPARISON_VARIABLES.join(','),
+    hourly: FORECAST_VARIABLES.join(','),
     models: modelIds.join(','),
     forecast_days: String(days),
     timezone: 'auto',
@@ -69,7 +73,7 @@ export async function fetchMultiModelForecast(
   const lastIndex: Record<string, number> = {}
   const available = new Set<string>()
 
-  for (const variable of COMPARISON_VARIABLES) {
+  for (const variable of FORECAST_VARIABLES) {
     data[variable] = {}
     for (const modelId of modelIds) {
       // Bei nur einem Modell hat Open-Meteo kein Suffix.
@@ -78,6 +82,8 @@ export async function fetchMultiModelForecast(
       if (!values) continue
       data[variable][modelId] = values
 
+      // Reichweite/Verfügbarkeit nur an der Temperatur messen (is_day ist z. B. immer gefüllt).
+      if (variable !== 'temperature_2m') continue
       let last = -1
       values.forEach((v, i) => {
         if (v !== null) last = i

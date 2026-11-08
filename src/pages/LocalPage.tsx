@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { getBrowserLocation } from '../api/geolocation'
 import { LocationCard } from '../components/LocationCard'
 import { LocationSearch } from '../components/LocationSearch'
-import { ModelComparison } from '../components/ModelComparison'
+import { LocalForecast } from '../components/LocalForecast'
 import { DEFAULT_LOCATION } from '../lib/defaults'
 import type { WeatherLocation } from '../types/location'
 
@@ -62,7 +62,7 @@ export function LocalPage() {
         </section>
       </div>
 
-      {location && <ModelComparison location={location} />}
+      {location && <LocalForecast location={location} />}
     </div>
   )
 }
