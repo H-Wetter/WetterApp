@@ -1,6 +1,7 @@
 import type { HourlyVariable, MultiModelForecast, Series } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
 import { PRESSURE_LEVELS, WIND_LEVELS, type CloudProfileRaw } from '../types/clouds'
+import { isPlausibleElevation } from './geocoding'
 
 const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast'
 
@@ -61,6 +62,8 @@ export function cloudProfileVariables(): string[] {
     // für die Niederschlagsbalken unter dem Wolkenschnitt
     'precipitation',
     'snowfall',
+    // Linie der Nullgradgrenze im Wolkenschnitt
+    'freezing_level_height',
   ]
 }
 
@@ -84,7 +87,7 @@ export async function fetchCloudProfile(
     forecast_days: String(days),
     timezone: 'auto',
   })
-  if (location.elevation !== undefined && location.source !== 'gps') {
+  if (isPlausibleElevation(location.elevation) && location.source !== 'gps') {
     params.set('elevation', String(Math.round(location.elevation)))
   }
 
@@ -144,8 +147,8 @@ export async function fetchMultiModelForecast(
     timezone: 'auto',
   })
   // Höhe nur mitgeben, wenn sie verlässlich ist (Ortssuche/Standard). GPS-Höhen sind oft ungenau –
-  // dann nimmt Open-Meteo selbst die Geländehöhe.
-  if (location.elevation !== undefined && location.source !== 'gps') {
+  // dann nimmt Open-Meteo selbst die Geländehöhe. Unsinnige Werte (z. B. −9999) nie weitergeben!
+  if (isPlausibleElevation(location.elevation) && location.source !== 'gps') {
     params.set('elevation', String(Math.round(location.elevation)))
   }
 

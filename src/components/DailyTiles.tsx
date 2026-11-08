@@ -1,12 +1,15 @@
 import { useState } from 'react'
 import { FEW_MODELS, type DaySummary } from '../lib/daily'
 import { formatDate, relativeDayName } from '../lib/time'
+import { LEVEL_NAME, type WarnLevel, type Warning } from '../lib/warnings'
 import { MoonIcon, SmallIcon, WeatherIcon } from './WeatherIcon'
 import { WindArrow } from './WindArrow'
 
 interface Props {
   days: DaySummary[]
   now: number
+  /** Warnhinweise (für die Markierung der Kacheln) */
+  warnings: Warning[]
   selectedIndex: number | null
   onSelect: (index: number) => void
 }
@@ -36,7 +39,7 @@ function spread(min: number | null, max: number | null): string {
 }
 
 /** Tageskacheln für 7 oder 14 Tage. Klick auf eine Kachel öffnet die Stundenansicht. */
-export function DailyTiles({ days, now, selectedIndex, onSelect }: Props) {
+export function DailyTiles({ days, now, warnings, selectedIndex, onSelect }: Props) {
   const [range, setRange] = useState<7 | 14>(readRange)
 
   function changeRange(next: 7 | 14) {
@@ -68,9 +71,20 @@ export function DailyTiles({ days, now, selectedIndex, onSelect }: Props) {
         {shown.map((d, i) => {
           const uncertain = d.modelCount < FEW_MODELS
           const classes = ['tile', i === selectedIndex ? 'selected' : '', uncertain ? 'uncertain' : ''].join(' ')
+          const dayWarnings = warnings.filter((w) => w.dayStart === d.dayStart)
+          const top = dayWarnings[0] // schon nach Stärke sortiert
           return (
             <li key={d.dayStart}>
               <button type="button" className={classes} aria-pressed={i === selectedIndex} onClick={() => onSelect(i)}>
+                {top && (
+                  <span
+                    className={`tile-warn level-${top.level}`}
+                    title={dayWarnings.map((w) => `${w.title} (Stufe ${LEVEL_NAME[w.level as WarnLevel]})`).join(', ')}
+                    aria-label={`Warnhinweis: ${dayWarnings.map((w) => w.title).join(', ')}`}
+                  >
+                    ⚠
+                  </span>
+                )}
                 <span className="tile-day">{relativeDayName(d.dayStart, now)}</span>
                 <span className="tile-date muted small">
                   {formatDate(d.dayStart)} <MoonIcon phase={d.moon.phase} size={18} label={`Mond: ${d.moon.name}`} />

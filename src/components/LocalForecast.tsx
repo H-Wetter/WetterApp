@@ -5,6 +5,8 @@ import { CloudSectionBlock } from './CloudSectionBlock'
 import { reachInDays, sliceForecast } from '../lib/chartData'
 import { summarizeDays } from '../lib/daily'
 import { CLOUD_PROFILE_MODELS, COMPARISON_MODELS } from '../lib/models'
+import { WARNING_EXTRA_VARIABLES, computeWarnings } from '../lib/warnings'
+import { WarningsPanel } from './WarningsPanel'
 import { dayStarts, localNow } from '../lib/time'
 import type { ModelInfo, MultiModelForecast } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
@@ -45,7 +47,7 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
 
   useEffect(() => {
     const controller = new AbortController()
-    fetchMultiModelForecast(location, COMPARISON_MODELS.map((m) => m.id), FETCH_DAYS, controller.signal)
+    fetchMultiModelForecast(location, COMPARISON_MODELS.map((m) => m.id), FETCH_DAYS, controller.signal, WARNING_EXTRA_VARIABLES)
       .then((forecast) => {
         setSelectedDay(null)
         setResult({ key: requestKey, forecast })
@@ -72,6 +74,11 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
   const cloudProfile = cloudCurrent && 'profile' in cloudCurrent ? cloudCurrent.profile : null
 
   const days = useMemo(() => (forecast ? summarizeDays(forecast) : []), [forecast])
+  // Warnhinweise nur für die ersten 7 Tage – danach rechnen zu wenige Modelle
+  const warnings = useMemo(
+    () => (forecast ? computeWarnings(forecast, days.slice(0, CHART_DAYS), location.elevation ?? 0) : []),
+    [forecast, days, location.elevation],
+  )
   const chartForecast = useMemo(() => (forecast ? sliceForecast(forecast, 0, CHART_DAYS * 24) : null), [forecast])
 
   const available: ModelInfo[] = useMemo(
@@ -136,10 +143,20 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
 
   return (
     <>
+      <ErrorBoundary label="Die Warnhinweise" resetKey={requestKey}>
+        <WarningsPanel
+          warnings={warnings}
+          days={CHART_DAYS}
+          now={now}
+          onSelectDay={(dayStart) => setSelectedDay(days.findIndex((d) => d.dayStart === dayStart))}
+        />
+      </ErrorBoundary>
+
       <ErrorBoundary label="Die Tageskacheln" resetKey={requestKey}>
         <DailyTiles
           days={days}
           now={now}
+          warnings={warnings}
           selectedIndex={selectedDay}
           onSelect={(i) => setSelectedDay((prev) => (prev === i ? null : i))}
         />
@@ -155,6 +172,7 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
             lineModels={lineModels}
             cloudProfile={cloudProfile}
             cloudError={cloudCurrent && 'error' in cloudCurrent ? cloudCurrent.error : null}
+            warnings={warnings.filter((w) => w.dayStart === selected.dayStart)}
             onClose={() => setSelectedDay(null)}
           />
         </ErrorBoundary>

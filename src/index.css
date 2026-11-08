@@ -19,6 +19,13 @@
   --valley: #2f7fe0;
   --mountain: #2b8a3e;
   --inversion: #f59f00;
+  /* Warnstufen: gelb, orange, rot, violett */
+  --warn-1: #f2c200;
+  --warn-2: #ff8c00;
+  --warn-3: #e03131;
+  --warn-4: #9c36b5;
+  --freezing: #00b8d9;
+  --ok: #2b8a3e;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
   color: var(--text);
@@ -47,6 +54,12 @@
     --valley: #6aa8ff;
     --mountain: #69db7c;
     --inversion: #fab005;
+    --warn-1: #ffd43b;
+    --warn-2: #ffa94d;
+    --warn-3: #ff6b6b;
+    --warn-4: #cc5de8;
+    --freezing: #66d9ef;
+    --ok: #69db7c;
   }
 }
 
@@ -214,6 +227,50 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
   .tiles { grid-template-columns: repeat(2, 1fr); }
   .h-label { display: none; }
 }
+
+/* ---------- Warnhinweise ---------- */
+.warnings-none {
+  margin: 0; padding: 0.5rem 0.8rem; border-radius: 10px;
+  background: color-mix(in srgb, var(--ok) 12%, var(--surface)); color: var(--text);
+  border-left: 4px solid var(--ok);
+}
+.warnings-panel h2 { margin: 0 0 0.5rem; font-size: 1.2rem; }
+.warnings { list-style: none; margin: 0 0 0.5rem; padding: 0; display: flex; flex-direction: column; gap: 0.4rem; }
+.warning { border-radius: 10px; border-left: 6px solid; overflow: hidden; }
+.warning.level-1 { border-color: var(--warn-1); background: color-mix(in srgb, var(--warn-1) 16%, var(--surface)); }
+.warning.level-2 { border-color: var(--warn-2); background: color-mix(in srgb, var(--warn-2) 16%, var(--surface)); }
+.warning.level-3 { border-color: var(--warn-3); background: color-mix(in srgb, var(--warn-3) 16%, var(--surface)); }
+.warning.level-4 { border-color: var(--warn-4); background: color-mix(in srgb, var(--warn-4) 18%, var(--surface)); }
+.warning-button, .warning-body {
+  width: 100%; display: flex; gap: 0.6rem; align-items: flex-start; text-align: left;
+  border: 0; border-radius: 0; background: transparent; padding: 0.5rem 0.7rem; color: var(--text);
+}
+.warning-button:hover { background: color-mix(in srgb, var(--text) 5%, transparent); }
+.warning-icon { font-size: 1.3rem; line-height: 1.2; }
+.warning-text { display: flex; flex-direction: column; gap: 0.1rem; }
+.warning-day { font-weight: 600; }
+.warning-level { font-size: 0.85rem; }
+
+/* Warndreieck in der Kachel */
+.tile { position: relative; }
+.tile-warn {
+  position: absolute; top: 4px; right: 6px; font-size: 1rem; line-height: 1;
+  width: 1.5rem; height: 1.5rem; display: grid; place-items: center; border-radius: 50%;
+  color: #1c2430; font-weight: 700;
+}
+.tile-warn.level-1 { background: var(--warn-1); }
+.tile-warn.level-2 { background: var(--warn-2); }
+.tile-warn.level-3 { background: var(--warn-3); color: #fff; }
+.tile-warn.level-4 { background: var(--warn-4); color: #fff; }
+
+/* Nullgradgrenze */
+.freezing-key {
+  font-size: 0.75rem; font-weight: 700; color: var(--freezing);
+  border: 1.5px dashed var(--freezing); border-radius: 4px; padding: 0 0.2rem;
+}
+.cs-freezing { fill: none; stroke: var(--freezing); stroke-width: 2; stroke-dasharray: 2 3; }
+.cs-freezing-label { fill: var(--freezing); font-size: 11px; font-weight: 700; paint-order: stroke; stroke: #1c2430; stroke-width: 2px; }
+.cs-key-freezing { height: 0; border-top: 2px dashed var(--freezing); border-radius: 0; }
 
 /* ---------- Fehlermeldung eines Bereichs ---------- */
 .error-card { border-left: 4px solid var(--error); }

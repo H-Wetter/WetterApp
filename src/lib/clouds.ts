@@ -41,6 +41,8 @@ export interface CloudColumn {
   precip: number | null
   /** fällt der Niederschlag überwiegend als Schnee? */
   snow: boolean
+  /** Nullgradgrenze (m über dem Meer), Mittel der Modelle, die sie liefern */
+  freezing: number | null
 }
 
 /** Laut Open-Meteo: 7 cm Schnee ≈ 10 mm Wasser (gleich wie in weatherSymbol.ts) */
@@ -113,7 +115,9 @@ function column(at: Lookup, i: number, t: number, ground: number): CloudColumn {
   const snowCm = mean(nums(at('snowfall', i)))
   const snow = precip !== null && precip > 0 && snowCm !== null && (snowCm * MM_WATER_PER_CM_SNOW) / precip > 0.5
 
-  return { t, cells, base, winds, precip, snow }
+  const freezing = mean(nums(at('freezing_level_height', i)))
+
+  return { t, cells, base, winds, precip, snow, freezing }
 }
 
 /**

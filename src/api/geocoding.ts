@@ -18,6 +18,14 @@ interface GeocodingResponse {
   results?: GeocodingResult[]
 }
 
+/**
+ * Ist das eine echte Höhe? Tiefster Ort an Land: Totes Meer ca. −430 m, höchster: Mount Everest 8849 m.
+ * Alles außerhalb (z. B. der Platzhalter −9999) gilt als „unbekannt“.
+ */
+export function isPlausibleElevation(h: number | null | undefined): h is number {
+  return typeof h === 'number' && Number.isFinite(h) && h >= -500 && h <= 9000
+}
+
 export interface SearchHit extends WeatherLocation {
   id: number
 }
@@ -45,7 +53,8 @@ export async function searchLocations(query: string, signal?: AbortSignal): Prom
     name: r.name,
     latitude: r.latitude,
     longitude: r.longitude,
-    elevation: r.elevation,
+    // Open-Meteo liefert −9999 als Platzhalter für „Höhe unbekannt“ – das darf nie weitergereicht werden
+    elevation: isPlausibleElevation(r.elevation) ? r.elevation : undefined,
     country: r.country,
     region: r.admin1,
     source: 'search',

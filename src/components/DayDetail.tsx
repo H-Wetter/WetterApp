@@ -6,6 +6,8 @@ import type { ModelInfo, MultiModelForecast } from '../types/forecast'
 import type { CloudProfileRaw } from '../types/clouds'
 import { CloudSectionBlock } from './CloudSectionBlock'
 import { ErrorBoundary } from './ErrorBoundary'
+import { WarningItem } from './WarningItem'
+import { freezingLevel, type Warning } from '../lib/warnings'
 import { ForecastCharts } from './ForecastCharts'
 import { MoonIcon, SmallIcon, WeatherIcon } from './WeatherIcon'
 import { WindArrow } from './WindArrow'
@@ -21,6 +23,8 @@ interface Props {
   /** Höhendaten für den Wolkenschnitt (`null` = lädt noch oder Fehler) */
   cloudProfile: CloudProfileRaw | null
   cloudError: string | null
+  /** Warnhinweise für diesen Tag */
+  warnings: Warning[]
   onClose: () => void
 }
 
@@ -29,6 +33,10 @@ const HOUR_MS = 60 * 60 * 1000
 /** Niederschlagswahrscheinlichkeit in %; ohne Ensemble-Daten ersatzweise der Anteil der Modelle mit Niederschlag. */
 function hourProbability(h: HourSummary): number {
   return h.precipProbability ?? h.precipShare * 100
+}
+
+function roundTo(v: number, step: number): string {
+  return (Math.round(v / step) * step).toLocaleString('de-AT')
 }
 
 /** z. B. „06:51“ */
@@ -40,7 +48,8 @@ function formatTime(ms: number): string {
 const STRIP_STEP = 3
 
 /** Stundenansicht eines Tages: gleiche Diagramme wie der 7-Tage-Verlauf, nur für 24 Stunden. */
-export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfile, cloudError, onClose }: Props) {
+export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfile, cloudError, warnings, onClose }: Props) {
+  const freezing = useMemo(() => freezingLevel(forecast, day), [forecast, day])
   const dayForecast = useMemo(() => sliceForecast(forecast, day.startIndex, day.endIndex), [forecast, day])
   const hours = useMemo(() => summarizeHours(forecast, day), [forecast, day])
   const ticks = useMemo(() => hourTicks(dayForecast.times, 3), [dayForecast])
@@ -99,7 +108,21 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfil
           <MoonIcon phase={day.moon.phase} size={24} label={day.moon.name} /> {day.moon.name} (
           {Math.round(day.moon.illumination * 100)} % beleuchtet)
         </li>
+        {freezing && (
+          <li title={`Schneefallgrenze ≈ Nullgradgrenze − 300 m (Faustregel), aus ${freezing.models} Modellen`}>
+            <span className="freezing-key">0 °C</span> Nullgradgrenze {roundTo(Math.max(0, freezing.min), 50)}
+            {Math.abs(freezing.max - freezing.min) >= 100 ? `–${roundTo(Math.max(0, freezing.max), 50)}` : ''} m
+          </li>
+        )}
       </ul>
+
+      {warnings.length > 0 && (
+        <ul className="warnings">
+          {warnings.map((w) => (
+            <WarningItem key={w.kind} warning={w} />
+          ))}
+        </ul>
+      )}
 
       {day.modelCount < FEW_MODELS && (
         <p className="notice small">

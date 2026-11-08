@@ -181,6 +181,24 @@ export function CloudSectionChart({ section, ticks, tickFormatter = formatDay, a
     return paths
   }, [cols, colW, x, y])
 
+  // Nullgradgrenze als durchgehende Linie (Lücken, wo kein Modell sie liefert)
+  const freezingPaths = useMemo(() => {
+    const paths: string[] = []
+    let current: string[] = []
+    cols.forEach((c) => {
+      if (c.freezing === null) {
+        if (current.length > 1) paths.push(current.join(' '))
+        current = []
+        return
+      }
+      const px = x(c.t) + colW / 2
+      current.push(`${current.length === 0 ? 'M' : 'L'} ${px.toFixed(1)} ${y(c.freezing).toFixed(1)}`)
+    })
+    if (current.length > 1) paths.push(current.join(' '))
+    return paths
+  }, [cols, colW, x, y])
+  const lastFreezing = [...cols].reverse().find((c) => c.freezing !== null)
+
   // Niederschlagsleiste: Maßstab mindestens 1 mm/h, damit Nieseln nicht riesig aussieht
   const precipTop = MARGIN.top + plotH + 6
   const precipMax = Math.max(1, ...cols.map((c) => c.precip ?? 0))
@@ -306,6 +324,16 @@ export function CloudSectionChart({ section, ticks, tickFormatter = formatDay, a
               </g>
             ))}
 
+            {/* Nullgradgrenze: darüber Frost, darunter über 0 °C */}
+            {freezingPaths.map((d, i) => (
+              <path key={`f${i}`} className="cs-freezing" d={d} />
+            ))}
+            {lastFreezing && lastFreezing.freezing !== null && (
+              <text className="cs-freezing-label" x={MARGIN.left + plotW - 4} y={y(lastFreezing.freezing) - 4} textAnchor="end">
+                0 °C
+              </text>
+            )}
+
             {/* Geschätzte Wolkenbasis */}
             {basePaths.map((d, i) => (
               <path key={i} className="cs-base" d={d} />
@@ -348,6 +376,9 @@ export function CloudSectionChart({ section, ticks, tickFormatter = formatDay, a
         </li>
         <li>
           <span className="cs-key cs-key-base" /> geschätzte Wolkenbasis
+        </li>
+        <li>
+          <span className="cs-key cs-key-freezing" /> Nullgradgrenze (darüber Frost; Schnee fällt meist bis ca. 300 m darunter)
         </li>
         <li>
           <svg width="12" height="14" viewBox="-6 -8 12 16" aria-hidden="true">
@@ -402,6 +433,7 @@ function CloudTooltip({ hover, ground, width, inPrecipBar }: { hover: Hover; gro
         {precip >= 0.05 ? `${precip.toFixed(1).replace('.', ',')} mm${col.snow ? ' (Schnee)' : ''}` : 'keiner'}
       </p>
       {!inPrecipBar && col.base !== null && <p className="muted">Wolkenbasis ≈ {Math.round(col.base / 50) * 50} m</p>}
+      {col.freezing !== null && <p className="muted">Nullgradgrenze ≈ {Math.round(col.freezing / 50) * 50} m</p>}
       {!inPrecipBar && wind && wind.direction.degrees !== null && (
         <p className="muted">
           Wind in {Math.round(wind.height / 100) * 100} m: aus {wind.direction.name}, {Math.round(wind.speed ?? 0)} km/h
