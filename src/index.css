@@ -421,3 +421,33 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
 .ens-summary { display: flex; flex-direction: column; gap: 0.35rem; }
 .ens-summary p { margin: 0; }
 .chart-note .swatch { vertical-align: middle; margin: 0 0.15rem 0 0.4rem; }
+
+/* Etappe 9: Großwetterlage */
+.syn-map { width: 100%; height: 70vh; min-height: 360px; border-radius: 10px; border: 1px solid var(--border); margin: 0.75rem 0; z-index: 0; }
+.syn-map .leaflet-tile-pane { filter: grayscale(1) brightness(1.05); }
+.syn-controls { display: flex; flex-direction: column; gap: 0.5rem; }
+.syn-controls p { margin: 0; }
+.syn-controls input[type='range'] { width: 100%; }
+.syn-time { display: flex; align-items: center; gap: 0.6rem; }
+.syn-time button { min-width: 2.6rem; }
+.syn-legend p { margin: 0.25rem 0; }
+.syn-scale { display: flex; max-width: 360px; margin: 0.4rem 0; border-radius: 4px; overflow: hidden; }
+.syn-scale span { flex: 1; text-align: center; font-size: 0.75rem; padding: 0.15rem 0; color: #fff; text-shadow: 0 0 2px #000; }
+.syn-label { background: none; border: 0; white-space: nowrap; font-weight: 700; }
+.syn-label > span { display: inline-block; transform: translate(-50%, -50%); }
+.syn-isobar { font-size: 11px; color: #1c2430; text-shadow: 0 0 3px #fff, 0 0 3px #fff; }
+.syn-high, .syn-low { font-size: 26px; line-height: 1; text-align: center; text-shadow: 0 0 4px #fff, 0 0 4px #fff; }
+.syn-high { color: #1d4ed8; }
+.syn-low { color: #c92a2a; }
+.syn-high small, .syn-low small { display: block; font-size: 11px; color: #1c2430; }
+@media (max-width: 600px) { .syn-map { height: 60vh; } }
+
+/* Kopfzeile mit drei Seiten: auf schmalen Bildschirmen kompakter, nichts umbrechen */
+.nav-item, .brand { white-space: nowrap; }
+@media (max-width: 480px) {
+  .app-header { gap: 0.4rem; }
+  .brand { font-size: 0; }
+  .brand::first-letter { font-size: 1.3rem; }
+  .nav { gap: 0.15rem; }
+  .nav-item { padding: 0.3rem 0.55rem; font-size: 0.88rem; }
+}

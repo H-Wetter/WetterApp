@@ -3,13 +3,15 @@ import { ErrorBoundary } from './components/ErrorBoundary'
 import { DEFAULT_MOUNTAIN } from './lib/defaults'
 import { LocalPage } from './pages/LocalPage'
 import { MountainPage } from './pages/MountainPage'
+import { SynopticPage } from './pages/SynopticPage'
 import type { WeatherLocation } from './types/location'
 
-type Page = 'local' | 'mountain'
+type Page = 'local' | 'mountain' | 'synoptic'
 
 const PAGES: { id: Page; label: string }[] = [
   { id: 'local', label: 'Lokal' },
   { id: 'mountain', label: 'Berg & Tal' },
+  { id: 'synoptic', label: 'Großwetterlage' },
 ]
 
 function App() {
@@ -47,6 +49,11 @@ function App() {
         {page === 'mountain' && (
           <ErrorBoundary label="Die Seite „Berg & Tal“" resetKey={location ? `${location.latitude},${location.longitude}` : ''}>
             <MountainPage valley={location} mountain={mountain} onChooseValley={() => setPage('local')} />
+          </ErrorBoundary>
+        )}
+        {page === 'synoptic' && (
+          <ErrorBoundary label="Die Seite „Großwetterlage“">
+            <SynopticPage location={location} />
           </ErrorBoundary>
         )}
       </main>
