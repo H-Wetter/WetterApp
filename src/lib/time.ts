@@ -16,6 +16,11 @@ export function formatDayHour(ms: number): string {
   return `${formatDay(ms)}, ${hh}:00`
 }
 
+/** Zeitpunkte alle `step` Stunden (für die x-Achse der Stundenansicht). */
+export function hourTicks(times: number[], step: number): number[] {
+  return times.filter((t) => new Date(t).getUTCHours() % step === 0)
+}
+
 /** Mitternachts-Zeitpunkte aus einer Stundenliste (für die Tagesstriche an der x-Achse). */
 export function dayStarts(times: number[]): number[] {
   return times.filter((t) => new Date(t).getUTCHours() === 0)

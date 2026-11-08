@@ -1,26 +1,39 @@
 import { useEffect, useMemo, useState } from 'react'
 import { fetchMultiModelForecast } from '../api/openMeteo'
-import { sliceForecast } from '../lib/chartData'
+import { reachInDays, sliceForecast } from '../lib/chartData'
 import { summarizeDays } from '../lib/daily'
 import { COMPARISON_MODELS } from '../lib/models'
-import { localNow } from '../lib/time'
-import type { MultiModelForecast } from '../types/forecast'
+import { dayStarts, localNow } from '../lib/time'
+import type { ModelInfo, MultiModelForecast } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
 import { DailyTiles } from './DailyTiles'
 import { DayDetail } from './DayDetail'
+import { ForecastCharts } from './ForecastCharts'
 import { ModelComparison } from './ModelComparison'
 
-/** Wir laden einmal 14 Tage – Kacheln nutzen bis zu 14, der Modellvergleich die ersten 7. */
+/** Wir laden einmal 14 Tage – Kacheln nutzen bis zu 14, die Verlaufsdiagramme die ersten 7. */
 const FETCH_DAYS = 14
-const COMPARISON_DAYS = 7
+const CHART_DAYS = 7
+const OPEN_KEY = 'wetter-app.comparison-open'
 
 type Result = { key: string; forecast: MultiModelForecast } | { key: string; error: string }
 
-/** Lädt die Vorhersage für den Ort und zeigt Kacheln, Stundenansicht und Modellvergleich. */
+function readOpen(): boolean {
+  try {
+    return localStorage.getItem(OPEN_KEY) === '1'
+  } catch {
+    return false
+  }
+}
+
+/** Lädt die Vorhersage für den Ort und zeigt Kacheln, Stundenansicht und Verlaufsdiagramme. */
 export function LocalForecast({ location }: { location: WeatherLocation }) {
   const [reload, setReload] = useState(0)
   const [result, setResult] = useState<Result | null>(null)
   const [selectedDay, setSelectedDay] = useState<number | null>(null)
+  // Modellvergleich: aufgeklappt? Welche Modelle ausgeblendet? Gilt für alle Diagramme (auch Stundenansicht).
+  const [compareOpen, setCompareOpen] = useState(readOpen)
+  const [hidden, setHidden] = useState<Set<string>>(new Set())
 
   // Eindeutiger Schlüssel der aktuellen Anfrage. Passt das Ergebnis nicht dazu, laden wir gerade.
   const requestKey = `${location.latitude},${location.longitude},${location.elevation ?? ''},${reload}`
@@ -44,9 +57,44 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
   const forecast = current && 'forecast' in current ? current.forecast : null
 
   const days = useMemo(() => (forecast ? summarizeDays(forecast) : []), [forecast])
-  const comparison = useMemo(() => (forecast ? sliceForecast(forecast, COMPARISON_DAYS * 24) : null), [forecast])
-  const now = forecast ? localNow(forecast.utcOffsetSeconds) : 0
-  const selected = selectedDay !== null ? days[selectedDay] : undefined
+  const chartForecast = useMemo(() => (forecast ? sliceForecast(forecast, 0, CHART_DAYS * 24) : null), [forecast])
+
+  const available: ModelInfo[] = useMemo(
+    () => (forecast ? COMPARISON_MODELS.filter((m) => forecast.availableModels.includes(m.id)) : []),
+    [forecast],
+  )
+  // Zugeklappt: alle Modelle zählen, keine Einzellinien. Aufgeklappt: nur die sichtbaren, jedes mit Linie.
+  const visible = useMemo(
+    () => (compareOpen ? available.filter((m) => !hidden.has(m.id)) : available),
+    [available, hidden, compareOpen],
+  )
+  const statIds = useMemo(() => visible.map((m) => m.id), [visible])
+  const lineModels = compareOpen ? visible : []
+  const reach = useMemo(
+    () => (chartForecast ? Object.fromEntries(available.map((m) => [m.id, reachInDays(chartForecast, m.id)])) : {}),
+    [chartForecast, available],
+  )
+
+  function toggleCompare() {
+    setCompareOpen((prev) => {
+      const next = !prev
+      try {
+        localStorage.setItem(OPEN_KEY, next ? '1' : '0')
+      } catch {
+        // Speichern nicht möglich – dann gilt es nur bis zum Neuladen.
+      }
+      return next
+    })
+  }
+
+  function toggleModel(id: string) {
+    setHidden((prev) => {
+      const next = new Set(prev)
+      if (next.has(id)) next.delete(id)
+      else next.add(id)
+      return next
+    })
+  }
 
   if (!current) {
     return <p className="hint">Wetterdaten von {COMPARISON_MODELS.length} Modellen werden geladen …</p>
@@ -64,9 +112,12 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
     )
   }
 
-  if (!forecast || !comparison || forecast.availableModels.length === 0 || days.length === 0) {
+  if (!forecast || !chartForecast || available.length === 0 || days.length === 0) {
     return <p className="notice">Für diesen Ort liefert leider kein Modell Daten.</p>
   }
+
+  const now = localNow(forecast.utcOffsetSeconds)
+  const selected = selectedDay !== null ? days[selectedDay] : undefined
 
   return (
     <>
@@ -76,10 +127,42 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
         selectedIndex={selectedDay}
         onSelect={(i) => setSelectedDay((prev) => (prev === i ? null : i))}
       />
+
       {selected && (
-        <DayDetail forecast={forecast} day={selected} now={now} onClose={() => setSelectedDay(null)} />
+        <DayDetail
+          forecast={forecast}
+          day={selected}
+          now={now}
+          statIds={statIds}
+          lineModels={lineModels}
+          onClose={() => setSelectedDay(null)}
+        />
       )}
-      <ModelComparison forecast={comparison} />
+
+      <section className="trend">
+        <h2>Verlauf – {CHART_DAYS} Tage</h2>
+        <p className="muted small">
+          Dicke Linie = Mittelwert aller Modelle, graue Fläche = Spanne vom niedrigsten bis zum höchsten Modell. Je breiter die Fläche,
+          desto unsicherer die Vorhersage.
+        </p>
+        <ModelComparison
+          open={compareOpen}
+          onToggleOpen={toggleCompare}
+          models={available}
+          hidden={hidden}
+          reach={reach}
+          onToggleModel={toggleModel}
+          onShowAll={() => setHidden(new Set())}
+          onHideAll={() => setHidden(new Set(available.map((m) => m.id)))}
+        />
+        <ForecastCharts
+          forecast={chartForecast}
+          statIds={statIds}
+          lineModels={lineModels}
+          ticks={dayStarts(chartForecast.times)}
+          now={now}
+        />
+      </section>
     </>
   )
 }

@@ -18,8 +18,14 @@ interface Props {
   title: string
   unit: string
   rows: ChartRow[]
+  /** Modelle, die als eigene dünne Linie gezeichnet werden (leer = nur Mittelwert + Streuband). */
   models: ModelInfo[]
-  dayTicks: number[]
+  /** Striche an der x-Achse (z. B. Mitternacht oder alle 3 Stunden) */
+  ticks: number[]
+  /** Beschriftung der x-Achse, Standard: Tag („Mo 9.11.“) */
+  tickFormatter?: (t: number) => string
+  /** Kleinere Höhe, z. B. in der Stundenansicht */
+  compact?: boolean
   now: number
   /** y-Achse bei 0 beginnen lassen (Niederschlag, Wind). */
   fromZero?: boolean
@@ -64,20 +70,31 @@ function ChartTooltip({
       )}
       {extraLabel && <p className="muted">{extraLabel}: {fmt(row.extraMean, unit)}</p>}
       <p className="muted">{row.count} Modell(e)</p>
-      <ul className="tt-models">
+      {perModel.length > 0 && <ul className="tt-models">
         {perModel.map(({ m, v }) => (
           <li key={m.id}>
             <span className="swatch" style={{ background: m.color }} />
             {m.label}: {v.toFixed(1)}
           </li>
         ))}
-      </ul>
+      </ul>}
     </div>
   )
 }
 
 /** Ein Diagramm: dünne Linie pro Modell, dicke Linie = Mittelwert, graue Fläche = Streuband (Min–Max). */
-export function ModelChart({ title, unit, rows, models, dayTicks, now, fromZero, extraLabel }: Props) {
+export function ModelChart({
+  title,
+  unit,
+  rows,
+  models,
+  ticks,
+  tickFormatter = formatDay,
+  compact,
+  now,
+  fromZero,
+  extraLabel,
+}: Props) {
   const first = rows[0]?.t ?? 0
   const last = rows[rows.length - 1]?.t ?? 0
 
@@ -87,7 +104,7 @@ export function ModelChart({ title, unit, rows, models, dayTicks, now, fromZero,
         {title} <span className="muted small">({unit})</span>
       </h3>
       {extraLabel && <p className="muted small chart-note">Gestrichelte Linie = {extraLabel} (Mittel aller sichtbaren Modelle)</p>}
-      <div className="chart">
+      <div className={compact ? 'chart compact' : 'chart'}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>
             <CartesianGrid strokeDasharray="3 3" stroke="var(--border)" />
@@ -96,8 +113,8 @@ export function ModelChart({ title, unit, rows, models, dayTicks, now, fromZero,
               type="number"
               scale="time"
               domain={[first, last]}
-              ticks={dayTicks}
-              tickFormatter={formatDay}
+              ticks={ticks}
+              tickFormatter={tickFormatter}
               tick={{ fontSize: 12, fill: 'currentColor' }}
             />
             <YAxis

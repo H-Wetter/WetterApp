@@ -49,19 +49,30 @@ export function buildChartRows(
   })
 }
 
-/** Schneidet die Vorhersage auf die ersten `hours` Stunden zu (z. B. 7 Tage für den Modellvergleich). */
-export function sliceForecast(forecast: MultiModelForecast, hours: number): MultiModelForecast {
+/**
+ * Schneidet die Vorhersage auf die Stunden `from` bis `to` (exklusiv) zu –
+ * z. B. die ersten 7 Tage oder einen einzelnen Tag für die Stundenansicht.
+ * Modelle ohne Werte in diesem Zeitraum fallen aus `availableModels` heraus.
+ */
+export function sliceForecast(forecast: MultiModelForecast, from: number, to: number): MultiModelForecast {
   const data = {} as MultiModelForecast['data']
   for (const [variable, byModel] of Object.entries(forecast.data) as [HourlyVariable, Record<string, Series>][]) {
-    data[variable] = Object.fromEntries(Object.entries(byModel).map(([id, s]) => [id, s.slice(0, hours)]))
+    data[variable] = Object.fromEntries(Object.entries(byModel).map(([id, s]) => [id, s.slice(from, to)]))
   }
   const lastIndex: Record<string, number> = {}
-  for (const [id, last] of Object.entries(forecast.lastIndex)) lastIndex[id] = Math.min(last, hours - 1)
+  const available: string[] = []
+  for (const id of forecast.availableModels) {
+    const last = (forecast.lastIndex[id] ?? -1) - from
+    if (last < 0) continue
+    lastIndex[id] = Math.min(last, to - from - 1)
+    available.push(id)
+  }
   return {
     ...forecast,
-    times: forecast.times.slice(0, hours),
+    times: forecast.times.slice(from, to),
     data,
     lastIndex,
+    availableModels: available,
   }
 }
 
