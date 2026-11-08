@@ -7,6 +7,7 @@ import { summarizeDays } from '../lib/daily'
 import { CLOUD_PROFILE_MODELS, COMPARISON_MODELS } from '../lib/models'
 import { WARNING_EXTRA_VARIABLES, computeWarnings } from '../lib/warnings'
 import { WarningsPanel } from './WarningsPanel'
+import { EnvironmentPanel } from './EnvironmentPanel'
 import { dayStarts, localNow } from '../lib/time'
 import type { ModelInfo, MultiModelForecast } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
@@ -177,6 +178,10 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
           />
         </ErrorBoundary>
       )}
+
+      <ErrorBoundary label="Luft & Umwelt" resetKey={requestKey}>
+        <EnvironmentPanel location={location} now={now} />
+      </ErrorBoundary>
 
       <section className="trend">
         <h2>Verlauf – {CHART_DAYS} Tage</h2>

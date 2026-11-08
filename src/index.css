@@ -272,6 +272,34 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
 .cs-freezing-label { fill: var(--freezing); font-size: 11px; font-weight: 700; paint-order: stroke; stroke: #1c2430; stroke-width: 2px; }
 .cs-key-freezing { height: 0; border-top: 2px dashed var(--freezing); border-radius: 0; }
 
+/* ---------- Luft & Umwelt ---------- */
+.env-panel { display: flex; flex-direction: column; gap: 0.5rem; }
+.env-panel p { margin: 0; }
+.env-title { margin: 0 0 0.25rem; font-size: 1.2rem; }
+.env-table { border-collapse: separate; border-spacing: 0.25rem; width: 100%; font-size: 0.9rem; }
+.env-table th { text-align: left; font-weight: 600; white-space: nowrap; padding: 0.2rem 0.3rem; }
+.env-table thead th { font-size: 0.85rem; }
+.env-table tbody th { cursor: help; }
+/* Zeilennamen bleiben beim seitlichen Wischen (Handy) stehen */
+.env-table tbody th, .env-table thead th:first-child {
+  position: sticky; left: 0; z-index: 1; background: var(--surface);
+}
+.env-table td { padding: 0; }
+.env-badge {
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  min-width: 4.8rem; padding: 0.25rem 0.4rem; border-radius: 8px; text-align: center; line-height: 1.2;
+  color: #1c2430;
+}
+.env-label { font-size: 0.72rem; }
+/* 1 sehr gut … 6 extrem – ähnlich den Farben des Europäischen Luftqualitätsindex */
+.env-0 { background: var(--border); color: var(--muted); }
+.env-1 { background: #8fd3c4; }
+.env-2 { background: #b5e48c; }
+.env-3 { background: #ffe066; }
+.env-4 { background: #ffa94d; }
+.env-5 { background: #ff6b6b; color: #fff; }
+.env-6 { background: #9c36b5; color: #fff; }
+
 /* ---------- Fehlermeldung eines Bereichs ---------- */
 .error-card { border-left: 4px solid var(--error); }
 .error-card p { margin: 0 0 0.4rem; }
