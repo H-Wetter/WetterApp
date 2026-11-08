@@ -6,13 +6,18 @@ import { LocalForecast } from '../components/LocalForecast'
 import { DEFAULT_LOCATION } from '../lib/defaults'
 import type { WeatherLocation } from '../types/location'
 
+interface Props {
+  /** Der gewählte Ort gilt für alle Seiten – darum liegt er in App.tsx. */
+  location: WeatherLocation | null
+  setLocation: (location: WeatherLocation) => void
+}
+
 /**
  * Seite „Lokal“: Beim Start wählt man selbst:
  *  – einen Ort eingeben (z. B. „Wien“ → Wien, Österreich) oder
  *  – den eigenen Standort ermitteln lassen (bei Fehler → Graz).
  */
-export function LocalPage() {
-  const [location, setLocation] = useState<WeatherLocation | null>(null)
+export function LocalPage({ location, setLocation }: Props) {
   const [locating, setLocating] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
 

@@ -128,11 +128,13 @@ export async function fetchMultiModelForecast(
   modelIds: string[],
   days: number,
   signal?: AbortSignal,
+  /** zusätzliche stündliche Variablen, landen in `extra` (z. B. 'temperature_850hPa') */
+  extraVariables: string[] = [],
 ): Promise<MultiModelForecast> {
   const params = new URLSearchParams({
     latitude: location.latitude.toFixed(4),
     longitude: location.longitude.toFixed(4),
-    hourly: FORECAST_VARIABLES.join(','),
+    hourly: [...FORECAST_VARIABLES, ...extraVariables].join(','),
     daily: 'sunrise,sunset',
     models: modelIds.join(','),
     forecast_days: String(days),
@@ -185,6 +187,16 @@ export async function fetchMultiModelForecast(
     }
   }
 
+  const extra: MultiModelForecast['extra'] = {}
+  for (const variable of extraVariables) {
+    extra[variable] = {}
+    for (const modelId of modelIds) {
+      const key = modelIds.length === 1 ? variable : `${variable}_${modelId}`
+      const values = raw.hourly[key] as Series | undefined
+      if (values) extra[variable][modelId] = values
+    }
+  }
+
   return {
     times,
     utcOffsetSeconds: raw.utc_offset_seconds,
@@ -193,5 +205,6 @@ export async function fetchMultiModelForecast(
     availableModels: modelIds.filter((id) => available.has(id)),
     lastIndex,
     sun: parseSunTimes(raw.daily),
+    extra,
   }
 }

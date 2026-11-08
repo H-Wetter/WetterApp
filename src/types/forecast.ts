@@ -49,6 +49,8 @@ export interface MultiModelForecast {
   lastIndex: Record<string, number>
   /** Sonnenauf-/-untergang je Tag */
   sun: SunTimes[]
+  /** Zusätzlich angefragte Variablen (z. B. Temperatur auf Druckniveaus für den Berg): extra[variable][modelId] */
+  extra: Record<string, Record<string, Series>>
 }
 
 /** Statistik über alle (sichtbaren) Modelle für eine Stunde. */

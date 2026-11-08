@@ -12,6 +12,9 @@
   --cloud-fill: #6f7b8c;
   --ground: #b49a7a;
   --cloud-base: #e8590c;
+  --valley: #2f7fe0;
+  --mountain: #2b8a3e;
+  --inversion: #f59f00;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
   color: var(--text);
@@ -33,6 +36,9 @@
     --cloud-fill: #e3e8ef;
     --ground: #6b5a45;
     --cloud-base: #ff8c42;
+    --valley: #6aa8ff;
+    --mountain: #69db7c;
+    --inversion: #fab005;
   }
 }
 
@@ -49,7 +55,9 @@ body { margin: 0; }
   border-bottom: 1px solid var(--border);
 }
 .brand { font-weight: 700; }
-.nav-item { padding: 0.25rem 0.75rem; border-radius: 999px; }
+.nav { display: flex; gap: 0.3rem; }
+.nav-item { padding: 0.3rem 0.8rem; border-radius: 999px; border: 1px solid transparent; background: transparent; }
+.nav-item:hover { border-color: var(--border); }
 .nav-item.active { background: var(--accent); color: #fff; }
 
 main { max-width: 1000px; margin: 0 auto; padding: 1rem; }
@@ -198,6 +206,31 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
   .tiles { grid-template-columns: repeat(2, 1fr); }
   .h-label { display: none; }
 }
+
+/* ---------- Berg & Tal ---------- */
+.link-button { border: 0; background: none; padding: 0; color: var(--accent); text-decoration: underline; }
+.day-chips { flex-wrap: wrap; border-radius: 12px; align-self: flex-start; }
+.day-chips button { white-space: nowrap; }
+.inversion-banner {
+  margin: 0; padding: 0.6rem 0.8rem; border-radius: 10px;
+  background: color-mix(in srgb, var(--inversion) 18%, var(--surface));
+  border-left: 4px solid var(--inversion);
+}
+.place-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 0.75rem; }
+.place-day.valley { border-top: 4px solid var(--valley); }
+.place-day.mountain { border-top: 4px solid var(--mountain); }
+.place-kind { margin: 0; text-transform: uppercase; letter-spacing: 0.05em; }
+.place-head { display: flex; align-items: center; gap: 0.6rem; }
+.place-head h3 { margin: 0; }
+.place-head p { margin: 0; }
+.place-temps { margin-left: auto !important; font-size: 1.4rem; white-space: nowrap; }
+.place-facts { list-style: none; padding: 0; margin: 0.5rem 0; display: flex; flex-wrap: wrap; gap: 0.3rem 1rem; }
+.place-facts li { display: inline-flex; align-items: center; gap: 0.25rem; }
+.place-text p { margin: 0.3rem 0; }
+.swatch.vm-valley { background: var(--valley); }
+.swatch.vm-mountain { background: var(--mountain); }
+.swatch.vm-inv { background: var(--inversion); opacity: 0.5; }
+.vm-inv-text { color: var(--inversion); font-weight: 600; }
 
 /* ---------- Wolkenschnitt ---------- */
 .cs-wrap { position: relative; width: 100%; touch-action: pan-y; }

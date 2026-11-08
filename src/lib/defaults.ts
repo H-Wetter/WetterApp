@@ -11,6 +11,17 @@ export const DEFAULT_LOCATION: WeatherLocation = {
   source: 'default',
 }
 
+/** Standard-Bergpunkt für „Berg & Tal“ (laut CLAUDE.md). */
+export const DEFAULT_MOUNTAIN: WeatherLocation = {
+  name: 'Schöckl',
+  latitude: 47.2,
+  longitude: 15.47,
+  elevation: 1445,
+  country: 'Österreich',
+  region: 'Steiermark',
+  source: 'default',
+}
+
 /** Koordinaten hübsch formatieren, z. B. „47.07° N, 15.44° O“. */
 export function formatCoordinates(lat: number, lon: number): string {
   const ns = lat >= 0 ? 'N' : 'S'
