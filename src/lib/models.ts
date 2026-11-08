@@ -1,4 +1,5 @@
 import type { ModelInfo } from '../types/forecast'
+import type { EnsembleModelInfo } from '../types/ensemble'
 
 /**
  * Modelle für den 7-Tage-Vergleich. Am 08.11.2026 gegen die Open-Meteo-API geprüft.
@@ -37,3 +38,15 @@ export const CLOUD_PROFILE_MODELS = COMPARISON_MODELS.filter((m) => !NO_PRESSURE
 export function findModel(id: string): ModelInfo | undefined {
   return COMPARISON_MODELS.find((m) => m.id === id)
 }
+
+/**
+ * Ensembles für den Trend Tag 8–16. Am 08.11.2026 gegen die Open-Meteo-Ensemble-API geprüft.
+ * Reichweite für Graz: ECMWF bis Tag 15, GEFS und GEM bis Tag 16, UKMO bis Tag 10.
+ * Bewusst NICHT dabei: icon_seamless_eps (nur ~7,5 Tage – erreicht Tag 8 nicht).
+ */
+export const ENSEMBLE_MODELS: EnsembleModelInfo[] = [
+  { id: 'ecmwf_ifs025_ensemble', label: 'ECMWF ENS', provider: 'Europa' },
+  { id: 'ncep_gefs_seamless', label: 'GEFS', provider: 'USA' },
+  { id: 'gem_global_ensemble', label: 'GEM ENS', provider: 'Kanada' },
+  { id: 'ukmo_global_ensemble_20km', label: 'MOGREPS-G', provider: 'Großbritannien' },
+]

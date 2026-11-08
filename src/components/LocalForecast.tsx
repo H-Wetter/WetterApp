@@ -8,6 +8,7 @@ import { CLOUD_PROFILE_MODELS, COMPARISON_MODELS } from '../lib/models'
 import { WARNING_EXTRA_VARIABLES, computeWarnings } from '../lib/warnings'
 import { WarningsPanel } from './WarningsPanel'
 import { EnvironmentPanel } from './EnvironmentPanel'
+import { EnsembleTrend } from './EnsembleTrend'
 import { dayStarts, localNow } from '../lib/time'
 import type { ModelInfo, MultiModelForecast } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
@@ -223,6 +224,10 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
           />
         </ErrorBoundary>
       </section>
+
+      <ErrorBoundary label="Der Trend Tag 8–16" resetKey={requestKey}>
+        <EnsembleTrend location={location} />
+      </ErrorBoundary>
     </>
   )
 }

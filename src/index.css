@@ -416,3 +416,8 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
   .hour-strip { grid-template-columns: repeat(4, 1fr); }
   .chart.compact { height: 180px; }
 }
+
+/* Etappe 8: Ensemble-Trend Tag 8–16 */
+.ens-summary { display: flex; flex-direction: column; gap: 0.35rem; }
+.ens-summary p { margin: 0; }
+.chart-note .swatch { vertical-align: middle; margin: 0 0.15rem 0 0.4rem; }
