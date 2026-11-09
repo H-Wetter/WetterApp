@@ -17,6 +17,7 @@ import { dayStarts, formatDate, localNow, relativeDayName } from '../lib/time'
 import type { MultiModelForecast } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
 import type { FoundPoint, TerrainResult } from '../types/terrain'
+import { LinkedText, Term } from '../components/LexikonLink'
 
 const DAYS = 7
 const RADIUS_KEY = 'wetter-app.mountain-radius'
@@ -283,11 +284,13 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
           {inversion && inversion.hours >= 3 && (
             <p className="inversion-banner">
               <strong>
-                {inversion.fog ? (inversion.fogFromGround ? 'Inversion mit Nebel' : 'Inversion mit Hochnebel') : 'Inversion'}
+                <LinkedText
+                  text={inversion.fog ? (inversion.fogFromGround ? 'Inversion mit Nebel' : 'Inversion mit Hochnebel') : 'Inversion'}
+                />
               </strong>
               {' – '}
               {inversion.fog && inversion.fogTop !== null
-                ? `Nebelobergrenze etwa ${meters(inversion.fogTop)}: im Tal trüb und kühl, darüber sonnig und mild.`
+                ? <><Term id="hochnebel">Nebelobergrenze</Term> etwa {meters(inversion.fogTop)}: im Tal trüb und kühl, darüber sonnig und mild.</>
                 : `nach oben wird es ${joinParts(inversion.parts) || 'zeitweise'} wärmer${inversion.top !== null ? `, bis etwa ${meters(inversion.top)}` : ''}.`}
               {inversion.maxStrength !== null && inversion.maxStrength >= 0.5 &&
                 ` Bis zu ${inversion.maxStrength.toFixed(1).replace('.', ',')} °C Unterschied.`}
@@ -323,9 +326,16 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
           <p className="muted small">
             <strong>So wird gerechnet:</strong> Tal und Berg kommen aus einem Höhenmodell (90 m Raster, Open-Meteo): Tal = dein
             Ort oder der tiefste Punkt im Umkreis von 5 km, Berg = der höchste Punkt im gewählten Umkreis. Die{' '}
-            <strong>Inversion</strong> erkennen wir am Temperaturprofil der Modelle über dem Tal (2 m und Druckniveaus 1000–850 hPa,
+            <strong>
+              <Term id="inversion">Inversion</Term>
+            </strong>{' '}
+            erkennen wir am Temperaturprofil der Modelle über dem Tal (2 m und Druckniveaus 1000–850 hPa,
             also bis ca. 1500 m): Wird es nach oben wärmer, liegt eine Inversion vor. Ist die Luft darunter fast gesättigt (≥ 95 %
-            Feuchte), schätzen wir daraus die <strong>Nebelobergrenze</strong>. Für den Gipfel nehmen wir Temperatur und Wind aus der
+            Feuchte), schätzen wir daraus die{' '}
+            <strong>
+              <Term id="hochnebel">Nebelobergrenze</Term>
+            </strong>
+            . Für den Gipfel nehmen wir Temperatur und Wind aus der
             freien Atmosphäre in Gipfelhöhe.
           </p>
         </>

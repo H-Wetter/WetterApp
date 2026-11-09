@@ -466,3 +466,31 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
 .terrain-list .swatch { vertical-align: middle; }
 .terrain-map { width: 100%; height: 260px; border-radius: 8px; border: 1px solid var(--border); z-index: 0; }
 .terrain-map .leaflet-tile-pane { filter: grayscale(0.6); }
+
+/* Wetterlexikon */
+.nav { overflow-x: auto; scrollbar-width: none; }
+.nav-short { display: none; }
+@media (max-width: 560px) {
+  .nav-long { display: none; }
+  .nav-short { display: inline; }
+}
+.term-link {
+  display: inline; padding: 0; margin: 0; border: 0; background: none; font: inherit; color: inherit;
+  text-decoration: underline dotted; text-decoration-color: var(--accent); text-underline-offset: 3px; cursor: help;
+}
+.term-link:hover { color: var(--accent); }
+.lex-back { margin-bottom: 0.5rem; }
+.lex-search { display: flex; flex-direction: column; gap: 0.6rem; }
+.lex-search input { width: 100%; font-size: 1rem; padding: 0.55rem 0.7rem; }
+.lex-search p { margin: 0; }
+.lex-index { display: flex; flex-wrap: wrap; gap: 0.35rem; }
+.lex-index button { padding: 0.25rem 0.65rem; font-size: 0.85rem; border-radius: 999px; }
+.lex-entry { scroll-margin-top: 4.5rem; transition: box-shadow 0.4s, border-color 0.4s; }
+.lex-entry h2 { margin: 0 0 0.4rem; font-size: 1.2rem; }
+.lex-entry p { margin: 0 0 0.5rem; line-height: 1.5; }
+.lex-highlight { border-color: var(--accent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--accent) 35%, transparent); }
+.lex-body { display: grid; grid-template-columns: 1fr minmax(180px, 260px); gap: 1rem; align-items: start; }
+.lex-inapp { padding: 0.4rem 0.6rem; border-left: 3px solid var(--accent); background: color-mix(in srgb, var(--accent) 7%, transparent); border-radius: 4px; }
+.lex-example { color: var(--muted); }
+.lex-sketch { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
+@media (max-width: 600px) { .lex-body { grid-template-columns: 1fr; } .lex-sketch { max-width: 320px; } }

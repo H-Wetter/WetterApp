@@ -2,6 +2,7 @@ import type { DaySummary } from '../lib/daily'
 import type { WeatherLocation } from '../types/location'
 import { SmallIcon, WeatherIcon } from './WeatherIcon'
 import { WindArrow } from './WindArrow'
+import { LinkedText } from './LexikonLink'
 
 interface Props {
   title: string
@@ -51,7 +52,9 @@ export function PlaceDayCard({ title, location, elevation, day, sentences, varia
 
       <div className="place-text">
         {sentences.map((s) => (
-          <p key={s}>{s}</p>
+          <p key={s}>
+            <LinkedText text={s} />
+          </p>
         ))}
       </div>
     </section>

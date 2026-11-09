@@ -11,6 +11,7 @@ import { freezingLevel, type Warning } from '../lib/warnings'
 import { ForecastCharts } from './ForecastCharts'
 import { MoonIcon, SmallIcon, WeatherIcon } from './WeatherIcon'
 import { WindArrow } from './WindArrow'
+import { Term } from './LexikonLink'
 
 interface Props {
   forecast: MultiModelForecast
@@ -110,7 +111,7 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfil
         </li>
         {freezing && (
           <li title={`Schneefallgrenze ≈ Nullgradgrenze − 300 m (Faustregel), aus ${freezing.models} Modellen`}>
-            <span className="freezing-key">0 °C</span> Nullgradgrenze {roundTo(Math.max(0, freezing.min), 50)}
+            <span className="freezing-key">0 °C</span> <Term id="nullgradgrenze">Nullgradgrenze</Term> {roundTo(Math.max(0, freezing.min), 50)}
             {Math.abs(freezing.max - freezing.min) >= 100 ? `–${roundTo(Math.max(0, freezing.max), 50)}` : ''} m
           </li>
         )}

@@ -13,6 +13,7 @@ import {
 import type { ChartRow } from '../lib/chartData'
 import { formatDay, formatDayHour } from '../lib/time'
 import type { ModelInfo } from '../types/forecast'
+import { LinkedText } from './LexikonLink'
 
 interface Props {
   title: string
@@ -103,7 +104,11 @@ export function ModelChart({
       <h3>
         {title} <span className="muted small">({unit})</span>
       </h3>
-      {extraLabel && <p className="muted small chart-note">Gestrichelte Linie = {extraLabel} (Mittel aller sichtbaren Modelle)</p>}
+      {extraLabel && (
+        <p className="muted small chart-note">
+          <LinkedText text={`Gestrichelte Linie = ${extraLabel} (Mittel aller sichtbaren Modelle)`} />
+        </p>
+      )}
       <div className={compact ? 'chart compact' : 'chart'}>
         <ResponsiveContainer width="100%" height="100%">
           <ComposedChart data={rows} margin={{ top: 8, right: 8, bottom: 0, left: -16 }}>

@@ -2,6 +2,7 @@ import { useId, useMemo, useState, type PointerEvent } from 'react'
 import { MAX_HEIGHT, cloudMotionText, type CloudColumn, type CloudSection } from '../lib/clouds'
 import { formatDay, formatDayHour } from '../lib/time'
 import { useElementWidth } from './useElementWidth'
+import { LinkedText, Term } from './LexikonLink'
 
 interface Props {
   section: CloudSection
@@ -224,9 +225,13 @@ export function CloudSectionChart({ section, ticks, tickFormatter = formatDay, a
   return (
     <section className="card chart-card cloud-section">
       <h3>
-        Wolken nach Höhe <span className="muted small">({section.modelCount} Modelle)</span>
+        <Term id="wolkenstockwerke">Wolken nach Höhe</Term> <span className="muted small">({section.modelCount} Modelle)</span>
       </h3>
-      {motion && <p className="small cs-motion">{motion}</p>}
+      {motion && (
+        <p className="small cs-motion">
+          <LinkedText text={motion} />
+        </p>
+      )}
 
       <div className="cs-wrap" ref={ref} style={{ height }}>
         {width > 0 && (
@@ -375,10 +380,11 @@ export function CloudSectionChart({ section, ticks, tickFormatter = formatDay, a
           Wolken (groß und dicht = viel Bewölkung)
         </li>
         <li>
-          <span className="cs-key cs-key-base" /> geschätzte Wolkenbasis
+          <span className="cs-key cs-key-base" /> geschätzte <Term id="wolkenbasis">Wolkenbasis</Term>
         </li>
         <li>
-          <span className="cs-key cs-key-freezing" /> Nullgradgrenze (darüber Frost; Schnee fällt meist bis ca. 300 m darunter)
+          <span className="cs-key cs-key-freezing" /> <Term id="nullgradgrenze">Nullgradgrenze</Term> (darüber Frost;{' '}
+          <Term id="schneefallgrenze">Schnee fällt meist bis ca. 300 m darunter</Term>)
         </li>
         <li>
           <svg width="12" height="14" viewBox="-6 -8 12 16" aria-hidden="true">

@@ -12,6 +12,7 @@ import {
 } from 'recharts'
 import type { HourComparison } from '../lib/inversion'
 import { formatDay, formatDayHour } from '../lib/time'
+import { Term } from './LexikonLink'
 
 interface Props {
   hours: HourComparison[]
@@ -83,7 +84,7 @@ export function ValleyMountainChart({ hours, valleyName, mountainName, ticks, no
       </h3>
       <p className="muted small chart-note">
         <span className="swatch vm-valley" /> {valleyName} &nbsp; <span className="swatch vm-mountain" /> {mountainName} &nbsp;
-        <span className="swatch vm-inv" /> Inversion laut Temperaturprofil (oben wärmer als unten)
+        <span className="swatch vm-inv" /> <Term id="inversion">Inversion</Term> laut Temperaturprofil (oben wärmer als unten)
       </p>
       <div className="chart">
         <ResponsiveContainer width="100%" height="100%">

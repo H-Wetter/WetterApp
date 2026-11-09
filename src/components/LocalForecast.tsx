@@ -17,6 +17,7 @@ import { ErrorBoundary } from './ErrorBoundary'
 import { DayDetail } from './DayDetail'
 import { ForecastCharts } from './ForecastCharts'
 import { ModelComparison } from './ModelComparison'
+import { Term } from './LexikonLink'
 
 /** Wir laden einmal 14 Tage – Kacheln nutzen bis zu 14, die Verlaufsdiagramme die ersten 7. */
 const FETCH_DAYS = 14
@@ -187,8 +188,8 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
       <section className="trend">
         <h2>Verlauf – {CHART_DAYS} Tage</h2>
         <p className="muted small">
-          Dicke Linie = Mittelwert aller Modelle, graue Fläche = Spanne vom niedrigsten bis zum höchsten Modell. Je breiter die Fläche,
-          desto unsicherer die Vorhersage.
+          Dicke Linie = Mittelwert aller Modelle, graue Fläche = Spanne vom niedrigsten bis zum höchsten Modell (
+          <Term id="modellstreuung">Modellstreuung</Term>). Je breiter die Fläche, desto unsicherer die Vorhersage.
         </p>
         <ErrorBoundary label="Der Modellvergleich" resetKey={requestKey}>
           <ModelComparison

@@ -27,7 +27,8 @@ src/
   api/          # alle API-Aufrufe (openMeteo.ts, ensemble.ts, airQuality.ts, geocoding.ts)
   lib/          # Berechnungen (Statistik, Inversion, Wolkenbasis, Texte)
   components/   # UI-Bausteine (Diagramme, Karten, Kacheln)
-  pages/        # Lokal, Berge, Großwetterlage
+  pages/        # Lokal, Berg & Tal, Radar, Großwetterlage, Wetterlexikon
+  data/         # feste Texte, z. B. lexikon.ts (Wetterlexikon)
   types/        # TypeScript-Typen
 ```
 API-Aufrufe nur in `src/api/`, Berechnungen nur in `src/lib/` – nie direkt in Komponenten.
@@ -88,7 +89,20 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
 7. **Umwelt:** Pollen, Feinstaub, UV, Saharastaub.
 8. **Ensemble 8–16 Tage:** Trend mit Unsicherheitsband.
 9. **Großwetterlage:** Europa-Karte, Raster aus `pressure_msl` und `geopotential_height_500hPa`, Isolinien, Zeitschieber. Hinweis: Rasterabfragen sparsam (Tageslimit ca. 10.000 Aufrufe), Punkte bündeln, Ergebnis cachen.
-10. **Feinschliff:** Mobil-Layout, Ladeanzeigen, Fehlermeldungen, Caching (z. B. 30 Min).
+10. **Wetterlexikon:** eigener Reiter „Wetterlexikon“, gleichrangig mit „Lokal“ und „Berg & Tal“.
+    - Erklärt Wetterbegriffe einfach und verständlich für Laien. Je Begriff: kurze Erklärung (2–4 Sätze), woran man es in der App erkennt, wenn sinnvoll eine kleine Skizze oder ein Beispiel.
+    - Begriffe zum Start: Inversion, Hochnebel, Nullgradgrenze, Schneefallgrenze, Föhn, CAPE / Gewitterneigung, Lifted Index, Böen, Taupunkt, Wolkenbasis, tiefe/mittlere/hohe Wolken, Ensemble, Modellstreuung, Hoch- und Tiefdruckgebiet, Trog, Kaltfront, Warmfront, Okklusion.
+    - Mit Suchfeld.
+    - Verknüpfung: Wo ein Begriff in der App vorkommt (z. B. „Inversion“ bei Berg & Tal), ist er antippbar und springt direkt zur Erklärung im Lexikon.
+    - Texte in einer eigenen Datei `src/data/lexikon.ts`, damit sie leicht ergänzt werden können.
+11. **Textueller Tagesverlauf:** für den gewählten Tag eine Beschreibung in vier Abschnitten: Vormittag (6–11 Uhr), Mittag (11–14 Uhr), Nachmittag (14–18 Uhr), Abend (18–22 Uhr).
+    - Je Abschnitt 1–3 Sätze: Bewölkung, Niederschlag (Regen/Schnee), Temperatur, Wind/Böen, Gewitterrisiko, Nebel/Hochnebel.
+    - Grundlage ist der Mittelwert aller Modelle. Bei großer Streuung steht das im Text, z. B. „Die Modelle sind sich beim Regen am Nachmittag uneinig.“
+    - Bei erkannter Inversion Tal und Berg getrennt beschreiben.
+    - Regelbasiert aus Textbausteinen, ohne Claude API.
+    - Regeln und Schwellenwerte in `src/lib/tagesverlauf.ts`, verständlich kommentiert.
+    - Abwechslungsreiche Formulierungen, damit sich die Texte nicht jeden Tag gleich lesen.
+12. **Feinschliff:** Mobil-Layout, Ladeanzeigen, Fehlermeldungen, Caching (z. B. 30 Min).
 
 ## Qualität
 - TypeScript streng, keine `any`.

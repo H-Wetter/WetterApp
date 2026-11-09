@@ -18,6 +18,7 @@ import { ENSEMBLE_MODELS } from '../lib/models'
 import { formatDay } from '../lib/time'
 import type { EnsembleData, EnsembleDay } from '../types/ensemble'
 import type { WeatherLocation } from '../types/location'
+import { LinkedText, Term } from './LexikonLink'
 
 /** Tag 8 bis 16 (Index 7 bis 15, 0 = heute) */
 const FROM_DAY = 7
@@ -171,13 +172,15 @@ export function EnsembleTrend({ location }: { location: WeatherLocation }) {
       {title}
       <p className="muted small">
         Ab Tag 8 sind einzelne Modellläufe kaum noch verlässlich. Darum rechnen die Wetterdienste jedes Modell viele Male mit
-        leicht veränderten Startwerten („Ensemble“). Hier sind bis zu {maxMembers} solcher Läufe zusammengefasst. Linie = mittlerer
+        leicht veränderten Startwerten („<Term id="ensemble">Ensemble</Term>“). Hier sind bis zu {maxMembers} solcher Läufe zusammengefasst. Linie = mittlerer
         Lauf (Median), kräftige Fläche = 80 % der Läufe, blasse Fläche = alle Läufe.
       </p>
 
       <div className="card ens-summary">
         {text.map((s) => (
-          <p key={s}>{s}</p>
+          <p key={s}>
+            <LinkedText text={s} />
+          </p>
         ))}
       </div>
 

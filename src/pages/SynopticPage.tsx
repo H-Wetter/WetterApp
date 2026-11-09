@@ -5,6 +5,7 @@ import { SynopticMap } from '../components/SynopticMap'
 import { DEFAULT_LOCATION } from '../lib/defaults'
 import { Z500_LEGEND, describeSynoptic, nearestTimeIndex, z500Color } from '../lib/synoptic'
 import type { WeatherLocation } from '../types/location'
+import { LinkedText, Term } from '../components/LexikonLink'
 
 type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ok'; result: SynopticResult }
 
@@ -133,7 +134,11 @@ export function SynopticPage({ location }: { location: WeatherLocation | null })
           }}
           aria-label="Zeitpunkt wählen"
         />
-        {description && <p className="small">{description}</p>}
+        {description && (
+          <p className="small">
+            <LinkedText text={description} />
+          </p>
+        )}
       </div>
 
       <ErrorBoundary label="Die Karte" resetKey={`${g.fetchedAt}`}>
@@ -142,8 +147,8 @@ export function SynopticPage({ location }: { location: WeatherLocation | null })
 
       <div className="card syn-legend">
         <p className="small">
-          <strong>Farbe</strong> = Höhe der 500-hPa-Fläche (ca. 5,5 km) in Dekametern. Blau: kalte Luft in der Höhe (Trog,
-          unbeständig), Rot: warme Luft (Hochkeil, meist ruhig).
+          <strong>Farbe</strong> = Höhe der 500-hPa-Fläche (ca. 5,5 km) in Dekametern. Blau: kalte Luft in der Höhe (<Term id="trog">Trog</Term>,
+          unbeständig), Rot: warme Luft (<Term id="trog">Hochkeil</Term>, meist ruhig).
         </p>
         <div className="syn-scale">
           {Z500_LEGEND.map((v) => (
@@ -153,8 +158,8 @@ export function SynopticPage({ location }: { location: WeatherLocation | null })
           ))}
         </div>
         <p className="small">
-          <strong>Linien</strong> = Isobaren (gleicher Luftdruck am Boden) alle 5 hPa, dick alle 20 hPa. Liegen sie eng
-          beieinander, weht kräftiger Wind. <strong>H</strong> = Hoch, <strong>T</strong> = Tief.
+          <strong>Linien</strong> = <Term id="hoch-tief">Isobaren</Term> (gleicher Luftdruck am Boden) alle 5 hPa, dick alle 20 hPa. Liegen sie eng
+          beieinander, weht kräftiger Wind. <strong>H</strong> = <Term id="hoch-tief">Hoch</Term>, <strong>T</strong> = <Term id="hoch-tief">Tief</Term>.
         </p>
         <p className="small muted">
           Modell ECMWF IFS, 7 Tage alle 6 Stunden. Daten geladen {formatAge(age)}; sie werden 3 Stunden zwischengespeichert, um
