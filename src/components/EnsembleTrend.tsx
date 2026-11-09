@@ -20,6 +20,8 @@ import type { EnsembleData, EnsembleDay } from '../types/ensemble'
 import type { WeatherLocation } from '../types/location'
 import { LinkedText, Term } from './LexikonLink'
 import { Loading } from './Loading'
+import { ErrorMessage } from './ErrorMessage'
+import { friendlyError } from '../api/errors'
 
 /** Tag 8 bis 16 (Index 7 bis 15, 0 = heute) */
 const FROM_DAY = 7
@@ -120,7 +122,7 @@ export function EnsembleTrend({ location }: { location: WeatherLocation }) {
       .then((data) => setResult({ key, data }))
       .catch((err: unknown) => {
         if (controller.signal.aborted) return
-        setResult({ key, error: err instanceof Error ? err.message : 'Unbekannter Fehler.' })
+        setResult({ key, error: friendlyError(err) })
       })
     return () => controller.abort()
   }, [key, location])
@@ -147,12 +149,7 @@ export function EnsembleTrend({ location }: { location: WeatherLocation }) {
     return (
       <section className="trend">
         {title}
-        <div className="card">
-          <p className="error small">{current.error}</p>
-          <button type="button" onClick={() => setReload((r) => r + 1)}>
-            Erneut versuchen
-          </button>
-        </div>
+        <ErrorMessage small message={current.error} onRetry={() => setReload((r) => r + 1)} />
       </section>
     )
   }

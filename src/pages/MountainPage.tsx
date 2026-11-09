@@ -21,6 +21,8 @@ import { LinkedText, Term } from '../components/LexikonLink'
 import { DayCourse } from '../components/DayCourse'
 import { describeDayCourse } from '../lib/tagesverlauf'
 import { Loading } from '../components/Loading'
+import { ErrorMessage } from '../components/ErrorMessage'
+import { friendlyError } from '../api/errors'
 
 const DAYS = 7
 const VALLEY_EXTRA_VARIABLES = [...PROFILE_EXTRA_VARIABLES, 'cape']
@@ -77,7 +79,7 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
       .then((terrain) => setTerrainState({ key: terrainKey, terrain }))
       .catch((err: unknown) => {
         if (controller.signal.aborted) return
-        setTerrainState({ key: terrainKey, error: err instanceof Error ? err.message : 'Unbekannter Fehler.' })
+        setTerrainState({ key: terrainKey, error: friendlyError(err) })
       })
       .finally(() => setWaitSeconds(null))
     return () => controller.abort()
@@ -130,7 +132,7 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
       .then(([v, m]) => setForecastState({ key: forecastKey, valley: v, mountain: m }))
       .catch((err: unknown) => {
         if (controller.signal.aborted) return
-        setForecastState({ key: forecastKey, error: err instanceof Error ? err.message : 'Unbekannter Fehler.' })
+        setForecastState({ key: forecastKey, error: friendlyError(err) })
       })
     return () => controller.abort()
   }, [forecastKey, valley, mountain, hasMountain])
@@ -223,12 +225,7 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
           </Loading>
         )}
         {terrainError && (
-          <>
-            <p className="error small">{terrainError}</p>
-            <button type="button" onClick={() => setReload((r) => r + 1)}>
-              Erneut versuchen
-            </button>
-          </>
+          <ErrorMessage small message={terrainError} onRetry={() => setReload((r) => r + 1)} />
         )}
 
         {terrain && valley && mountain && (
@@ -284,12 +281,7 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
 
       {terrain && !forecast && <Loading>Vorhersage für Tal{hasMountain ? ' und Berg' : ''} wird geladen …</Loading>}
       {forecast && 'error' in forecast && (
-        <div className="card">
-          <p className="error">{forecast.error}</p>
-          <button type="button" onClick={() => setReload((r) => r + 1)}>
-            Erneut versuchen
-          </button>
-        </div>
+        <ErrorMessage message={forecast.error} onRetry={() => setReload((r) => r + 1)} />
       )}
 
       {data && vDay && valley && mountain && (

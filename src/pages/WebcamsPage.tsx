@@ -23,6 +23,8 @@ import type { HourInversion } from '../lib/inversion'
 import type { WeatherLocation } from '../types/location'
 import type { PlacedWebcam } from '../types/webcam'
 import { Loading } from '../components/Loading'
+import { ErrorMessage } from '../components/ErrorMessage'
+import { friendlyError } from '../api/errors'
 
 const RADIUS_KEY = 'wetter-app.webcam-radius'
 /** Nach so langer Zeit (ms) beim erneuten Öffnen der Seite neu laden – die Bildadressen laufen ab. */
@@ -97,7 +99,7 @@ export function WebcamsPage({ location, active, onChooseLocation }: Props) {
         if (controller.signal.aborted) return
         setCamState({
           key: camKey,
-          error: err instanceof Error ? err.message : 'Unbekannter Fehler.',
+          error: friendlyError(err),
           missingKey: err instanceof MissingWebcamKeyError,
         })
       })
@@ -187,12 +189,7 @@ export function WebcamsPage({ location, active, onChooseLocation }: Props) {
         {hasWebcamKey() && !current && <Loading>Webcams werden gesucht …</Loading>}
 
         {current && 'error' in current && !current.missingKey && (
-          <div>
-            <p className="error">{current.error}</p>
-            <button type="button" onClick={refresh}>
-              Erneut versuchen
-            </button>
-          </div>
+          <ErrorMessage message={current.error} onRetry={refresh} />
         )}
         {current && 'error' in current && current.missingKey && (
           <p className="notice small">

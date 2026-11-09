@@ -3,6 +3,7 @@ import { buildCloudSection } from '../lib/clouds'
 import type { CloudProfileRaw } from '../types/clouds'
 import { CloudSectionChart } from './CloudSectionChart'
 import { Loading } from './Loading'
+import { ErrorMessage } from './ErrorMessage'
 
 interface Props {
   /** `null` = wird noch geladen (oder Fehler, siehe `error`) */
@@ -31,7 +32,7 @@ export function CloudSectionBlock({ profile, error, modelIds, from, to, ...chart
     return (
       <section className="card">
         <h3>Wolken nach Höhe</h3>
-        <p className="error small">{error}</p>
+        <ErrorMessage small message={error} />
       </section>
     )
   }

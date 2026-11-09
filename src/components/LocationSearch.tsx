@@ -2,6 +2,8 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { searchLocations, type SearchHit } from '../api/geocoding'
 import type { WeatherLocation } from '../types/location'
 import { Loading } from './Loading'
+import { ErrorMessage } from './ErrorMessage'
+import { friendlyError } from '../api/errors'
 
 interface Props {
   onSelect: (location: WeatherLocation) => void
@@ -14,7 +16,7 @@ type SearchState =
   | { status: 'error'; message: string }
 
 function errorText(err: unknown): string {
-  const message = err instanceof Error ? err.message : 'Unbekannter Fehler'
+  const message = friendlyError(err)
   return `Suche nicht möglich: ${message}`
 }
 
@@ -100,7 +102,7 @@ export function LocationSearch({ onSelect }: Props) {
       </div>
 
       {shown.status === 'loading' && <Loading>Suche läuft …</Loading>}
-      {shown.status === 'error' && <p className="error">{shown.message}</p>}
+      {shown.status === 'error' && <ErrorMessage message={shown.message} />}
       {shown.status === 'done' && shown.hits.length === 0 && (
         <p className="hint">Kein Ort mit diesem Namen gefunden.</p>
       )}

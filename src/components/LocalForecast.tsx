@@ -19,6 +19,8 @@ import { ForecastCharts } from './ForecastCharts'
 import { ModelComparison } from './ModelComparison'
 import { Term } from './LexikonLink'
 import { Loading } from './Loading'
+import { ErrorMessage } from './ErrorMessage'
+import { friendlyError } from '../api/errors'
 
 /** Wir laden einmal 14 Tage – Kacheln nutzen bis zu 14, die Verlaufsdiagramme die ersten 7. */
 const FETCH_DAYS = 14
@@ -58,7 +60,7 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
       })
       .catch((err: unknown) => {
         if (controller.signal.aborted) return
-        const message = err instanceof Error ? err.message : 'Unbekannter Fehler.'
+        const message = friendlyError(err)
         setResult({ key: requestKey, error: message })
       })
     // Wolkenschnitt: eigene Anfrage, läuft parallel. Ein Fehler hier betrifft nur dieses Diagramm.
@@ -66,7 +68,7 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
       .then((profile) => setCloudResult({ key: requestKey, profile }))
       .catch((err: unknown) => {
         if (controller.signal.aborted) return
-        const message = err instanceof Error ? err.message : 'Unbekannter Fehler.'
+        const message = friendlyError(err)
         setCloudResult({ key: requestKey, error: message })
       })
     return () => controller.abort()
@@ -128,13 +130,7 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
 
   if ('error' in current) {
     return (
-      <div className="card">
-        <p className="error">{current.error}</p>
-        <p className="muted small">Prüfe deine Internetverbindung und versuche es noch einmal.</p>
-        <button type="button" onClick={() => setReload((r) => r + 1)}>
-          Erneut versuchen
-        </button>
-      </div>
+      <ErrorMessage message={current.error} onRetry={() => setReload((r) => r + 1)} />
     )
   }
 

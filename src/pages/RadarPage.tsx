@@ -9,6 +9,8 @@ import { DEFAULT_LOCATION } from '../lib/defaults'
 import { RADAR_LEGEND, dbzToRainRate, formatAgo, formatClock, formatRainRate } from '../lib/radar'
 import type { WeatherLocation } from '../types/location'
 import { Loading } from '../components/Loading'
+import { ErrorMessage } from '../components/ErrorMessage'
+import { friendlyError } from '../api/errors'
 
 /** Neue Radarbilder kommen alle 10 Minuten – wir fragen alle 5 Minuten nach. */
 const REFRESH_MS = 5 * 60 * 1000
@@ -94,7 +96,7 @@ export function RadarPage({ location }: { location: WeatherLocation | null }) {
           if (controller.signal.aborted) return
           // Scheitert nur die Aktualisierung, bleiben die alten Bilder stehen
           if (framesRef.current.length > 0) return
-          setLoad({ status: 'error', message: err instanceof Error ? err.message : 'Unbekannter Fehler.' })
+          setLoad({ status: 'error', message: friendlyError(err) })
         })
     fetchFrames()
     const id = window.setInterval(fetchFrames, REFRESH_MS)
@@ -189,12 +191,7 @@ export function RadarPage({ location }: { location: WeatherLocation | null }) {
     return (
       <div className="page">
         <h1>Radar</h1>
-        <div className="card">
-          <p className="error">{load.message}</p>
-          <button type="button" onClick={() => setReload((r) => r + 1)}>
-            Erneut versuchen
-          </button>
-        </div>
+        <ErrorMessage message={load.message} onRetry={() => setReload((r) => r + 1)} />
         <WindyMap place={place} />
       </div>
     )

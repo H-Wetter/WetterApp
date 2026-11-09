@@ -7,6 +7,8 @@ import { Z500_LEGEND, describeSynoptic, nearestTimeIndex, z500Color } from '../l
 import type { WeatherLocation } from '../types/location'
 import { LinkedText, Term } from '../components/LexikonLink'
 import { Loading } from '../components/Loading'
+import { ErrorMessage } from '../components/ErrorMessage'
+import { friendlyError } from '../api/errors'
 
 type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ok'; result: SynopticResult }
 
@@ -45,7 +47,7 @@ export function SynopticPage({ location }: { location: WeatherLocation | null })
       .then((result) => setState({ status: 'ok', result }))
       .catch((err: unknown) => {
         if (controller.signal.aborted) return
-        setState({ status: 'error', message: err instanceof Error ? err.message : 'Unbekannter Fehler.' })
+        setState({ status: 'error', message: friendlyError(err) })
       })
     return () => controller.abort()
   }, [reload])
@@ -91,12 +93,7 @@ export function SynopticPage({ location }: { location: WeatherLocation | null })
     return (
       <div className="page">
         <h1>Großwetterlage</h1>
-        <div className="card">
-          <p className="error">{state.message}</p>
-          <button type="button" onClick={() => setReload((r) => r + 1)}>
-            Erneut versuchen
-          </button>
-        </div>
+        <ErrorMessage message={state.message} onRetry={() => setReload((r) => r + 1)} />
       </div>
     )
   }

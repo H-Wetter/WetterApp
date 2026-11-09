@@ -5,6 +5,7 @@ import { LocationSearch } from '../components/LocationSearch'
 import { LocalForecast } from '../components/LocalForecast'
 import { DEFAULT_LOCATION } from '../lib/defaults'
 import type { WeatherLocation } from '../types/location'
+import { friendlyError } from '../api/errors'
 
 interface Props {
   /** Der gewählte Ort gilt für alle Seiten – darum liegt er in App.tsx. */
@@ -27,7 +28,7 @@ export function LocalPage({ location, setLocation }: Props) {
     getBrowserLocation()
       .then(setLocation)
       .catch((err: unknown) => {
-        const reason = err instanceof Error ? err.message : 'Unbekannter Fehler.'
+        const reason = friendlyError(err)
         setNotice(`${reason} Es wird Graz verwendet.`)
         setLocation(DEFAULT_LOCATION)
       })

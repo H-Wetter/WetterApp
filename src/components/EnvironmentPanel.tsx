@@ -5,6 +5,8 @@ import { formatDate, relativeDayName } from '../lib/time'
 import type { AirQualityData } from '../types/airQuality'
 import type { WeatherLocation } from '../types/location'
 import { Loading } from './Loading'
+import { ErrorMessage } from './ErrorMessage'
+import { friendlyError } from '../api/errors'
 
 /** Luftqualitätsdaten gibt es für etwa 5 Tage. */
 const DAYS = 5
@@ -39,7 +41,7 @@ export function EnvironmentPanel({ location, now }: { location: WeatherLocation;
       .then((data) => setResult({ key, data }))
       .catch((err: unknown) => {
         if (controller.signal.aborted) return
-        setResult({ key, error: err instanceof Error ? err.message : 'Unbekannter Fehler.' })
+        setResult({ key, error: friendlyError(err) })
       })
     return () => controller.abort()
   }, [key, location])
@@ -59,10 +61,7 @@ export function EnvironmentPanel({ location, now }: { location: WeatherLocation;
     return (
       <section className="card">
         <h2 className="env-title">Luft &amp; Umwelt</h2>
-        <p className="error small">{current.error}</p>
-        <button type="button" onClick={() => setReload((r) => r + 1)}>
-          Erneut versuchen
-        </button>
+        <ErrorMessage small message={current.error} onRetry={() => setReload((r) => r + 1)} />
       </section>
     )
   }

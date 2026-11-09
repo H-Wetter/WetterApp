@@ -1,5 +1,5 @@
 import type { SynopticGrid } from '../types/synoptic'
-import { openMeteoError } from './errors'
+import { friendlyError, openMeteoError } from './errors'
 
 const FORECAST_URL = 'https://api.open-meteo.com/v1/forecast'
 
@@ -154,7 +154,7 @@ export async function loadSynopticGrid(signal?: AbortSignal): Promise<SynopticRe
     return { grid, stale: false, warning: null }
   } catch (err) {
     if (signal?.aborted || !cached) throw err
-    const reason = err instanceof Error ? err.message : 'Unbekannter Fehler.'
+    const reason = friendlyError(err)
     return { grid: cached, stale: true, warning: `${reason} Es werden ältere Daten angezeigt.` }
   }
 }

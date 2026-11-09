@@ -23,3 +23,23 @@ export async function openMeteoError(response: Response, what: string): Promise<
   }
   return new Error(`${what} (${reason || `HTTP ${response.status}`}).`)
 }
+
+/**
+ * Macht aus JEDEM Fehler einen verständlichen deutschen Satz für die Anzeige.
+ * Unsere eigenen Fehler (z. B. aus openMeteoError) sind schon deutsch und bleiben, wie sie sind.
+ * Übersetzt werden die technischen Meldungen des Browsers, etwa „Failed to fetch“ (Chrome),
+ * „NetworkError when attempting to fetch resource“ (Firefox) oder „Load failed“ (Safari).
+ */
+export function friendlyError(err: unknown): string {
+  if (typeof navigator !== 'undefined' && navigator.onLine === false) {
+    return 'Keine Internetverbindung. Bitte prüfe WLAN oder mobile Daten und versuche es noch einmal.'
+  }
+  if (err instanceof TypeError && /fetch|network|load failed/i.test(err.message)) {
+    return 'Der Dienst ist gerade nicht erreichbar. Prüfe deine Internetverbindung und versuche es gleich noch einmal.'
+  }
+  if (err instanceof SyntaxError) {
+    return 'Die Antwort des Dienstes war unvollständig oder fehlerhaft. Bitte versuche es noch einmal.'
+  }
+  if (err instanceof Error && err.message) return err.message
+  return 'Unbekannter Fehler. Bitte versuche es noch einmal.'
+}
