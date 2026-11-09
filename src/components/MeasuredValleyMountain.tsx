@@ -81,8 +81,8 @@ export function MeasuredValleyMountain({
           valley: v,
           mountain: m,
           stale: newest > 0 && now - newest > STALE_AFTER_MS,
-          // Nebel zählt nur im Tal
-          fog: v ? detectMeasuredFog(v.measurement, v.candidate.station, now) : null,
+          // Nebel zählt nur im Tal – an irgendeiner nahen Talstation
+          fog: detectMeasuredFog(valleyCandidates, measurements, now),
         })
       })
       .catch((err: unknown) => {

@@ -141,7 +141,7 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
 14. **Jetzt gemessen (GeoSphere Austria):** echte Stationswerte als „Ist-Zustand“ neben der Vorhersage (nur Österreich).
     - **14a:** Karte „Jetzt gemessen“ auf „Lokal“: nächste Station (ähnliche Höhe, Ersatz falls eine schweigt), Temperatur, Feuchte, Taupunkt, Wind/Böen, Niederschlag, Schnee, Uhrzeit; daneben der Modell-Mittelwert dieser Stunde. Keine Station im Umkreis von ca. 25 km → freundlicher Hinweis.
     - **14b:** Berg & Tal: Tal- und Bergstation (nahe beim gefundenen Berg, mind. 300 m höher) nebeneinander, „Inversion gemessen“, wenn oben wärmer.
-    - **14c:** Nebel aus Messwerten: Talstation ≥ 95 % Feuchte → „Nebel gemessen“ in Hinweis und Tagesverlauf (nächste Stunden), Lexikon-Eintrag „Messstation“.
+    - **14c:** Nebel aus Messwerten: misst **eine der nahen Talstationen** (bis 15 km, ähnliche Höhe) ≥ 95 % Feuchte → „Nebel wahrscheinlich“ mit Stationsname in Hinweis und Tagesverlauf (nächste 3 Stunden), Lexikon-Eintrag „Messstation“. Grund: Nebel liegt oft nur in Teilen eines Beckens (09.11.2026: Thalerhof 98 %, Straßgang 90 %).
 
 ## Qualität
 - TypeScript streng, keine `any`.

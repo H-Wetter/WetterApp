@@ -211,20 +211,42 @@ export const MEASURED_FOG_RH = 95
 export const MEASURED_FOG_HOURS = 3
 /** Ab so viel Niederschlag in 10 Minuten (mm) ist es Regen, kein Nebel. */
 const MEASURED_RAIN_MM = 0.1
+/**
+ * Talstationen bis zu dieser Entfernung (km) zählen für die Nebel-Erkennung.
+ * Nebel liegt oft nur in Teilen eines Beckens: Am 09.11.2026 maß Graz-Thalerhof (11 km südlich)
+ * 98 % mit Nebel, Graz/Straßgang nur 90 %. Darum schauen wir auf ALLE nahen Talstationen.
+ */
+export const FOG_STATION_MAX_KM = 15
 
 export interface MeasuredFog {
   stationName: string
+  /** Entfernung der Station zum Ort (km) */
+  distanceKm: number
   humidity: number
   /** Messzeitpunkt (echte UTC-Zeit, ms) */
   time: number
 }
 
-/** Nebel laut Messung? Nur bei frischer Messung, hoher Feuchte und ohne Regen. */
-export function detectMeasuredFog(m: Measurement, station: Station, now: number): MeasuredFog | null {
-  if (m.humidity === null || m.humidity < MEASURED_FOG_RH) return null
-  if (now - m.time > STALE_AFTER_MS) return null
-  if (m.precipitation !== null && m.precipitation >= MEASURED_RAIN_MM) return null
-  return { stationName: prettyStationName(station.name), humidity: m.humidity, time: m.time }
+/** Misst diese Station gerade Nebel? Nur bei frischer Messung, hoher Feuchte und ohne Regen. */
+function isFoggy(m: Measurement, now: number): m is Measurement & { humidity: number } {
+  if (m.humidity === null || m.humidity < MEASURED_FOG_RH) return false
+  if (now - m.time > STALE_AFTER_MS) return false
+  return m.precipitation === null || m.precipitation < MEASURED_RAIN_MM
+}
+
+/**
+ * Nebel laut Messung an IRGENDEINER nahen Talstation (bis FOG_STATION_MAX_KM, ähnliche Höhe –
+ * die Kandidaten kommen aus nearbyStations). Gemeldet wird die nächste Station mit Nebel.
+ */
+export function detectMeasuredFog(candidates: StationCandidate[], measurements: Measurement[], now: number): MeasuredFog | null {
+  for (const c of candidates) {
+    if (c.distanceKm > FOG_STATION_MAX_KM) continue
+    const m = measurements.find((x) => x.stationId === c.station.id)
+    if (m && isFoggy(m, now)) {
+      return { stationName: prettyStationName(c.station.name), distanceKm: c.distanceKm, humidity: m.humidity, time: m.time }
+    }
+  }
+  return null
 }
 
 /** Zeitfenster des gemessenen Nebels in der Zeitrechnung der Vorhersage („Ortszeit als UTC“). */

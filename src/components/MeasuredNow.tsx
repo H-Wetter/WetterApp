@@ -74,7 +74,7 @@ export function MeasuredNow({
           status: 'ok',
           ...found,
           stale: now - found.measurement.time > STALE_AFTER_MS,
-          fog: detectMeasuredFog(found.measurement, found.candidate.station, now),
+          fog: detectMeasuredFog(candidates, measurements, now),
         })
       })
       .catch((err: unknown) => {
@@ -211,8 +211,9 @@ export function FogHint({ fog }: { fog: MeasuredFog }) {
       🌫️ <strong>
         <Term id="hochnebel">Nebel</Term> wahrscheinlich:
       </strong>{' '}
-      Die Station {fog.stationName} misst {Math.round(fog.humidity)} % Luftfeuchte. Der Tagesverlauf berücksichtigt das für die
-      nächsten Stunden – auch wenn die Modelle trockener rechnen.
+      Die Station {fog.stationName}
+      {fog.distanceKm >= 1 && ` (${Math.round(fog.distanceKm)} km entfernt)`} misst {Math.round(fog.humidity)} % Luftfeuchte. Der
+      Tagesverlauf berücksichtigt das für die nächsten Stunden – auch wenn die Modelle trockener rechnen.
     </p>
   )
 }
