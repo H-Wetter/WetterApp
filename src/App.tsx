@@ -1,4 +1,4 @@
-import { useCallback, useLayoutEffect, useRef, useState } from 'react'
+import { useCallback, useEffect, useLayoutEffect, useRef, useState } from 'react'
 import { ErrorBoundary } from './components/ErrorBoundary'
 import { LexikonContext } from './components/lexikonContext'
 import { LexikonPage } from './pages/LexikonPage'
@@ -8,6 +8,7 @@ import { SynopticPage } from './pages/SynopticPage'
 import { RadarPage } from './pages/RadarPage'
 import { WebcamsPage } from './pages/WebcamsPage'
 import type { WeatherLocation } from './types/location'
+import { loadSavedLocation, saveLocation } from './lib/savedLocation'
 
 type Page = 'local' | 'mountain' | 'webcams' | 'radar' | 'synoptic' | 'lexikon'
 
@@ -31,8 +32,10 @@ const KEEP_ALIVE: Page[] = ['local', 'mountain', 'webcams', 'synoptic', 'lexikon
 function App() {
   const [page, setPage] = useState<Page>('local')
   const [visited, setVisited] = useState<Set<Page>>(() => new Set(['local']))
-  // Gewählter Ort (Tal) – gilt für alle Seiten
-  const [location, setLocation] = useState<WeatherLocation | null>(null)
+  // Gewählter Ort (Tal) – gilt für alle Seiten. Startwert: der beim letzten Besuch gewählte Ort.
+  const [location, setLocation] = useState<WeatherLocation | null>(loadSavedLocation)
+  // Jede Änderung des Orts im Browser merken
+  useEffect(() => saveLocation(location), [location])
   // Sprungziel im Lexikon und Seite, von der man kam
   const [lexTarget, setLexTarget] = useState<{ id: string; nonce: number } | null>(null)
   const [cameFrom, setCameFrom] = useState<Page | null>(null)
