@@ -6,6 +6,8 @@ import {
   MAX_STATION_DISTANCE_KM,
   STALE_AFTER_MS,
   firstWithData,
+  formatNum as num,
+  formatViennaClock as clock,
   isNearAustria,
   modelValuesAt,
   nearbyStations,
@@ -23,16 +25,6 @@ type Result =
   | { key: string; status: 'none' }
   | { key: string; status: 'error'; message: string }
   | { key: string; status: 'ok'; candidate: StationCandidate; measurement: Measurement; stale: boolean }
-
-/** Zahl mit Komma, z. B. −1,7 */
-function num(v: number, digits = 1): string {
-  return v.toFixed(digits).replace('.', ',').replace('-', '−')
-}
-
-/** Uhrzeit in Österreich, z. B. „08:20“ (die Stationen liegen alle in Österreich) */
-function clock(utcMs: number): string {
-  return new Date(utcMs).toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vienna' })
-}
 
 /**
  * Karte „Jetzt gemessen“: echte Messwerte der nächsten Station von GeoSphere Austria,

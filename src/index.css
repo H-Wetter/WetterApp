@@ -599,3 +599,5 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
 .measured-grid dd { margin: 0; display: flex; flex-direction: column; }
 .measured-big { font-size: 1.5rem; }
 .measured-source { margin-top: 0.2rem; }
+.measured-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.6rem 1rem; }
+.measured-station p { margin: 0.1rem 0; }

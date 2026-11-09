@@ -1,6 +1,6 @@
 import type { MultiModelForecast } from '../types/forecast'
 import type { Measurement, Station, StationCandidate } from '../types/station'
-import { distanceKm } from './inversion'
+import { MIN_HEIGHT_DIFFERENCE, distanceKm } from './inversion'
 import { statsForValues } from './statistics'
 
 /**
@@ -61,18 +61,22 @@ function isComplete(m: Measurement): boolean {
 }
 
 /**
- * Wählt die Station für die Anzeige (Kandidaten sind nach Entfernung sortiert):
+ * Wählt die Station für die Anzeige (Kandidaten sind schon nach Eignung sortiert):
  * zuerst die nächste, die alle Hauptwerte liefert (bis COMPLETE_MAX_KM entfernt);
  * gibt es keine, die nächste mit Temperatur.
+ * @param preferComplete false = nur die Temperatur zählt (für den Berg: Die Gipfelstation ist wichtiger
+ *   als ein Regenmesser – der Schöckl z. B. liefert nicht alle Werte, eine Talstation daneben schon)
  */
 export function firstWithData(
   candidates: StationCandidate[],
   measurements: Measurement[],
+  preferComplete = true,
 ): { candidate: StationCandidate; measurement: Measurement } | null {
   const pairs = candidates.flatMap((candidate) => {
     const measurement = measurements.find((m) => m.stationId === candidate.station.id)
     return measurement && measurement.temp !== null ? [{ candidate, measurement }] : []
   })
+  if (!preferComplete) return pairs[0] ?? null
   return pairs.find((p) => isComplete(p.measurement) && p.candidate.distanceKm <= COMPLETE_MAX_KM) ?? pairs[0] ?? null
 }
 
@@ -125,4 +129,72 @@ export function sunshineText(seconds: number | null): string | null {
   if (seconds >= 420) return 'sonnig'
   if (seconds >= 120) return 'zeitweise Sonne'
   return 'keine Sonne'
+}
+
+// ---------- Berg & Tal (Etappe 14b) ----------
+
+/** Eine Bergstation darf so weit vom gefundenen Berg entfernt sein (km). */
+export const MOUNTAIN_STATION_MAX_KM = 15
+/** Übliche Temperaturabnahme mit der Höhe (°C pro 100 m) – Standardatmosphäre */
+const LAPSE_PER_100M = 0.65
+
+/**
+ * Stationen für den Berg: nahe beim gefundenen Gipfel und mindestens MIN_HEIGHT_DIFFERENCE (300 m)
+ * höher als die Talstation. Am besten passt eine Station, die nah ist UND ungefähr auf Gipfelhöhe liegt:
+ * Wertung = Entfernung (km) + Höhenunterschied zum Gipfel / 100 (also 100 m zählen wie 1 km).
+ */
+export function mountainStations(
+  stations: Station[],
+  lat: number,
+  lon: number,
+  summitElevation: number,
+  valleyStationAltitude: number,
+): StationCandidate[] {
+  return stations
+    .filter((s) => s.altitude >= valleyStationAltitude + MIN_HEIGHT_DIFFERENCE)
+    .map((station) => ({
+      station,
+      distanceKm: distanceKm(lat, lon, station.lat, station.lon),
+      heightDiff: station.altitude - summitElevation,
+    }))
+    .filter((c) => c.distanceKm <= MOUNTAIN_STATION_MAX_KM)
+    .sort((a, b) => a.distanceKm + Math.abs(a.heightDiff) / 100 - (b.distanceKm + Math.abs(b.heightDiff) / 100))
+    .slice(0, CANDIDATE_COUNT)
+}
+
+export interface MeasuredInversion {
+  /** Temperatur Berg − Tal (°C): positiv = oben wärmer */
+  diff: number
+  /** So viel kälter wäre es oben „normalerweise“ (°C, positiv) */
+  expectedDrop: number
+  /** Höhenunterschied der beiden Stationen (m) */
+  heightDiff: number
+  /**
+   * 'inversion' – oben wärmer als unten
+   * 'stable'    – oben kälter, aber deutlich weniger als üblich (Luft geschichtet, Inversion in der Nähe)
+   * 'normal'    – übliche Abnahme oder mehr
+   */
+  kind: 'inversion' | 'stable' | 'normal'
+}
+
+/** Vergleicht die gemessenen Temperaturen von Tal- und Bergstation. */
+export function measuredInversion(valleyTemp: number, valleyAltitude: number, mountainTemp: number, mountainAltitude: number): MeasuredInversion {
+  const diff = mountainTemp - valleyTemp
+  const heightDiff = mountainAltitude - valleyAltitude
+  const expectedDrop = (heightDiff / 100) * LAPSE_PER_100M
+  // „stabil“: weniger als die Hälfte der üblichen Abnahme
+  const kind = diff > 0 ? 'inversion' : -diff < expectedDrop / 2 ? 'stable' : 'normal'
+  return { diff, expectedDrop, heightDiff, kind }
+}
+
+// ---------- Anzeige-Hilfen ----------
+
+/** Zahl mit Komma und echtem Minuszeichen, z. B. „−1,7“ */
+export function formatNum(v: number, digits = 1): string {
+  return v.toFixed(digits).replace('.', ',').replace('-', '−')
+}
+
+/** Uhrzeit in Österreich, z. B. „08:20“ (alle GeoSphere-Stationen liegen in Österreich) */
+export function formatViennaClock(utcMs: number): string {
+  return new Date(utcMs).toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vienna' })
 }

@@ -23,6 +23,7 @@ import { describeDayCourse } from '../lib/tagesverlauf'
 import { Loading } from '../components/Loading'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { friendlyError } from '../api/errors'
+import { MeasuredValleyMountain } from '../components/MeasuredValleyMountain'
 
 const DAYS = 7
 const VALLEY_EXTRA_VARIABLES = [...PROFILE_EXTRA_VARIABLES, 'cape']
@@ -278,6 +279,12 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
           </>
         )}
       </section>
+
+      {terrain && valley && mountain && (
+        <ErrorBoundary label="Die Messwerte Tal und Berg" resetKey={terrainKey}>
+          <MeasuredValleyMountain valley={valley} mountain={hasMountain ? mountain : null} />
+        </ErrorBoundary>
+      )}
 
       {terrain && !forecast && <Loading>Vorhersage für Tal{hasMountain ? ' und Berg' : ''} wird geladen …</Loading>}
       {forecast && 'error' in forecast && (
