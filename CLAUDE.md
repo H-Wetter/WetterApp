@@ -12,12 +12,12 @@ Eine Web-App, die
 1. das lokale Wetter am Standort aus **möglichst vielen Wettermodellen** vergleicht,
 2. Wolken nach Höhe, Niederschlag/Schnee, Wind, Gewitter und Umweltdaten (Pollen, Feinstaub, UV) zeigt,
 3. den Tag **in Tallagen und in den Bergen** in Worten beschreibt (inkl. Inversions-/Hochnebel-Erkennung),
-4. die **Großwetterlage** über Europa als Karte darstellt.
+4. ~~die Großwetterlage über Europa als Karte darstellt~~ – am 09.11.2026 wieder entfernt; Radar und Karten kommen von der eingebetteten Windy-Karte.
 
 ## Technik
 - React + Vite + TypeScript
 - Diagramme: Recharts
-- Karte: Leaflet (react-leaflet), Isolinien: d3-contour
+- Karte: Leaflet (react-leaflet) für Gelände/Webcams; Radar & Wetterkarten über die eingebettete Windy-Karte
 - Styling: einfaches CSS, mobilfreundlich
 - Keine API-Schlüssel nötig für Open-Meteo. Keine Geheimnisse im Frontend-Code.
 - Ausnahme Windy-Webcams: Schlüssel nur über `.env` (nicht im Git); er ist im fertigen Frontend trotzdem sichtbar (siehe Datenquellen).
@@ -28,7 +28,7 @@ src/
   api/          # alle API-Aufrufe (openMeteo.ts, ensemble.ts, airQuality.ts, geocoding.ts, webcams.ts)
   lib/          # Berechnungen (Statistik, Inversion, Wolkenbasis, Texte)
   components/   # UI-Bausteine (Diagramme, Karten, Kacheln)
-  pages/        # Lokal, Berg & Tal, Radar, Großwetterlage, Wetterlexikon, Webcams
+  pages/        # Lokal, Berg & Tal, Webcams, Radar (Windy), Wetterlexikon
   data/         # feste Texte, z. B. lexikon.ts (Wetterlexikon)
   types/        # TypeScript-Typen
 ```
@@ -72,7 +72,7 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
 - Liefert **keine Höhe** → Höhe über die Open-Meteo Elevation API ergänzen (dauerhaft cachen).
 
 ### Windy-Karte (eingebettet) – `https://embed.windy.com/embed.html`
-- Kostenlos, ohne Schlüssel, als iframe im Reiter „Radar“. Windy-Logo muss sichtbar bleiben, nur private Nutzung.
+- Kostenlos, ohne Schlüssel, als iframe im Reiter „Radar“ – seit 09.11.2026 der einzige Inhalt dort (das eigene RainViewer-Radar wurde entfernt). Windy-Logo muss sichtbar bleiben, nur private Nutzung.
 - Ebenen (`overlay`/`product`): `radar/radar`, `satellite/satellite`, sonst Modell `ecmwf`: `rain, wind, gust, temp, clouds, snowAccu, cape` (am 09.11.2026 getestet).
 - Liste und Adresse in `src/lib/windyMap.ts`.
 
@@ -113,7 +113,7 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
 6. **Warnungen:** Gewitter (CAPE/Lifted Index), Sturmböen, Schneefall, Nullgradgrenze.
 7. **Umwelt:** Pollen, Feinstaub, UV, Saharastaub.
 8. **Ensemble 8–16 Tage:** Trend mit Unsicherheitsband.
-9. **Großwetterlage:** Europa-Karte, Raster aus `pressure_msl` und `geopotential_height_500hPa`, Isolinien, Zeitschieber. Hinweis: Rasterabfragen sparsam (Tageslimit ca. 10.000 Aufrufe), Punkte bündeln, Ergebnis cachen.
+9. ~~**Großwetterlage:** Europa-Karte mit Isobaren und 500-hPa-Höhe~~ – gebaut (Tag `etappe-9`), am 09.11.2026 auf Wunsch wieder entfernt, ebenso das eigene RainViewer-Radar. Der Code ist über den Tag `etappe-9` bzw. die Git-Geschichte wiederherstellbar.
 10. **Wetterlexikon:** eigener Reiter „Wetterlexikon“, gleichrangig mit „Lokal“ und „Berg & Tal“.
     - Erklärt Wetterbegriffe einfach und verständlich für Laien. Je Begriff: kurze Erklärung (2–4 Sätze), woran man es in der App erkennt, wenn sinnvoll eine kleine Skizze oder ein Beispiel.
     - Begriffe zum Start: Inversion, Hochnebel, Nullgradgrenze, Schneefallgrenze, Föhn, CAPE / Gewitterneigung, Lifted Index, Böen, Taupunkt, Wolkenbasis, tiefe/mittlere/hohe Wolken, Ensemble, Modellstreuung, Hoch- und Tiefdruckgebiet, Trog, Kaltfront, Warmfront, Okklusion.

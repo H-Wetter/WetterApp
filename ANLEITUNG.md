@@ -65,8 +65,10 @@ Bei jeder Etappe gleich vorgehen:
 ### Etappe 8 – 16-Tage-Trend
 > Setze Etappe 8 um: Ensemble-Trend für Tag 8 bis 16 mit Unsicherheitsband.
 
-### Etappe 9 – Großwetterlage
+### Etappe 9 – Großwetterlage *(am 09.11.2026 wieder entfernt)*
 > Setze Etappe 9 um. Mach zuerst einen Plan, wie viele API-Aufrufe das Raster braucht und wie wir cachen, und zeig ihn mir, bevor du baust.
+
+Die Seite gibt es nicht mehr – Wetterkarten zeigt jetzt die Windy-Karte im Reiter „Radar“. Wer sie zurück will: „Hol die Großwetterlage aus etappe-9 zurück.“
 
 ### Etappe 10 – Feinschliff
 > Setze Etappe 10 um und prüfe am Ende, dass `npm run build` fehlerfrei läuft.

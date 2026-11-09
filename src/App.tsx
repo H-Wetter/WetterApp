@@ -4,30 +4,28 @@ import { LexikonContext } from './components/lexikonContext'
 import { LexikonPage } from './pages/LexikonPage'
 import { LocalPage } from './pages/LocalPage'
 import { MountainPage } from './pages/MountainPage'
-import { SynopticPage } from './pages/SynopticPage'
 import { RadarPage } from './pages/RadarPage'
 import { WebcamsPage } from './pages/WebcamsPage'
 import type { WeatherLocation } from './types/location'
 import { loadSavedLocation, saveLocation } from './lib/savedLocation'
 
-type Page = 'local' | 'mountain' | 'webcams' | 'radar' | 'synoptic' | 'lexikon'
+type Page = 'local' | 'mountain' | 'webcams' | 'radar' | 'lexikon'
 
 const PAGES: { id: Page; label: string; short?: string }[] = [
   { id: 'local', label: 'Lokal' },
   { id: 'mountain', label: 'Berg & Tal' },
   { id: 'webcams', label: 'Webcams', short: 'Cams' },
   { id: 'radar', label: 'Radar' },
-  { id: 'synoptic', label: 'Großwetterlage', short: 'Wetterlage' },
   { id: 'lexikon', label: 'Wetterlexikon', short: 'Lexikon' },
 ]
 
 /**
  * Diese Seiten bleiben nach dem ersten Öffnen im Hintergrund erhalten (nur ausgeblendet).
  * So lädt z. B. „Berg & Tal“ nach einem Abstecher ins Lexikon nicht alles neu – das spart Abrufe –
- * und man steht wieder an derselben Stelle. Nur das Radar wird jedes Mal neu aufgebaut,
- * weil es im Hintergrund sonst weiter Radarbilder nachladen würde.
+ * und man steht wieder an derselben Stelle. Nur das Radar (Windy-Karte) wird jedes Mal neu aufgebaut,
+ * damit die Karte im Hintergrund nicht weiterläuft.
  */
-const KEEP_ALIVE: Page[] = ['local', 'mountain', 'webcams', 'synoptic', 'lexikon']
+const KEEP_ALIVE: Page[] = ['local', 'mountain', 'webcams', 'lexikon']
 
 function App() {
   const [page, setPage] = useState<Page>('local')
@@ -126,13 +124,6 @@ function App() {
           <ErrorBoundary label="Die Seite „Radar“">
             <RadarPage location={location} />
           </ErrorBoundary>
-        )}
-        {shows('synoptic') && (
-          <div hidden={page !== 'synoptic'}>
-            <ErrorBoundary label="Die Seite „Großwetterlage“">
-              <SynopticPage location={location} />
-            </ErrorBoundary>
-          </div>
         )}
         {shows('lexikon') && (
           <div hidden={page !== 'lexikon'}>

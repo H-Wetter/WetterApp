@@ -151,7 +151,7 @@ export const LEXIKON: LexikonEntry[] = [
     explanation:
       'Ein Hoch ist ein Gebiet mit hohem Luftdruck: Die Luft sinkt dort ab, Wolken lösen sich auf – meist ruhiges, trockenes Wetter. Ein Tief hat niedrigen Luftdruck: Die Luft steigt auf, es bilden sich Wolken und Niederschlag. Der Wind weht vom Hoch zum Tief und wird durch die Erddrehung abgelenkt, sodass er auf unserer Erdhälfte gegen den Uhrzeigersinn um ein Tief kreist.',
     inApp:
-      'Auf der Seite „Großwetterlage“: „H“ und „T“ markieren die Zentren, die Linien (Isobaren) verbinden Orte mit gleichem Luftdruck. Liegen sie eng beieinander, weht kräftiger Wind.',
+      'Die App zeigt keine Druckkarte. Auf windy.com (Reiter „Radar“ → „Groß bei Windy öffnen“) lässt sich der Luftdruck einblenden: „H“ und „T“ markieren die Zentren, die Linien (Isobaren) verbinden Orte mit gleichem Luftdruck. Liegen sie eng beieinander, weht kräftiger Wind.',
     sketch: 'hochtief',
   },
   {
@@ -160,7 +160,8 @@ export const LEXIKON: LexikonEntry[] = [
     terms: ['Trog', 'Hochkeil'],
     explanation:
       'Ein Trog ist ein Bereich mit kalter Luft in großer Höhe (etwa 5 km), der wie eine Ausbuchtung von Norden nach Süden reicht. Unter einem Trog ist das Wetter oft wechselhaft mit Schauern. Das Gegenstück ist der Hochkeil: warme Luft in der Höhe, meist ruhiges Wetter.',
-    inApp: 'Auf der Seite „Großwetterlage“: Blaue Farben zeigen kalte Luft in der Höhe (Trog), rote warme Luft (Hochkeil).',
+    inApp:
+      'Die App zeigt das nicht direkt. Auf windy.com (Reiter „Radar“ → „Groß bei Windy öffnen“) die Temperatur in großer Höhe (z. B. 500 hPa, ca. 5,5 km) wählen: Ein Keil kalter Farben von Norden ist ein Trog.',
     sketch: 'trog',
   },
   {
@@ -190,7 +191,7 @@ export const LEXIKON: LexikonEntry[] = [
     terms: ['Okklusion'],
     explanation:
       'Eine Okklusion entsteht, wenn die schnellere Kaltfront die Warmfront eines Tiefs einholt. Die warme Luft wird dabei vom Boden abgehoben. Das Wetter ist eine Mischung aus beiden Fronten: oft länger Regen, manchmal mit Schauern. Für das Tief ist es meist der Anfang vom Ende.',
-    inApp: 'Fronten zeichnet die App nicht ein. Auf der „Großwetterlage“ sieht man ein älteres, sich auffüllendes Tief: Der Kerndruck steigt von Tag zu Tag.',
+    inApp: 'Fronten zeichnet die App nicht ein. Auf einer Druckkarte (z. B. bei windy.com) erkennt man ein älteres, sich auffüllendes Tief: Der Kerndruck steigt von Tag zu Tag.',
     sketch: 'okklusion',
   },
   {

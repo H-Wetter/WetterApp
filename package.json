@@ -11,7 +11,6 @@
     "encrypt": "staticrypt dist/index.html -d dist-encrypted --short --remember 30 --template-title \"Wetter-App\" --template-instructions \"Bitte Passwort eingeben, um die Wetter-App zu öffnen.\" --template-placeholder \"Passwort\" --template-button \"Öffnen\" --template-remember \"Angemeldet bleiben (30 Tage)\" --template-error \"Falsches Passwort\" --template-toggle-show \"Passwort anzeigen\" --template-toggle-hide \"Passwort verbergen\" --template-color-primary \"#2f6fdd\" --template-color-secondary \"#f4f6f9\""
   },
   "dependencies": {
-    "d3-contour": "^4.0.3",
     "leaflet": "^1.9.4",
     "react": "^19.3.1",
     "react-dom": "^19.3.1",
@@ -21,7 +20,6 @@
   },
   "devDependencies": {
     "@bybas/weather-icons": "^2.0.0",
-    "@types/d3-contour": "^3.0.6",
     "@types/leaflet": "^1.9.22",
     "@types/node": "^24.19.2",
     "@types/react": "^19.3.0",
