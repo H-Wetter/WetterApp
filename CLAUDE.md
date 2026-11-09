@@ -78,6 +78,7 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
 
 ### Blitze live (optional, zuletzt)
 - Blitzortung.org nur nach Prüfung der Nutzungsbedingungen. Sonst nur Gewitter-Prognose (CAPE, Wettercode 95–99).
+- **Geprüft am 09.11.2026:** Keine offene Schnittstelle für fremde Apps; Rohdaten nur für Stationsbetreiber oder nach Einzelfreigabe durch das Projekt. → Keine Live-Blitzdaten in der App, nur ein Link zur öffentlichen Karte `https://map.blitzortung.org/#Zoom/Breite/Länge` im Reiter „Radar“ (`src/lib/radar.ts`).
 
 ## Fachliche Regeln
 - **Modellstatistik:** pro Stunde Mittelwert, Median, Min/Max über alle verfügbaren Modelle; `null` ignorieren.

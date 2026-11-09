@@ -6,7 +6,7 @@ import { RADAR_MAX_NATIVE_ZOOM, RADAR_TILE_SIZE, canLoadTiles, fetchRadarFrames,
 import { ErrorBoundary } from '../components/ErrorBoundary'
 import { WindyMap } from '../components/WindyMap'
 import { DEFAULT_LOCATION } from '../lib/defaults'
-import { RADAR_LEGEND, dbzToRainRate, formatAgo, formatClock, formatRainRate } from '../lib/radar'
+import { RADAR_LEGEND, blitzortungMapUrl, dbzToRainRate, formatAgo, formatClock, formatRainRate } from '../lib/radar'
 import type { WeatherLocation } from '../types/location'
 import { Loading } from '../components/Loading'
 import { ErrorMessage } from '../components/ErrorMessage'
@@ -303,8 +303,17 @@ export function RadarPage({ location }: { location: WeatherLocation | null }) {
         </p>
         <p className="small muted">
           Radar: RainViewer (kostenlos für private Nutzung). Bei RainViewer gibt es keine Vorschau in die Zukunft und Details nur
-          bis zu einer bestimmten Zoomstufe – beim weiteren Hineinzoomen wird das Bild unscharf. Live-Blitze gibt es leider nicht kostenlos; die
-          Gewittergefahr aus der Vorhersage steht in den Warnhinweisen auf der Seite „Lokal“.
+          bis zu einer bestimmten Zoomstufe – beim weiteren Hineinzoomen wird das Bild unscharf.
+        </p>
+        <p className="small">
+          ⚡ <strong>Blitze live:</strong>{' '}
+          <a href={blitzortungMapUrl(place.latitude, place.longitude)} target="_blank" rel="noopener noreferrer">
+            Blitzkarte von Blitzortung.org öffnen
+          </a>{' '}
+          <span className="muted">
+            (neuer Tab; die Daten dürfen nicht direkt in fremde Apps eingebaut werden). Die Gewittergefahr aus der Vorhersage
+            steht in den Warnhinweisen auf der Seite „Lokal“.
+          </span>
         </p>
       </div>
 
