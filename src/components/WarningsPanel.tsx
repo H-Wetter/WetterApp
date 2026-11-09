@@ -35,8 +35,8 @@ export function WarningsPanel({ warnings, days, now, onSelectDay }: Props) {
         ))}
       </ul>
       <p className="muted small">
-        Hinweise aus den Wettermodellen – <strong>keine amtliche Warnung</strong>. Amtliche Unwetterwarnungen für Österreich gibt
-        GeoSphere Austria heraus. Stufen: gelb → orange → rot → violett. Klick auf einen Hinweis öffnet den Tag.
+        Hinweise aus den Wettermodellen – <strong>keine amtliche Warnung</strong>. Die amtlichen Warnungen von GeoSphere Austria
+        stehen (in Österreich) darüber. Stufen: gelb → orange → rot → violett. Klick auf einen Hinweis öffnet den Tag.
       </p>
     </section>
   )

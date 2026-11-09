@@ -85,6 +85,17 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
 - Lizenz CC BY 4.0 → Quellenangabe „Datenquelle: GeoSphere Austria“ sichtbar.
 - Beispiel-IDs: Graz-Thalerhof 11240 (340 m), Graz/Straßgang 11238, Graz Universität 11290, Schöckl 11241 (1443 m).
 - Aufruf in `src/api/geosphere.ts`, Stationswahl in `src/lib/stations.ts`.
+- **Vergangene Messungen** (Modell-Check): `/station/historical/tawes-v1-10min?parameters=TL&station_ids=…&start=2026-11-06T00:00&end=2026-11-09T09:00` (UTC, gleiche Synop-IDs). Die `klima-v2-*`-Datensätze haben ANDERE Stations-IDs (403 mit Synop-IDs).
+
+### Amtliche Warnungen – GeoSphere Warn API `https://warnungen.zamg.at/wsapp/api/getWarningsForCoords?lon=…&lat=…&lang=de`
+- Doku: https://openapi.hub.geosphere.at/warnapi/v1/ (OpenAPI unter `…/openapi.json`). Kein Schlüssel, CORS `*`, CC BY 4.0.
+- **Achtung Reihenfolge: zuerst `lon`, dann `lat`.** Punkt außerhalb Österreichs → HTTP 404.
+- Antwort: `properties.location.properties.name` (Gemeinde), `properties.warnings[].properties` mit `warntypid` (1 Sturm, 2 Regen, 3 Schnee, 4 Glatteis, 5 Gewitter, 6 Hitze, 7 Kälte), `warnstufeid` (1 gelb, 2 orange, 3 rot), `text`, `auswirkungen`, `empfehlungen`, `meteotext` und `rawinfo.start/end` (Unix-Sekunden als Text – zuverlässiger als `begin`/`end`, deren Format wechselt).
+- Aufruf in `src/api/officialWarnings.ts`, 15 Min. Cache.
+
+### Frühere Modellläufe – Open-Meteo Previous Runs `https://previous-runs-api.open-meteo.com/v1/forecast`
+- `hourly=temperature_2m_previous_day1` = Vorhersage von ~24 h vorher, mit `models=`, `past_days=3`. Alle 15 Vergleichsmodelle verfügbar (09.11.2026 geprüft). `elevation` = Höhe der Messstation.
+- Aufruf in `src/api/openMeteo.ts` (`fetchPreviousDayTemperatures`), Auswertung in `src/lib/modelCheck.ts`.
 
 ### Blitze live (optional, zuletzt)
 - Blitzortung.org nur nach Prüfung der Nutzungsbedingungen. Sonst nur Gewitter-Prognose (CAPE, Wettercode 95–99).
@@ -142,8 +153,14 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
     - **14a:** Karte „Jetzt gemessen“ auf „Lokal“: nächste Station (ähnliche Höhe, Ersatz falls eine schweigt), Temperatur, Feuchte, Taupunkt, Wind/Böen, Niederschlag, Schnee, Uhrzeit; daneben der Modell-Mittelwert dieser Stunde. Keine Station im Umkreis von ca. 25 km → freundlicher Hinweis.
     - **14b:** Berg & Tal: Tal- und Bergstation (nahe beim gefundenen Berg, mind. 300 m höher) nebeneinander, „Inversion gemessen“, wenn oben wärmer.
     - **14c:** Nebel aus Messwerten: misst **eine der nahen Talstationen** (bis 15 km, ähnliche Höhe) ≥ 95 % Feuchte → „Nebel wahrscheinlich“ mit Stationsname in Hinweis und Tagesverlauf (nächste 3 Stunden), Lexikon-Eintrag „Messstation“. Grund: Nebel liegt oft nur in Teilen eines Beckens (09.11.2026: Thalerhof 98 %, Straßgang 90 %).
+15. **Verbesserungen (09.11.2026):**
+    - **Automatische Tests** mit Vitest (`npm test`), laufen auch beim Veröffentlichen.
+    - **Amtliche Warnungen** von GeoSphere Austria auf „Lokal“ über den Modell-Hinweisen (Stufe, Art, Zeitraum, Auswirkungen, Empfehlungen).
+    - **App aufs Handy:** Web-App-Manifest + Symbole (`public/`), `scripts/add-pwa.mjs` trägt sie nach dem Verschlüsseln in die Passwort-Seite ein. Symbole aus `public/icon.svg` bzw. `npm run icons` (`scripts/make-icons.mjs`). Kein Service Worker (keine Offline-Daten – Wetter soll aktuell sein).
+    - **Modell-Check** „Welches Modell lag zuletzt richtig?“ auf „Lokal“ (aufklappbar, lädt erst beim Öffnen): Ø-Abweichung der Vortags-Vorhersage gegen die Messung der Station aus „Jetzt gemessen“, letzte 3 Tage.
 
 ## Qualität
 - TypeScript streng, keine `any`.
 - Fehler (kein Netz, Modell liefert nichts) freundlich anzeigen, App darf nicht abstürzen.
-- Vor jedem Abschluss: `npm run build` muss fehlerfrei laufen.
+- Vor jedem Abschluss: `npm run build` muss fehlerfrei laufen und `npm test` grün sein.
+- Tests (Vitest) liegen neben dem Code als `*.test.ts` in `src/lib/`. Neue Regeln in `src/lib/` bekommen einen Test – am besten mit einem echten Beispiel (z. B. Graz/Schöckl am 09.11.2026). Beim Veröffentlichen laufen die Tests auf GitHub mit; schlägt einer fehl, bleibt die alte Online-Version stehen.

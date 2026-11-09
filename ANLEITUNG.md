@@ -86,6 +86,15 @@ Den angezeigten Link (meist http://localhost:5173) im Browser öffnen. Beenden m
 
 **Am Handy / unterwegs:** die Online-Version öffnen (siehe „Online mit Passwort“): https://h-wetter.github.io/WetterApp/ – nach dem Hochladen dauert es 1–2 Minuten, bis die neue Version da ist. Falls noch die alte erscheint: Seite neu laden.
 
+**Automatische Tests:** `npm test` prüft die Rechenregeln (Inversion, Nebel, Stationswahl, Tagesverlauf, Warnungen, Modell-Check) in einer Sekunde. Sie laufen auch bei jedem Hochladen auf GitHub – schlägt einer fehl, bleibt die alte Online-Version stehen. Unter *Actions* sieht man dann ein rotes ✗.
+
+## App aufs Handy legen
+Die Online-Version lässt sich wie eine App auf den Startbildschirm legen – mit eigenem Symbol (Sonne und Wolke) und ohne Browserleiste:
+- **iPhone (Safari):** Seite öffnen → Teilen-Knopf (Quadrat mit Pfeil) → **„Zum Home-Bildschirm“**.
+- **Android (Chrome):** Seite öffnen → Menü ⋮ → **„App installieren“** bzw. **„Zum Startbildschirm hinzufügen“**.
+
+Beim ersten Öffnen über das Symbol fragt die App einmal nach dem Passwort („Angemeldet bleiben“ ankreuzen). Ein Neustart ist nicht nötig, neue Versionen kommen automatisch. Das Symbol selbst: `public/icon.svg`; nach einer Änderung `npm run icons` aufrufen (erzeugt die PNG-Bilder).
+
 ## Sichern (nach jeder funktionierenden Etappe)
 Am Ende jeder Etappe fragt Claude, ob hochgeladen werden soll. Ein Klick auf **„Ja, hochladen“** erledigt alles in einem Schritt:
 1. **Commit** mit passender Beschreibung (die Sicherung auf deinem PC),

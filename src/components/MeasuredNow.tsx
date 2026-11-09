@@ -37,11 +37,14 @@ export function MeasuredNow({
   location,
   forecast,
   onFog,
+  onStation,
 }: {
   location: WeatherLocation
   forecast: MultiModelForecast
   /** meldet gemessenen Nebel (oder `null`) nach oben – für den Tagesverlauf */
   onFog?: (fog: MeasuredFog | null) => void
+  /** meldet die angezeigte Station (oder `null`) nach oben – für den Modell-Check */
+  onStation?: (station: StationCandidate | null) => void
 }) {
   const [reload, setReload] = useState(0)
   const [result, setResult] = useState<Result | null>(null)
@@ -92,6 +95,8 @@ export function MeasuredNow({
 
   const fog = current?.status === 'ok' ? current.fog : null
   useEffect(() => onFog?.(fog), [fog, onFog])
+  const shownStation = current?.status === 'ok' ? current.candidate : null
+  useEffect(() => onStation?.(shownStation), [shownStation, onStation])
 
   // Außerhalb Österreichs gibt es keine GeoSphere-Stationen – dann zeigen wir die Karte gar nicht.
   if (!inAustria) return null

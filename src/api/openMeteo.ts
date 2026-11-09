@@ -1,4 +1,4 @@
-import type { HourlyVariable, MultiModelForecast, Series } from '../types/forecast'
+import type { HourlyVariable, MultiModelForecast, PreviousDayForecast, Series } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
 import { PRESSURE_LEVELS, WIND_LEVELS, type CloudProfileRaw } from '../types/clouds'
 import { isPlausibleElevation } from './geocoding'
@@ -202,4 +202,44 @@ export async function fetchMultiModelForecast(
     sun: parseSunTimes(raw.daily),
     extra,
   }
+}
+
+// ---------- Vorhersagen vom Vortag (für den Modell-Check) ----------
+
+const PREVIOUS_RUNS_URL = 'https://previous-runs-api.open-meteo.com/v1/forecast'
+
+/**
+ * Holt aus der „Previous Runs“-API von Open-Meteo, was die Modelle für die letzten Tage
+ * einen Tag vorher vorhergesagt hatten (Variable `temperature_2m_previous_day1`).
+ * Die Höhe wird auf die der Messstation gesetzt, damit der Vergleich fair ist.
+ */
+export async function fetchPreviousDayTemperatures(
+  lat: number,
+  lon: number,
+  elevation: number,
+  modelIds: string[],
+  pastDays: number,
+  signal?: AbortSignal,
+): Promise<PreviousDayForecast> {
+  const variable = 'temperature_2m_previous_day1'
+  const params = new URLSearchParams({
+    latitude: lat.toFixed(4),
+    longitude: lon.toFixed(4),
+    elevation: String(Math.round(elevation)),
+    hourly: variable,
+    models: modelIds.join(','),
+    past_days: String(pastDays),
+    forecast_days: '1',
+    timezone: 'auto',
+  })
+  const raw = await fetchJsonCached<ForecastResponse>(`${PREVIOUS_RUNS_URL}?${params.toString()}`, 'Die früheren Vorhersagen konnten nicht geladen werden', signal, {
+    // vergangene Vorhersagen ändern sich nicht → 1 Stunde merken
+    maxAgeMs: 60 * 60 * 1000,
+  })
+  const temps: Record<string, Series> = {}
+  for (const id of modelIds) {
+    const values = raw.hourly[modelIds.length === 1 ? variable : `${variable}_${id}`] as Series | undefined
+    if (values) temps[id] = values
+  }
+  return { times: raw.hourly.time.map(parseLocalTime), utcOffsetSeconds: raw.utc_offset_seconds, temps }
 }

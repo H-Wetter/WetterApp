@@ -576,3 +576,31 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
 .measured-source { margin-top: 0.2rem; }
 .measured-pair { display: grid; grid-template-columns: repeat(auto-fit, minmax(13rem, 1fr)); gap: 0.6rem 1rem; }
 .measured-station p { margin: 0.1rem 0; }
+
+/* Amtliche Warnungen (GeoSphere Austria) */
+.official-warning > summary { cursor: pointer; list-style: none; }
+.official-warning > summary::-webkit-details-marker { display: none; }
+.official-warning > summary::after { content: '▸'; margin-left: auto; color: var(--muted); }
+.official-warning[open] > summary::after { content: '▾'; }
+.official-active { color: var(--warn-3); font-weight: 700; }
+.official-details { padding: 0 0.7rem 0.6rem 2.6rem; }
+.official-details p { margin: 0.3rem 0 0.1rem; }
+.official-details ul { margin: 0; padding-left: 1.1rem; }
+
+/* Modell-Check: welches Modell lag zuletzt richtig? */
+.model-check > summary { cursor: pointer; }
+.model-check[open] > summary { margin-bottom: 0.5rem; }
+.model-check-list { list-style: none; margin: 0 0 0.5rem; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
+.model-check-list li {
+  display: grid; grid-template-columns: 1.8rem minmax(7rem, 11rem) 1fr auto; align-items: center; gap: 0.5rem; font-size: 0.92rem;
+}
+.model-check-rank { color: var(--muted); text-align: right; }
+.model-check-bar { height: 0.55rem; background: color-mix(in srgb, var(--text) 8%, transparent); border-radius: 999px; overflow: hidden; }
+.model-check-bar > span { display: block; height: 100%; background: var(--accent); border-radius: 999px; }
+.model-check-mean { font-weight: 700; }
+.model-check-mean .model-check-bar > span { background: var(--warn-2); }
+.model-check-value { text-align: right; white-space: nowrap; }
+@media (max-width: 600px) {
+  .model-check-list li { grid-template-columns: 1.5rem 1fr auto; }
+  .model-check-bar { display: none; }
+}

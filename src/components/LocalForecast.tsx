@@ -20,6 +20,9 @@ import { ModelComparison } from './ModelComparison'
 import { Term } from './LexikonLink'
 import { Loading } from './Loading'
 import { MeasuredNow } from './MeasuredNow'
+import { OfficialWarningsPanel } from './OfficialWarningsPanel'
+import { ModelCheck } from './ModelCheck'
+import type { StationCandidate } from '../types/station'
 import type { MeasuredFog } from '../lib/stations'
 import { ErrorMessage } from './ErrorMessage'
 import { friendlyError } from '../api/errors'
@@ -51,6 +54,8 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
   const [cloudResult, setCloudResult] = useState<CloudResult | null>(null)
   // Nebel laut Messstation (Etappe 14c) – fließt in den Tagesverlauf der Stundenansicht ein
   const [measuredFog, setMeasuredFog] = useState<MeasuredFog | null>(null)
+  // Station aus „Jetzt gemessen“ – für den Modell-Check
+  const [station, setStation] = useState<StationCandidate | null>(null)
 
   // Eindeutiger Schlüssel der aktuellen Anfrage. Passt das Ergebnis nicht dazu, laden wir gerade.
   const requestKey = `${location.latitude},${location.longitude},${location.elevation ?? ''},${reload}`
@@ -147,6 +152,10 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
 
   return (
     <>
+      <ErrorBoundary label="Die amtlichen Warnungen" resetKey={requestKey}>
+        <OfficialWarningsPanel location={location} />
+      </ErrorBoundary>
+
       <ErrorBoundary label="Die Warnhinweise" resetKey={requestKey}>
         <WarningsPanel
           warnings={warnings}
@@ -157,8 +166,14 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
       </ErrorBoundary>
 
       <ErrorBoundary label="Jetzt gemessen" resetKey={requestKey}>
-        <MeasuredNow location={location} forecast={forecast} onFog={setMeasuredFog} />
+        <MeasuredNow location={location} forecast={forecast} onFog={setMeasuredFog} onStation={setStation} />
       </ErrorBoundary>
+
+      {station && (
+        <ErrorBoundary label="Der Modell-Check" resetKey={`${requestKey}-${station.station.id}`}>
+          <ModelCheck station={station} />
+        </ErrorBoundary>
+      )}
 
       <ErrorBoundary label="Die Tageskacheln" resetKey={requestKey}>
         <DailyTiles

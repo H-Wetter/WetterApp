@@ -62,3 +62,12 @@ export interface HourStats {
   /** Wie viele Modelle hatten für diese Stunde einen Wert? */
   count: number
 }
+
+/** Temperatur-Vorhersagen, die jedes Modell ~24 Stunden VORHER gemacht hat (für den Modell-Check). */
+export interface PreviousDayForecast {
+  /** Ortszeit als UTC gelesen (wie MultiModelForecast.times) */
+  times: number[]
+  utcOffsetSeconds: number
+  /** Temperatur je Modell */
+  temps: Record<string, Series>
+}

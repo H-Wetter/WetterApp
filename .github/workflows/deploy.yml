@@ -34,6 +34,10 @@ jobs:
       - name: Pakete installieren
         run: npm ci
 
+      # Schlägt ein Test fehl, bricht hier alles ab – die alte Online-Version bleibt dann stehen.
+      - name: Tests
+        run: npm test
+
       # Der Windy-Schlüssel kommt aus dem GitHub-Secret WINDY_API_KEY (freiwillig).
       # Fehlt er, zeigt der Reiter „Webcams“ nur Links zu Webcam-Seiten.
       - name: App bauen (als eine einzige Datei)

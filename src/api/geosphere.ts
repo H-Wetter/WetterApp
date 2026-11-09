@@ -106,3 +106,42 @@ export async function fetchMeasurements(stationIds: string[], signal?: AbortSign
     }
   })
 }
+
+// ---------- Vergangene Messungen (für den Modell-Check) ----------
+
+const HISTORY_URL = 'https://dataset.api.hub.geosphere.at/v1/station/historical/tawes-v1-10min'
+/** Vergangene Messungen ändern sich nicht mehr → 1 Stunde merken */
+const HISTORY_MAX_AGE_MS = 60 * 60 * 1000
+
+/** „2026-11-09T07:00“ – Format, das GeoSphere für start/end erwartet (UTC) */
+function isoMinute(ms: number): string {
+  return new Date(ms).toISOString().slice(0, 16)
+}
+
+/**
+ * Stündliche Temperaturen einer Station für die letzten `hours` Stunden.
+ * GeoSphere misst alle 10 Minuten; wir nehmen jeweils den Wert zur vollen Stunde.
+ * @returns Map: volle Stunde (echte UTC-Zeit, ms) → Temperatur (°C)
+ */
+export async function fetchStationTemperatureHistory(stationId: string, hours: number, signal?: AbortSignal): Promise<Map<number, number>> {
+  // Ende auf die volle Stunde abrunden → dieselbe Adresse für eine ganze Stunde (Cache greift)
+  const end = Math.floor(Date.now() / 3_600_000) * 3_600_000
+  const params = new URLSearchParams({
+    parameters: 'TL',
+    station_ids: stationId,
+    start: isoMinute(end - hours * 3_600_000),
+    end: isoMinute(end),
+  })
+  const raw = await fetchJsonCached<DataResponse>(`${HISTORY_URL}?${params.toString()}`, 'Die vergangenen Messwerte konnten nicht geladen werden', signal, {
+    maxAgeMs: HISTORY_MAX_AGE_MS,
+    toError: geosphereError,
+  })
+  const values = raw.features[0]?.properties.parameters.TL?.data ?? []
+  const result = new Map<number, number>()
+  raw.timestamps.forEach((t, i) => {
+    const ms = Date.parse(t)
+    const v = values[i]
+    if (ms % 3_600_000 === 0 && typeof v === 'number' && Number.isFinite(v)) result.set(ms, v)
+  })
+  return result
+}

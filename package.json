@@ -7,8 +7,10 @@
     "dev": "vite",
     "build": "tsc -b && vite build",
     "lint": "oxlint",
+    "test": "vitest run",
+    "icons": "node scripts/make-icons.mjs",
     "preview": "vite preview",
-    "encrypt": "staticrypt dist/index.html -d dist-encrypted --short --remember 30 --template-title \"Wetter-App\" --template-instructions \"Bitte Passwort eingeben, um die Wetter-App zu öffnen.\" --template-placeholder \"Passwort\" --template-button \"Öffnen\" --template-remember \"Angemeldet bleiben (30 Tage)\" --template-error \"Falsches Passwort\" --template-toggle-show \"Passwort anzeigen\" --template-toggle-hide \"Passwort verbergen\" --template-color-primary \"#2f6fdd\" --template-color-secondary \"#f4f6f9\""
+    "encrypt": "staticrypt dist/index.html -d dist-encrypted --short --remember 30 --template-title \"Wetter-App\" --template-instructions \"Bitte Passwort eingeben, um die Wetter-App zu öffnen.\" --template-placeholder \"Passwort\" --template-button \"Öffnen\" --template-remember \"Angemeldet bleiben (30 Tage)\" --template-error \"Falsches Passwort\" --template-toggle-show \"Passwort anzeigen\" --template-toggle-hide \"Passwort verbergen\" --template-color-primary \"#2f6fdd\" --template-color-secondary \"#f4f6f9\" && node scripts/add-pwa.mjs"
   },
   "dependencies": {
     "leaflet": "^1.9.4",
@@ -29,6 +31,7 @@
     "staticrypt": "^3.5.4",
     "typescript": "~7.0.2",
     "vite": "^8.3.6",
-    "vite-plugin-singlefile": "^2.3.4"
+    "vite-plugin-singlefile": "^2.3.4",
+    "vitest": "^5.1.0"
   }
 }
