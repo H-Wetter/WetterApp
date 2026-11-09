@@ -19,6 +19,7 @@ import { ForecastCharts } from './ForecastCharts'
 import { ModelComparison } from './ModelComparison'
 import { Term } from './LexikonLink'
 import { Loading } from './Loading'
+import { MeasuredNow } from './MeasuredNow'
 import { ErrorMessage } from './ErrorMessage'
 import { friendlyError } from '../api/errors'
 
@@ -150,6 +151,10 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
           now={now}
           onSelectDay={(dayStart) => setSelectedDay(days.findIndex((d) => d.dayStart === dayStart))}
         />
+      </ErrorBoundary>
+
+      <ErrorBoundary label="Jetzt gemessen" resetKey={requestKey}>
+        <MeasuredNow location={location} forecast={forecast} />
       </ErrorBoundary>
 
       <ErrorBoundary label="Die Tageskacheln" resetKey={requestKey}>

@@ -76,6 +76,16 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
 - Ebenen (`overlay`/`product`): `radar/radar`, `satellite/satellite`, sonst Modell `ecmwf`: `rain, wind, gust, temp, clouds, snowAccu, cape` (am 09.11.2026 getestet).
 - Liste und Adresse in `src/lib/windyMap.ts`.
 
+### Messwerte – GeoSphere Austria Data Hub `https://dataset.api.hub.geosphere.at/v1`
+- Stationsmessungen (TAWES) alle 10 Min.: `/station/current/tawes-v1-10min?parameters=TL,RF,…&station_ids=11240,11241` (mehrere Stationen in EINEM Abruf, Antwort GeoJSON).
+- Stationsliste mit Koordinaten/Höhe: `/station/current/tawes-v1-10min/metadata` (≈ 290 Stationen, nur Österreich).
+- Kein Schlüssel, CORS erlaubt. Limit **5 Abrufe/Sekunde, 240/Stunde** → Messwerte 10 Min., Stationsliste 7 Tage cachen.
+- Wichtige Parameter: `TL` Temperatur °C, `RF` Feuchte %, `TP` Taupunkt, `FF`/`FFX` Wind/Spitze **m/s**, `DD` Richtung, `RR` Niederschlag 10 Min. mm, `SO` Sonne s, `SCHNEE` cm, `P` Luftdruck.
+- Stationen liefern manchmal keine Daten (fehlen dann in der Antwort) → nächste Station nehmen.
+- Lizenz CC BY 4.0 → Quellenangabe „Datenquelle: GeoSphere Austria“ sichtbar.
+- Beispiel-IDs: Graz-Thalerhof 11240 (340 m), Graz/Straßgang 11238, Graz Universität 11290, Schöckl 11241 (1443 m).
+- Aufruf in `src/api/geosphere.ts`, Stationswahl in `src/lib/stations.ts`.
+
 ### Blitze live (optional, zuletzt)
 - Blitzortung.org nur nach Prüfung der Nutzungsbedingungen. Sonst nur Gewitter-Prognose (CAPE, Wettercode 95–99).
 - **Geprüft am 09.11.2026:** Keine offene Schnittstelle für fremde Apps; Rohdaten nur für Stationsbetreiber oder nach Einzelfreigabe durch das Projekt. → Keine Live-Blitzdaten in der App, nur ein Link zur öffentlichen Karte `https://map.blitzortung.org/#Zoom/Breite/Länge` im Reiter „Radar“ (`src/lib/radar.ts`).
@@ -128,6 +138,10 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
     - Keine fremden Bilder speichern oder kopieren – nur einbinden bzw. verlinken. Quellenangabe Windy sichtbar.
     - Freundliche Meldung, wenn keine Webcams gefunden werden.
     - Zusatz: Im Reiter „Radar“ eine eingebettete Windy-Karte mit Knöpfen für Radar, Satellit, Regen, Wind, Böen, Temperatur, Wolken, Neuschnee und Gewitter (CAPE).
+14. **Jetzt gemessen (GeoSphere Austria):** echte Stationswerte als „Ist-Zustand“ neben der Vorhersage (nur Österreich).
+    - **14a:** Karte „Jetzt gemessen“ auf „Lokal“: nächste Station (ähnliche Höhe, Ersatz falls eine schweigt), Temperatur, Feuchte, Taupunkt, Wind/Böen, Niederschlag, Schnee, Uhrzeit; daneben der Modell-Mittelwert dieser Stunde. Keine Station im Umkreis von ca. 25 km → freundlicher Hinweis.
+    - **14b:** Berg & Tal: Tal- und Bergstation (nahe beim gefundenen Berg, mind. 300 m höher) nebeneinander, „Inversion gemessen“, wenn oben wärmer.
+    - **14c:** Nebel aus Messwerten: Talstation ≥ 95 % Feuchte → „Nebel gemessen“ in Hinweis und Tagesverlauf (nächste Stunden), Lexikon-Eintrag „Messstation“.
 
 ## Qualität
 - TypeScript streng, keine `any`.

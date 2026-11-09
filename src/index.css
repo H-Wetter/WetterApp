@@ -585,3 +585,17 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
   .segmented button { min-height: 2.5rem; }
   input[type='range'] { height: 2rem; accent-color: var(--accent); }
 }
+
+/* ---------- Jetzt gemessen (Etappe 14) ---------- */
+.measured { display: flex; flex-direction: column; gap: 0.4rem; }
+.measured-title { font-size: 1.2rem; }
+.measured-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(8rem, 1fr));
+  gap: 0.6rem 1rem;
+  margin: 0.3rem 0 0;
+}
+.measured-grid dt { color: var(--muted); font-size: 0.82rem; }
+.measured-grid dd { margin: 0; display: flex; flex-direction: column; }
+.measured-big { font-size: 1.5rem; }
+.measured-source { margin-top: 0.2rem; }
