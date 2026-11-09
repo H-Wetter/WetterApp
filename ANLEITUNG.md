@@ -70,8 +70,26 @@ Bei jeder Etappe gleich vorgehen:
 
 Die Seite gibt es nicht mehr – Wetterkarten zeigt jetzt die Windy-Karte im Reiter „Radar“. Wer sie zurück will: „Hol die Großwetterlage aus etappe-9 zurück.“
 
-### Etappe 10 – Feinschliff
-> Setze Etappe 10 um und prüfe am Ende, dass `npm run build` fehlerfrei läuft.
+### Etappe 10 – Wetterlexikon
+Eigener Reiter mit einfachen Erklärungen (Inversion, Föhn, CAPE, Fronten …), Suchfeld und Skizzen. Begriffe in der App sind antippbar und springen direkt zur Erklärung. Texte in `src/data/lexikon.ts` – neue Begriffe einfach dort ergänzen lassen.
+
+### Etappe 11 – Tagesverlauf in Worten
+Für jeden Tag Vormittag, Mittag, Nachmittag und Abend in 1–3 Sätzen: Wolken, Regen/Schnee, Temperatur, Wind, Gewitter, Nebel. Sind sich die Modelle uneinig, steht das dabei; bei Inversion getrennt für Tal und Berg. Regeln in `src/lib/tagesverlauf.ts`.
+
+### Etappe 12 – Feinschliff
+Daten werden gemerkt (Vorhersage 30 Min., spart Abrufe), der zuletzt gewählte Ort bleibt nach dem Neuladen, einheitliche Ladeanzeigen und Fehlermeldungen, Handy-Layout (Reiter als 3 × 2 Knöpfe), Ortssuche hinter „Ort ändern“ eingeklappt.
+
+### Etappe 13 – Webcams und Radar
+Reiter „Webcams“: Webcams im Umkreis, getrennt nach Tal und Berg (Windy Webcams API, Schlüssel siehe unten). Reiter „Radar“: eingebettete Windy-Karte (Radar, Satellit, Regen, Wind …) und Link zur Live-Blitzkarte von Blitzortung.org.
+
+### Etappe 14 – Jetzt gemessen (GeoSphere Austria)
+Echte Messwerte der nächsten Station neben der Vorhersage („Lokal“), Tal- und Bergstation mit „Inversion gemessen“ („Berg & Tal“) und Nebel aus den Messwerten (≥ 95 % Feuchte an einer nahen Talstation). Nur in Österreich.
+
+### Etappe 15 – Verbesserungen
+Automatische Tests (`npm test`), amtliche Warnungen von GeoSphere, App aufs Handy (siehe unten), Modell-Check „Welches Modell lag zuletzt richtig?“ und schönere Verlaufsdiagramme (Farbe je Größe, Regen als Säulen, Nacht grau, Höchst-/Tiefstwerte).
+
+### Neue Ideen
+Einfach beschreiben, z. B.: „Trag als Etappe 16 in die CLAUDE.md ein: …, und mach zuerst einen Plan.“ Jede Etappe bekommt am Ende einen Tag (`etappe-16`), zu dem man jederzeit zurück kann.
 
 ---
 
