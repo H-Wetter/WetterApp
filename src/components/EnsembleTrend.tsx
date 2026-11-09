@@ -19,6 +19,7 @@ import { formatDay } from '../lib/time'
 import type { EnsembleData, EnsembleDay } from '../types/ensemble'
 import type { WeatherLocation } from '../types/location'
 import { LinkedText, Term } from './LexikonLink'
+import { Loading } from './Loading'
 
 /** Tag 8 bis 16 (Index 7 bis 15, 0 = heute) */
 const FROM_DAY = 7
@@ -138,7 +139,7 @@ export function EnsembleTrend({ location }: { location: WeatherLocation }) {
     return (
       <section className="trend">
         {title}
-        <p className="hint small">Ensemble-Läufe werden geladen …</p>
+        <Loading small>Ensemble-Läufe werden geladen …</Loading>
       </section>
     )
   }

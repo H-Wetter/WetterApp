@@ -4,6 +4,7 @@ import { airSummary, summarizeAirDays, uvAdvice, type AirDay, type Rating } from
 import { formatDate, relativeDayName } from '../lib/time'
 import type { AirQualityData } from '../types/airQuality'
 import type { WeatherLocation } from '../types/location'
+import { Loading } from './Loading'
 
 /** Luftqualitätsdaten gibt es für etwa 5 Tage. */
 const DAYS = 5
@@ -50,7 +51,7 @@ export function EnvironmentPanel({ location, now }: { location: WeatherLocation;
     return (
       <section className="card">
         <h2 className="env-title">Luft &amp; Umwelt</h2>
-        <p className="hint small">Daten zu Luft, UV und Pollen werden geladen …</p>
+        <Loading small>Daten zu Luft, UV und Pollen werden geladen …</Loading>
       </section>
     )
   }

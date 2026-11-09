@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { searchLocations, type SearchHit } from '../api/geocoding'
 import type { WeatherLocation } from '../types/location'
+import { Loading } from './Loading'
 
 interface Props {
   onSelect: (location: WeatherLocation) => void
@@ -98,7 +99,7 @@ export function LocationSearch({ onSelect }: Props) {
         </button>
       </div>
 
-      {shown.status === 'loading' && <p className="hint">Suche läuft …</p>}
+      {shown.status === 'loading' && <Loading>Suche läuft …</Loading>}
       {shown.status === 'error' && <p className="error">{shown.message}</p>}
       {shown.status === 'done' && shown.hits.length === 0 && (
         <p className="hint">Kein Ort mit diesem Namen gefunden.</p>

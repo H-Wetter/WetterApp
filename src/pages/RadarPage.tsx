@@ -8,6 +8,7 @@ import { WindyMap } from '../components/WindyMap'
 import { DEFAULT_LOCATION } from '../lib/defaults'
 import { RADAR_LEGEND, dbzToRainRate, formatAgo, formatClock, formatRainRate } from '../lib/radar'
 import type { WeatherLocation } from '../types/location'
+import { Loading } from '../components/Loading'
 
 /** Neue Radarbilder kommen alle 10 Minuten – wir fragen alle 5 Minuten nach. */
 const REFRESH_MS = 5 * 60 * 1000
@@ -179,7 +180,7 @@ export function RadarPage({ location }: { location: WeatherLocation | null }) {
     return (
       <div className="page">
         <h1>Radar</h1>
-        <p className="hint">Radarbilder werden geladen …</p>
+        <Loading>Radarbilder werden geladen …</Loading>
         <WindyMap place={place} />
       </div>
     )

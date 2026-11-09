@@ -6,6 +6,7 @@ import { DEFAULT_LOCATION } from '../lib/defaults'
 import { Z500_LEGEND, describeSynoptic, nearestTimeIndex, z500Color } from '../lib/synoptic'
 import type { WeatherLocation } from '../types/location'
 import { LinkedText, Term } from '../components/LexikonLink'
+import { Loading } from '../components/Loading'
 
 type State = { status: 'loading' } | { status: 'error'; message: string } | { status: 'ok'; result: SynopticResult }
 
@@ -82,7 +83,7 @@ export function SynopticPage({ location }: { location: WeatherLocation | null })
     return (
       <div className="page">
         <h1>Großwetterlage</h1>
-        <p className="hint">Kartendaten für Europa werden geladen …</p>
+        <Loading>Kartendaten für Europa werden geladen …</Loading>
       </div>
     )
   }

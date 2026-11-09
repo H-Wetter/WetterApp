@@ -20,6 +20,7 @@ import type { FoundPoint, TerrainResult } from '../types/terrain'
 import { LinkedText, Term } from '../components/LexikonLink'
 import { DayCourse } from '../components/DayCourse'
 import { describeDayCourse } from '../lib/tagesverlauf'
+import { Loading } from '../components/Loading'
 
 const DAYS = 7
 const VALLEY_EXTRA_VARIABLES = [...PROFILE_EXTRA_VARIABLES, 'cape']
@@ -216,10 +217,10 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
         </div>
 
         {!terrain && !terrainError && (
-          <p className="hint small">
+          <Loading small>
             Gelände rund um {place.name} wird abgesucht …
             {waitSeconds !== null && ` (kurze Pause wegen des Abruf-Limits, ca. ${waitSeconds} s)`}
-          </p>
+          </Loading>
         )}
         {terrainError && (
           <>
@@ -281,7 +282,7 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
         )}
       </section>
 
-      {terrain && !forecast && <p className="hint">Vorhersage für Tal{hasMountain ? ' und Berg' : ''} wird geladen …</p>}
+      {terrain && !forecast && <Loading>Vorhersage für Tal{hasMountain ? ' und Berg' : ''} wird geladen …</Loading>}
       {forecast && 'error' in forecast && (
         <div className="card">
           <p className="error">{forecast.error}</p>

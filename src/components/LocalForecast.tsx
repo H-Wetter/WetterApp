@@ -18,6 +18,7 @@ import { DayDetail } from './DayDetail'
 import { ForecastCharts } from './ForecastCharts'
 import { ModelComparison } from './ModelComparison'
 import { Term } from './LexikonLink'
+import { Loading } from './Loading'
 
 /** Wir laden einmal 14 Tage – Kacheln nutzen bis zu 14, die Verlaufsdiagramme die ersten 7. */
 const FETCH_DAYS = 14
@@ -122,7 +123,7 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
   }
 
   if (!current) {
-    return <p className="hint">Wetterdaten von {COMPARISON_MODELS.length} Modellen werden geladen …</p>
+    return <Loading>Wetterdaten von {COMPARISON_MODELS.length} Modellen werden geladen …</Loading>
   }
 
   if ('error' in current) {

@@ -22,6 +22,7 @@ import {
 import type { HourInversion } from '../lib/inversion'
 import type { WeatherLocation } from '../types/location'
 import type { PlacedWebcam } from '../types/webcam'
+import { Loading } from '../components/Loading'
 
 const RADIUS_KEY = 'wetter-app.webcam-radius'
 /** Nach so langer Zeit (ms) beim erneuten Öffnen der Seite neu laden – die Bildadressen laufen ab. */
@@ -183,7 +184,7 @@ export function WebcamsPage({ location, active, onChooseLocation }: Props) {
           </div>
         </div>
 
-        {hasWebcamKey() && !current && <p className="hint">Webcams werden gesucht …</p>}
+        {hasWebcamKey() && !current && <Loading>Webcams werden gesucht …</Loading>}
 
         {current && 'error' in current && !current.missingKey && (
           <div>
