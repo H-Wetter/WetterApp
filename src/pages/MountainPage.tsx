@@ -18,8 +18,12 @@ import type { MultiModelForecast } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
 import type { FoundPoint, TerrainResult } from '../types/terrain'
 import { LinkedText, Term } from '../components/LexikonLink'
+import { DayCourse } from '../components/DayCourse'
+import { describeDayCourse } from '../lib/tagesverlauf'
 
 const DAYS = 7
+const VALLEY_EXTRA_VARIABLES = [...PROFILE_EXTRA_VARIABLES, 'cape']
+const SUMMIT_EXTRA_VARIABLES = [...MOUNTAIN_EXTRA_VARIABLES, 'cloud_cover_mid', 'cloud_cover_high']
 const RADIUS_KEY = 'wetter-app.mountain-radius'
 const RADIUS_CHOICES = [5, 10, 15, 20, 25, 30].filter((r) => r >= MIN_RADIUS_KM && r <= MAX_RADIUS_KM)
 /** Bekannte Gipfel: Liegt der gefundene Punkt höchstens so nah daran (km), bekommt er dessen Namen. */
@@ -117,8 +121,10 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
     const controller = new AbortController()
     const ids = COMPARISON_MODELS.map((m) => m.id)
     Promise.all([
-      fetchMultiModelForecast(valley, ids, DAYS, controller.signal, PROFILE_EXTRA_VARIABLES),
-      hasMountain ? fetchMultiModelForecast(mountain, ids, DAYS, controller.signal, MOUNTAIN_EXTRA_VARIABLES) : Promise.resolve(null),
+      // Tal: Temperaturprofil für die Inversion + CAPE für das Gewitterrisiko im Tagesverlauf
+      fetchMultiModelForecast(valley, ids, DAYS, controller.signal, VALLEY_EXTRA_VARIABLES),
+      // Berg: Höhenwerte für den Gipfel + mittlere/hohe Wolken („über dem Nebel sonnig?“)
+      hasMountain ? fetchMultiModelForecast(mountain, ids, DAYS, controller.signal, SUMMIT_EXTRA_VARIABLES) : Promise.resolve(null),
     ])
       .then(([v, m]) => setForecastState({ key: forecastKey, valley: v, mountain: m }))
       .catch((err: unknown) => {
@@ -147,6 +153,20 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
   const valleyText = useMemo(
     () => (data && vDay ? describeDay(vDay, summarizeHours(data.valley, vDay), 'valley', inversion) : []),
     [data, vDay, inversion],
+  )
+  // Tagesverlauf in Worten; bei Inversion Tal und Berg getrennt
+  const course = useMemo(
+    () =>
+      data && vDay
+        ? describeDayCourse({
+            forecast: data.valley,
+            startIndex: vDay.startIndex,
+            inversions: inversionHours,
+            summit: hasMountain ? summit : null,
+            summitElevation: mountain?.elevation,
+          })
+        : [],
+    [data, vDay, inversionHours, hasMountain, summit, mountain],
   )
   const mountainText = useMemo(
     () => (summit && mDay && mountain ? describeDay(mDay, summarizeHours(summit, mDay), 'mountain', inversion, mountain.elevation) : []),
@@ -312,6 +332,10 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
               </ErrorBoundary>
             )}
           </div>
+
+          <ErrorBoundary label="Der Tagesverlauf" resetKey={`${forecastKey}-${selected}`}>
+            <DayCourse periods={course} now={now} valleyName={valley.name} mountainName={mountain.name} />
+          </ErrorBoundary>
 
           <ErrorBoundary label="Das Tal-Berg-Diagramm" resetKey={forecastKey}>
             <ValleyMountainChart

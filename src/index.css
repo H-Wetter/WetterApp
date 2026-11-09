@@ -461,7 +461,7 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
 .terrain-card { display: flex; flex-direction: column; gap: 0.6rem; }
 .terrain-card p { margin: 0; }
 .terrain-head { display: flex; flex-wrap: wrap; align-items: center; gap: 0.5rem 0.8rem; }
-.terrain-head .segmented button { padding: 0.3rem 0.65rem; }
+.terrain-head .segmented button { padding: 0.3rem 0.65rem; white-space: nowrap; }
 .terrain-list { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.25rem; }
 .terrain-list .swatch { vertical-align: middle; }
 .terrain-map { width: 100%; height: 260px; border-radius: 8px; border: 1px solid var(--border); z-index: 0; }
@@ -494,3 +494,18 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
 .lex-example { color: var(--muted); }
 .lex-sketch { width: 100%; height: auto; border: 1px solid var(--border); border-radius: 8px; background: var(--surface); }
 @media (max-width: 600px) { .lex-body { grid-template-columns: 1fr; } .lex-sketch { max-width: 320px; } }
+
+/* Textueller Tagesverlauf */
+.day-course { margin: 0.75rem 0; }
+.day-course h3 { margin: 0 0 0.5rem; }
+.day-course > p { margin: 0.4rem 0 0; }
+.course-grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 0.6rem; }
+.course-period { border: 1px solid var(--border); border-radius: 10px; padding: 0.55rem 0.7rem; background: var(--surface); }
+.course-period.past { opacity: 0.55; }
+.course-period h4 { margin: 0 0 0.35rem; font-size: 0.98rem; display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.3rem; }
+.course-period p { margin: 0 0 0.3rem; font-size: 0.92rem; line-height: 1.45; }
+.course-place { margin-top: 0.3rem; }
+.course-place strong { display: block; font-size: 0.85rem; margin-bottom: 0.15rem; }
+.course-place .swatch { vertical-align: middle; }
+.course-tag { margin-left: auto; font-size: 0.75rem; padding: 0.05rem 0.45rem; border-radius: 999px;
+  background: color-mix(in srgb, var(--inversion) 25%, transparent); }

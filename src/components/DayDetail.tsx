@@ -12,6 +12,8 @@ import { ForecastCharts } from './ForecastCharts'
 import { MoonIcon, SmallIcon, WeatherIcon } from './WeatherIcon'
 import { WindArrow } from './WindArrow'
 import { Term } from './LexikonLink'
+import { DayCourse } from './DayCourse'
+import { describeDayCourse } from '../lib/tagesverlauf'
 
 interface Props {
   forecast: MultiModelForecast
@@ -53,6 +55,11 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfil
   const freezing = useMemo(() => freezingLevel(forecast, day), [forecast, day])
   const dayForecast = useMemo(() => sliceForecast(forecast, day.startIndex, day.endIndex), [forecast, day])
   const hours = useMemo(() => summarizeHours(forecast, day), [forecast, day])
+  // Tagesverlauf in Worten – aus denselben Modellen wie Mittelwert und Streuband (alle, wenn keins gewählt ist)
+  const course = useMemo(
+    () => describeDayCourse({ forecast, startIndex: day.startIndex, modelIds: statIds.length ? statIds : undefined }),
+    [forecast, day.startIndex, statIds],
+  )
   const ticks = useMemo(() => hourTicks(dayForecast.times, 3), [dayForecast])
 
   // Nur Modelle, die an diesem Tag überhaupt rechnen
@@ -159,6 +166,10 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfil
           )
         })}
       </ol>
+
+      <ErrorBoundary label="Der Tagesverlauf" resetKey={day.dayStart}>
+        <DayCourse periods={course} now={now} />
+      </ErrorBoundary>
 
       <div className="detail-charts">
         <ErrorBoundary label="Die Stundendiagramme" resetKey={day.dayStart}>
