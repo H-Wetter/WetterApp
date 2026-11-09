@@ -9,7 +9,7 @@ import { ValleyMountainChart } from '../components/ValleyMountainChart'
 import { summarizeDays, summarizeHours } from '../lib/daily'
 import { DEFAULT_LOCATION, DEFAULT_MOUNTAIN } from '../lib/defaults'
 import { describeDay, joinParts } from '../lib/describe'
-import { MIN_HEIGHT_DIFFERENCE, PROFILE_EXTRA_VARIABLES, compareHours, distanceKm, profileInversions, summarizeInversion } from '../lib/inversion'
+import { FOG_RH, MIN_HEIGHT_DIFFERENCE, PROFILE_EXTRA_VARIABLES, compareHours, distanceKm, profileInversions, summarizeInversion } from '../lib/inversion'
 import { COMPARISON_MODELS } from '../lib/models'
 import { MOUNTAIN_EXTRA_VARIABLES, toSummitForecast } from '../lib/mountain'
 import { DEFAULT_RADIUS_KM, MAX_RADIUS_KM, MIN_RADIUS_KM } from '../lib/terrain'
@@ -347,7 +347,7 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
               <Term id="inversion">Inversion</Term>
             </strong>{' '}
             erkennen wir am Temperaturprofil der Modelle über dem Tal (2 m und Druckniveaus 1000–850 hPa,
-            also bis ca. 1500 m): Wird es nach oben wärmer, liegt eine Inversion vor. Ist die Luft darunter fast gesättigt (≥ 95 %
+            also bis ca. 1500 m): Wird es nach oben wärmer, liegt eine Inversion vor. Ist die Luft darunter sehr feucht (in den Modellen ≥ {FOG_RH} %
             Feuchte), schätzen wir daraus die{' '}
             <strong>
               <Term id="hochnebel">Nebelobergrenze</Term>

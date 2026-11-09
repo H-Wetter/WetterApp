@@ -27,8 +27,13 @@ export const PROFILE_EXTRA_VARIABLES = [
 
 /** Ab so viel Erwärmung nach oben zählt es als Inversion (°C) – kleinere Werte sind Rauschen. */
 const MIN_STRENGTH = 0.5
-/** Ab dieser relativen Feuchte gilt eine Schicht als Nebel/Hochnebel (%) */
-const FOG_RH = 95
+/**
+ * Ab dieser relativen Feuchte gilt eine Schicht als Nebel/Hochnebel (%).
+ * Gemessen ist Nebel meist bei 95–100 %. Die Modelle rechnen aber über ein großes Gitterfeld
+ * und unterschätzen die Feuchte im Tal oft: Am 09.11.2026 zeigten sie in Graz nur 86–93 %,
+ * gemessen waren 95–98 % mit Nebel. Darum liegt die Grenze bewusst niedriger, bei 90 %.
+ */
+export const FOG_RH = 90
 /** Ein Druckniveau muss mindestens so hoch über dem Talboden liegen (m), sonst ist es „unter der Erde“ gerechnet. */
 const ABOVE_GROUND_M = 50
 
@@ -64,7 +69,7 @@ export interface ProfileInversion {
   fogFromGround: boolean
 }
 
-/** Höhe, in der die Feuchte zwischen zwei Punkten unter 95 % fällt (lineare Schätzung). */
+/** Höhe, in der die Feuchte zwischen zwei Punkten unter FOG_RH fällt (lineare Schätzung). */
 function fogCrossing(lower: ProfilePoint, upper: ProfilePoint | undefined): number {
   if (!upper || upper.rh === null || lower.rh === null || lower.rh === upper.rh) return lower.height
   const f = (lower.rh - FOG_RH) / (lower.rh - upper.rh)
