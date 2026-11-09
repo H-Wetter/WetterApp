@@ -66,8 +66,10 @@ export function fogPosition(elevation: number | null, fogTop: number | null): 'a
 /**
  * Für den Inversions-Hinweis reichen wenige Modelle und ein Tag – das spart Open-Meteo-Aufrufe.
  * (Die genaue Auswertung mit allen Modellen gibt es unter „Berg & Tal“.)
+ * Nur Modelle, die auch die tiefen Druckniveaus (1000–925 hPa) liefern – ECMWF IFS hat dort
+ * keine Werte (am 09.11.2026 für Graz geprüft) und würde das Urteil nur verwässern.
  */
-export const INVERSION_CHECK_MODELS = ['dwd_icon_seamless', 'ecmwf_ifs', 'gfs_seamless']
+export const INVERSION_CHECK_MODELS = ['dwd_icon_seamless', 'meteofrance_seamless', 'gfs_seamless']
 
 /** Die Stunde, die gerade läuft (Zeiten in Ortszeit wie in der Vorhersage). */
 export function inversionNow(hours: HourInversion[], localNowMs: number): HourInversion | null {
