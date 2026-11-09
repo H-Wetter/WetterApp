@@ -1,6 +1,6 @@
 import { AQ_VARIABLES, type AirQualityData, type AqVariable } from '../types/airQuality'
 import type { WeatherLocation } from '../types/location'
-import { openMeteoError } from './errors'
+import { fetchJsonCached } from './cache'
 
 const AIR_QUALITY_URL = 'https://air-quality-api.open-meteo.com/v1/air-quality'
 
@@ -20,10 +20,11 @@ export async function fetchAirQuality(location: WeatherLocation, days: number, s
     forecast_days: String(days),
     timezone: 'auto',
   })
-  const response = await fetch(`${AIR_QUALITY_URL}?${params.toString()}`, { signal })
-  if (!response.ok) throw await openMeteoError(response, 'Luftqualitätsdaten konnten nicht geladen werden')
-
-  const raw = (await response.json()) as AirQualityResponse
+  const raw = await fetchJsonCached<AirQualityResponse>(
+    `${AIR_QUALITY_URL}?${params.toString()}`,
+    'Luftqualitätsdaten konnten nicht geladen werden',
+    signal,
+  )
   const data = {} as AirQualityData['data']
   for (const v of AQ_VARIABLES) {
     data[v as AqVariable] = (raw.hourly[v] as (number | null)[] | undefined) ?? raw.hourly.time.map(() => null)
