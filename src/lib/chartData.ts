@@ -82,3 +82,74 @@ export function reachInDays(forecast: MultiModelForecast, modelId: string): numb
   if (last === undefined) return 0
   return Math.round(((last + 1) / 24) * 2) / 2
 }
+
+// ---------- Hilfen für schönere Diagramme ----------
+
+const HOUR_MS = 3_600_000
+const DAY_MS = 24 * HOUR_MS
+
+/**
+ * Nachtzeiten als [Beginn, Ende] (Zeiten wie forecast.times) – für die graue Hinterlegung.
+ * Nacht = die Mehrheit der Modelle meldet `is_day = 0`. Eine Stunde gilt von t bis t + 1 h.
+ */
+export function nightSpans(forecast: MultiModelForecast): [number, number][] {
+  const spans: [number, number][] = []
+  let start: number | null = null
+  forecast.times.forEach((t, i) => {
+    const flags = forecast.availableModels
+      .map((id) => forecast.data.is_day[id]?.[i])
+      .filter((v): v is number => typeof v === 'number')
+    const night = flags.length > 0 && flags.filter((v) => v < 0.5).length > flags.length / 2
+    if (night && start === null) start = t
+    if (!night && start !== null) {
+      spans.push([start, t])
+      start = null
+    }
+  })
+  const last = forecast.times[forecast.times.length - 1]
+  if (start !== null && last !== undefined) spans.push([start, last + HOUR_MS])
+  return spans
+}
+
+/** Mittag jedes Tages im Zeitraum – dort stehen die Tagesnamen (statt an Mitternacht). */
+export function middayTicks(first: number, last: number): number[] {
+  const ticks: number[] = []
+  for (let d = Math.floor(first / DAY_MS) * DAY_MS; d <= last; d += DAY_MS) {
+    const noon = d + 12 * HOUR_MS
+    if (noon >= first && noon <= last) ticks.push(noon)
+  }
+  return ticks
+}
+
+export interface DayExtreme {
+  /** Zeitpunkt des Höchst- bzw. Tiefstwerts */
+  t: number
+  value: number
+  kind: 'max' | 'min'
+}
+
+/**
+ * Höchst- und Tiefstwert des Mittelwerts je Kalendertag – für die Beschriftung im Temperaturdiagramm.
+ * Angebrochene Tage am Rand (weniger als 12 Stunden) bekommen keine Beschriftung, sonst stünde dort
+ * ein „Höchstwert“, der nur der letzte Wert vor dem Diagrammrand ist.
+ */
+export function dailyExtremes(rows: ChartRow[]): DayExtreme[] {
+  const byDay = new Map<number, ChartRow[]>()
+  for (const r of rows) {
+    if (r.mean === null) continue
+    const day = Math.floor(r.t / DAY_MS) * DAY_MS
+    byDay.set(day, [...(byDay.get(day) ?? []), r])
+  }
+  const out: DayExtreme[] = []
+  for (const dayRows of byDay.values()) {
+    if (dayRows.length < 12) continue
+    let max = dayRows[0]
+    let min = dayRows[0]
+    for (const r of dayRows) {
+      if ((r.mean ?? -Infinity) > (max.mean ?? -Infinity)) max = r
+      if ((r.mean ?? Infinity) < (min.mean ?? Infinity)) min = r
+    }
+    out.push({ t: max.t, value: max.mean ?? 0, kind: 'max' }, { t: min.t, value: min.mean ?? 0, kind: 'min' })
+  }
+  return out
+}

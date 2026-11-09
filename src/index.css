@@ -26,6 +26,12 @@
   --warn-4: #9c36b5;
   --freezing: #00b8d9;
   --ok: #2b8a3e;
+  /* Verlaufsdiagramme (Farben mit dem Palette-Prüfskript getestet, 09.11.2026) */
+  --chart-temp: #eb6834;
+  --chart-precip: #2a78d6;
+  --chart-wind: #1baf7a;
+  --grid: #e9edf2;
+  --night: rgba(40, 60, 100, 0.07);
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
   color: var(--text);
@@ -60,6 +66,11 @@
     --warn-4: #cc5de8;
     --freezing: #66d9ef;
     --ok: #69db7c;
+    --chart-temp: #d95926;
+    --chart-precip: #3987e5;
+    --chart-wind: #199e70;
+    --grid: #262d37;
+    --night: rgba(0, 0, 0, 0.28);
   }
 }
 
@@ -604,3 +615,13 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
   .model-check-list li { grid-template-columns: 1.5rem 1fr auto; }
   .model-check-bar { display: none; }
 }
+
+/* Legende der Verlaufsdiagramme */
+.chart-legend { list-style: none; margin: 0 0 0.35rem; padding: 0; display: flex; flex-wrap: wrap; gap: 0.2rem 1rem; color: var(--text); }
+.chart-legend li { display: inline-flex; align-items: center; gap: 0.35rem; }
+.lg-line { display: inline-block; width: 18px; height: 3px; border-radius: 2px; }
+.lg-bar { display: inline-block; width: 8px; height: 12px; border-radius: 2px 2px 0 0; }
+.lg-band { display: inline-block; width: 18px; height: 10px; border-radius: 2px; opacity: 0.25; }
+.lg-dash { display: inline-block; width: 18px; height: 0; border-top: 2px dashed; }
+.lg-night { display: inline-block; width: 14px; height: 10px; border-radius: 2px; background: var(--night); border: 1px solid var(--grid); }
+@media (max-width: 600px) { .lg-night-item { display: none; } }

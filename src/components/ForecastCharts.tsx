@@ -1,5 +1,5 @@
 import { useMemo } from 'react'
-import { buildChartRows } from '../lib/chartData'
+import { buildChartRows, nightSpans } from '../lib/chartData'
 import type { ModelInfo, MultiModelForecast } from '../types/forecast'
 import { ModelChart } from './ModelChart'
 
@@ -26,17 +26,27 @@ export function ForecastCharts({ forecast, statIds, lineModels, ticks, tickForma
     }),
     [forecast, statIds],
   )
+  const nights = useMemo(() => nightSpans(forecast), [forecast])
 
   if (statIds.length === 0) {
     return <p className="notice">Alle Modelle sind ausgeblendet. Blende im Modellvergleich mindestens ein Modell ein.</p>
   }
 
-  const common = { models: lineModels, ticks, tickFormatter, compact, now }
+  const common = { models: lineModels, ticks, tickFormatter, compact, now, nights }
   return (
     <>
-      <ModelChart title="Temperatur" unit="°C" rows={rows.temperature} extraLabel="Gefühlte Temperatur" {...common} />
-      <ModelChart title="Niederschlag" unit="mm/h" rows={rows.precipitation} fromZero {...common} />
-      <ModelChart title="Wind" unit="km/h" rows={rows.wind} fromZero extraLabel="Böen" {...common} />
+      <ModelChart
+        title="Temperatur"
+        unit="°C"
+        rows={rows.temperature}
+        extraLabel="Gefühlte Temperatur"
+        color="var(--chart-temp)"
+        showExtremes
+        zeroLine
+        {...common}
+      />
+      <ModelChart title="Niederschlag" unit="mm/h" rows={rows.precipitation} fromZero color="var(--chart-precip)" kind="bars" {...common} />
+      <ModelChart title="Wind" unit="km/h" rows={rows.wind} fromZero extraLabel="Böen" color="var(--chart-wind)" {...common} />
     </>
   )
 }
