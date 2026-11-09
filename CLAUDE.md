@@ -71,6 +71,11 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
 - Bedingungen: Quellenangabe „Webcams provided by Windy.com“ mit Link, Bilder nur Originalgröße oder kleiner, jedes Bild verlinkt auf die Webcam-Seite (`urls.detail`) oder den Player.
 - Liefert **keine Höhe** → Höhe über die Open-Meteo Elevation API ergänzen (dauerhaft cachen).
 
+### Windy-Karte (eingebettet) – `https://embed.windy.com/embed.html`
+- Kostenlos, ohne Schlüssel, als iframe im Reiter „Radar“. Windy-Logo muss sichtbar bleiben, nur private Nutzung.
+- Ebenen (`overlay`/`product`): `radar/radar`, `satellite/satellite`, sonst Modell `ecmwf`: `rain, wind, gust, temp, clouds, snowAccu, cape` (am 09.11.2026 getestet).
+- Liste und Adresse in `src/lib/windyMap.ts`.
+
 ### Blitze live (optional, zuletzt)
 - Blitzortung.org nur nach Prüfung der Nutzungsbedingungen. Sonst nur Gewitter-Prognose (CAPE, Wettercode 95–99).
 
@@ -121,6 +126,7 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
     - Fallback, wenn die API nichts liefert oder kein Schlüssel da ist: feste Such-Links mit dem Ortsnamen zu foto-webcam.eu, bergfex und panomax.
     - Keine fremden Bilder speichern oder kopieren – nur einbinden bzw. verlinken. Quellenangabe Windy sichtbar.
     - Freundliche Meldung, wenn keine Webcams gefunden werden.
+    - Zusatz: Im Reiter „Radar“ eine eingebettete Windy-Karte mit Knöpfen für Radar, Satellit, Regen, Wind, Böen, Temperatur, Wolken, Neuschnee und Gewitter (CAPE).
 
 ## Qualität
 - TypeScript streng, keine `any`.

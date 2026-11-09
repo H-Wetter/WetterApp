@@ -4,6 +4,7 @@ import { CircleMarker, MapContainer, Pane, TileLayer, Tooltip, useMapEvents } fr
 import type { LeafletEventHandlerFnMap, TileEvent } from 'leaflet'
 import { RADAR_MAX_NATIVE_ZOOM, RADAR_TILE_SIZE, canLoadTiles, fetchRadarFrames, noteTileRequest, type RadarFrame } from '../api/rainviewer'
 import { ErrorBoundary } from '../components/ErrorBoundary'
+import { WindyMap } from '../components/WindyMap'
 import { DEFAULT_LOCATION } from '../lib/defaults'
 import { RADAR_LEGEND, dbzToRainRate, formatAgo, formatClock, formatRainRate } from '../lib/radar'
 import type { WeatherLocation } from '../types/location'
@@ -179,6 +180,7 @@ export function RadarPage({ location }: { location: WeatherLocation | null }) {
       <div className="page">
         <h1>Radar</h1>
         <p className="hint">Radarbilder werden geladen …</p>
+        <WindyMap place={place} />
       </div>
     )
   }
@@ -192,6 +194,7 @@ export function RadarPage({ location }: { location: WeatherLocation | null }) {
             Erneut versuchen
           </button>
         </div>
+        <WindyMap place={place} />
       </div>
     )
   }
@@ -306,6 +309,10 @@ export function RadarPage({ location }: { location: WeatherLocation | null }) {
           Gewittergefahr aus der Vorhersage steht in den Warnhinweisen auf der Seite „Lokal“.
         </p>
       </div>
+
+      <ErrorBoundary label="Die Windy-Karte">
+        <WindyMap place={place} />
+      </ErrorBoundary>
     </div>
   )
 }
