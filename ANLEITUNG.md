@@ -117,6 +117,31 @@ Bei jedem Hochladen auf `main` baut GitHub die App als **eine** Datei, verschlü
 
 Die Datei `.staticrypt.json` ist **nicht geheim** und gehört ins Repository (sonst funktioniert „Angemeldet bleiben“ nach jedem Hochladen nicht mehr).
 
+## Windy-Schlüssel für die Webcams
+Der Reiter **„Webcams“** sucht Webcams über die Windy Webcams API. Dafür braucht es einen kostenlosen Schlüssel. Ohne Schlüssel läuft die App trotzdem – der Reiter zeigt dann nur Such-Links zu foto-webcam.eu, bergfex und panomax. Die **Windy-Karte im Reiter „Radar“ braucht keinen Schlüssel.**
+
+**Schlüssel anlegen:** https://api.windy.com/keys → anmelden → neuen Schlüssel für **„Webcams API“** erstellen. Andere Schlüsselarten (Map Forecast, Point Forecast, Plugins) braucht die App nicht.
+
+Der Schlüssel muss an **zwei** Stellen hinterlegt werden:
+
+**1. Auf deinem PC – Datei `.env`** (für `npm run dev` und „Wetter-App starten.bat“)
+- Liegt im Projektordner neben `package.json`. Falls sie fehlt: `.env.example` kopieren und die Kopie in `.env` umbenennen.
+- Zeile ausfüllen: `VITE_WINDY_API_KEY=dein-schlüssel` (ohne Anführungszeichen, ohne Leerzeichen).
+- Danach die App neu starten – Vite liest `.env` nur beim Start.
+- Die `.env` steht in `.gitignore` und kommt **nie** zu GitHub. In derselben Datei steht auch `STATICRYPT_PASSWORD` für das lokale Testen der Verschlüsselung.
+
+**2. Für die Online-Version – GitHub-Secret `WINDY_API_KEY`**
+- GitHub → dein Repository → *Settings* → *Secrets and variables* → *Actions* → *New repository secret* (bzw. bestehendes Secret bearbeiten)
+- Name: `WINDY_API_KEY` (genau so, **ohne** `VITE_` davor – das ergänzt der Bau-Ablauf in `.github/workflows/deploy.yml` selbst)
+- Wert: dein Schlüssel
+- Damit es wirkt: unter *Actions* → „Veröffentlichen auf GitHub Pages“ → *Run workflow* (oder einfach beim nächsten Hochladen).
+
+**Neuer Schlüssel nötig?** (z. B. abgelaufen oder versehentlich veröffentlicht) Auf api.windy.com einen neuen erstellen, an **beiden** Stellen eintragen und den alten dort löschen.
+
+**Gut zu wissen:**
+- Alles, was mit `VITE_` beginnt, landet im fertigen JavaScript. Der Schlüssel ist also im Browser sichtbar – auch in der Online-Version hinter dem Passwort, für alle, die das Passwort kennen. Er kostet nichts, darum ist das hier vertretbar.
+- Bildlinks von Windy verfallen nach ca. 10–15 Minuten; die App fragt darum höchstens alle 10 Minuten neu.
+
 ## Tipps
 - Lieber kleine, klare Aufträge als einen riesigen.
 - Frag ruhig „Warum hast du das so gemacht?“ – so lernst du am meisten.
