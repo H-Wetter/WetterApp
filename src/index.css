@@ -131,6 +131,8 @@ h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
 .intro { font-size: 1.1rem; margin: 0; }
 .choice { display: flex; flex-direction: column; gap: 0.5rem; }
 .or { text-align: center; color: var(--muted); margin: 0; }
+.location-card { display: flex; justify-content: space-between; align-items: flex-start; gap: 0.75rem; }
+.location-card > button { flex: none; white-space: nowrap; }
 
 .search { display: flex; flex-direction: column; gap: 0.4rem; }
 .search-row { display: flex; gap: 0.5rem; }

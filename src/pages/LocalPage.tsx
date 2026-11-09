@@ -17,20 +17,29 @@ interface Props {
  * Seite „Lokal“: Beim Start wählt man selbst:
  *  – einen Ort eingeben (z. B. „Wien“ → Wien, Österreich) oder
  *  – den eigenen Standort ermitteln lassen (bei Fehler → Graz).
+ * Ist schon ein Ort gewählt, ist die Auswahl eingeklappt (Knopf „Ort ändern“) –
+ * so steht vor allem am Handy die Vorhersage gleich oben.
  */
 export function LocalPage({ location, setLocation }: Props) {
   const [locating, setLocating] = useState(false)
   const [notice, setNotice] = useState<string | null>(null)
+  // Auswahl aufgeklappt? Ohne gewählten Ort ist sie immer offen.
+  const [changing, setChanging] = useState(false)
+  const showChoice = !location || changing
 
   function locate() {
     setLocating(true)
     setNotice(null)
     getBrowserLocation()
-      .then(setLocation)
+      .then((found) => {
+        setLocation(found)
+        setChanging(false)
+      })
       .catch((err: unknown) => {
         const reason = friendlyError(err)
         setNotice(`${reason} Es wird Graz verwendet.`)
         setLocation(DEFAULT_LOCATION)
+        setChanging(false)
       })
       .finally(() => setLocating(false))
   }
@@ -38,6 +47,7 @@ export function LocalPage({ location, setLocation }: Props) {
   function handleSelect(selected: WeatherLocation) {
     setNotice(null)
     setLocation(selected)
+    setChanging(false)
   }
 
   return (
@@ -45,28 +55,30 @@ export function LocalPage({ location, setLocation }: Props) {
       <h1>Lokal</h1>
 
       {location ? (
-        <LocationCard location={location} />
+        <LocationCard location={location} changing={changing} onToggleChange={() => setChanging((c) => !c)} />
       ) : (
         <p className="intro">Für welchen Ort möchtest du das Wetter sehen?</p>
       )}
       {notice && <p className="notice">{notice}</p>}
 
-      <div className="choice">
-        <section className="card">
-          <h3>Ort eingeben</h3>
-          <LocationSearch onSelect={handleSelect} />
-        </section>
+      {showChoice && (
+        <div className="choice">
+          <section className="card">
+            <h3>Ort eingeben</h3>
+            <LocationSearch onSelect={handleSelect} />
+          </section>
 
-        <p className="or">oder</p>
+          <p className="or">oder</p>
 
-        <section className="card">
-          <h3>Standort ermitteln</h3>
-          <p className="muted small">Der Browser fragt dich, ob er deinen Standort verwenden darf.</p>
-          <button type="button" className="primary" onClick={locate} disabled={locating}>
-            {locating ? 'Standort wird ermittelt …' : '📍 Meinen Standort ermitteln'}
-          </button>
-        </section>
-      </div>
+          <section className="card">
+            <h3>Standort ermitteln</h3>
+            <p className="muted small">Der Browser fragt dich, ob er deinen Standort verwenden darf.</p>
+            <button type="button" className="primary" onClick={locate} disabled={locating}>
+              {locating ? 'Standort wird ermittelt …' : '📍 Meinen Standort ermitteln'}
+            </button>
+          </section>
+        </div>
+      )}
 
       {location && <LocalForecast location={location} />}
     </div>
