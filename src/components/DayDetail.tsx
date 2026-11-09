@@ -14,6 +14,7 @@ import { WindArrow } from './WindArrow'
 import { Term } from './LexikonLink'
 import { DayCourse } from './DayCourse'
 import { describeDayCourse } from '../lib/tagesverlauf'
+import { measuredFogWindow, type MeasuredFog } from '../lib/stations'
 
 interface Props {
   forecast: MultiModelForecast
@@ -28,6 +29,8 @@ interface Props {
   cloudError: string | null
   /** Warnhinweise für diesen Tag */
   warnings: Warning[]
+  /** Nebel laut Messstation (nur heute relevant, sonst egal) */
+  measuredFog?: MeasuredFog | null
   onClose: () => void
 }
 
@@ -51,14 +54,20 @@ function formatTime(ms: number): string {
 const STRIP_STEP = 3
 
 /** Stundenansicht eines Tages: gleiche Diagramme wie der 7-Tage-Verlauf, nur für 24 Stunden. */
-export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfile, cloudError, warnings, onClose }: Props) {
+export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfile, cloudError, warnings, measuredFog, onClose }: Props) {
   const freezing = useMemo(() => freezingLevel(forecast, day), [forecast, day])
   const dayForecast = useMemo(() => sliceForecast(forecast, day.startIndex, day.endIndex), [forecast, day])
   const hours = useMemo(() => summarizeHours(forecast, day), [forecast, day])
   // Tagesverlauf in Worten – aus denselben Modellen wie Mittelwert und Streuband (alle, wenn keins gewählt ist)
   const course = useMemo(
-    () => describeDayCourse({ forecast, startIndex: day.startIndex, modelIds: statIds.length ? statIds : undefined }),
-    [forecast, day.startIndex, statIds],
+    () =>
+      describeDayCourse({
+        forecast,
+        startIndex: day.startIndex,
+        modelIds: statIds.length ? statIds : undefined,
+        measuredFog: measuredFog ? measuredFogWindow(measuredFog, forecast.utcOffsetSeconds) : null,
+      }),
+    [forecast, day.startIndex, statIds, measuredFog],
   )
   const ticks = useMemo(() => hourTicks(dayForecast.times, 3), [dayForecast])
 

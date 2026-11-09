@@ -24,6 +24,7 @@ import { Loading } from '../components/Loading'
 import { ErrorMessage } from '../components/ErrorMessage'
 import { friendlyError } from '../api/errors'
 import { MeasuredValleyMountain } from '../components/MeasuredValleyMountain'
+import { measuredFogWindow, type MeasuredFog } from '../lib/stations'
 
 const DAYS = 7
 const VALLEY_EXTRA_VARIABLES = [...PROFILE_EXTRA_VARIABLES, 'cape']
@@ -71,6 +72,8 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
   const [forecastState, setForecastState] = useState<ForecastState | null>(null)
   const [reload, setReload] = useState(0)
   const [selected, setSelected] = useState(0)
+  // Nebel laut Talstation (Etappe 14c) – fließt in den Tagesverlauf ein
+  const [measuredFog, setMeasuredFog] = useState<MeasuredFog | null>(null)
 
   // ---------- 1. Tal und Berg im Gelände suchen ----------
   const terrainKey = `${place.latitude},${place.longitude},${radius},${reload}`
@@ -168,9 +171,10 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
             inversions: inversionHours,
             summit: hasMountain ? summit : null,
             summitElevation: mountain?.elevation,
+            measuredFog: measuredFog ? measuredFogWindow(measuredFog, data.valley.utcOffsetSeconds) : null,
           })
         : [],
-    [data, vDay, inversionHours, hasMountain, summit, mountain],
+    [data, vDay, inversionHours, hasMountain, summit, mountain, measuredFog],
   )
   const mountainText = useMemo(
     () => (summit && mDay && mountain ? describeDay(mDay, summarizeHours(summit, mDay), 'mountain', inversion, mountain.elevation) : []),
@@ -282,7 +286,7 @@ export function MountainPage({ valley: chosen, onChooseValley }: Props) {
 
       {terrain && valley && mountain && (
         <ErrorBoundary label="Die Messwerte Tal und Berg" resetKey={terrainKey}>
-          <MeasuredValleyMountain valley={valley} mountain={hasMountain ? mountain : null} />
+          <MeasuredValleyMountain valley={valley} mountain={hasMountain ? mountain : null} onFog={setMeasuredFog} />
         </ErrorBoundary>
       )}
 

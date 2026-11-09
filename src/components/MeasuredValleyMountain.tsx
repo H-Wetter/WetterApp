@@ -5,6 +5,7 @@ import { MIN_HEIGHT_DIFFERENCE } from '../lib/inversion'
 import {
   MOUNTAIN_STATION_MAX_KM,
   STALE_AFTER_MS,
+  detectMeasuredFog,
   firstWithData,
   formatNum,
   formatViennaClock,
@@ -16,6 +17,8 @@ import {
 } from '../lib/stations'
 import type { WeatherLocation } from '../types/location'
 import type { Measurement, StationCandidate } from '../types/station'
+import type { MeasuredFog } from '../lib/stations'
+import { FogHint } from './MeasuredNow'
 import { ErrorMessage } from './ErrorMessage'
 import { Term } from './LexikonLink'
 import { Loading } from './Loading'
@@ -27,14 +30,23 @@ interface Picked {
 
 type Result =
   | { key: string; status: 'error'; message: string }
-  | { key: string; status: 'ok'; valley: Picked | null; mountain: Picked | null; stale: boolean }
+  | { key: string; status: 'ok'; valley: Picked | null; mountain: Picked | null; stale: boolean; fog: MeasuredFog | null }
 
 /**
  * Karte „Gemessen: Tal und Berg“ (Etappe 14b): je eine Messstation von GeoSphere Austria
  * im Tal und nahe beim gefundenen Berg. Ist es oben wärmer, ist die Inversion „echt“ gemessen –
  * unabhängig davon, was die Modelle rechnen. Nur in Österreich.
  */
-export function MeasuredValleyMountain({ valley, mountain }: { valley: WeatherLocation; mountain: WeatherLocation | null }) {
+export function MeasuredValleyMountain({
+  valley,
+  mountain,
+  onFog,
+}: {
+  valley: WeatherLocation
+  mountain: WeatherLocation | null
+  /** meldet gemessenen Nebel im Tal (oder `null`) nach oben – für den Tagesverlauf */
+  onFog?: (fog: MeasuredFog | null) => void
+}) {
   const [reload, setReload] = useState(0)
   const [result, setResult] = useState<Result | null>(null)
   const inAustria = isNearAustria(valley.latitude, valley.longitude)
@@ -61,8 +73,17 @@ export function MeasuredValleyMountain({ valley, mountain }: { valley: WeatherLo
           measurements,
           false,
         )
+        const now = Date.now()
         const newest = Math.max(v?.measurement.time ?? 0, m?.measurement.time ?? 0)
-        setResult({ key, status: 'ok', valley: v, mountain: m, stale: newest > 0 && Date.now() - newest > STALE_AFTER_MS })
+        setResult({
+          key,
+          status: 'ok',
+          valley: v,
+          mountain: m,
+          stale: newest > 0 && now - newest > STALE_AFTER_MS,
+          // Nebel zählt nur im Tal
+          fog: v ? detectMeasuredFog(v.measurement, v.candidate.station, now) : null,
+        })
       })
       .catch((err: unknown) => {
         if (controller.signal.aborted) return
@@ -71,8 +92,11 @@ export function MeasuredValleyMountain({ valley, mountain }: { valley: WeatherLo
     return () => controller.abort()
   }, [key, inAustria, valley.latitude, valley.longitude, valley.elevation, mountain])
 
-  if (!inAustria) return null
   const current = result && result.key === key ? result : null
+  const fog = current?.status === 'ok' ? current.fog : null
+  useEffect(() => onFog?.(fog), [fog, onFog])
+
+  if (!inAustria) return null
 
   return (
     <section className="card measured">
@@ -98,6 +122,7 @@ export function MeasuredValleyMountain({ valley, mountain }: { valley: WeatherLo
             </div>
           )}
           {current.valley && current.mountain && <InversionResult valley={current.valley} mountain={current.mountain} />}
+          {current.fog && <FogHint fog={current.fog} />}
         </>
       )}
       <p className="muted small measured-source">
@@ -105,7 +130,7 @@ export function MeasuredValleyMountain({ valley, mountain }: { valley: WeatherLo
         <a href="https://data.hub.geosphere.at/" target="_blank" rel="noopener noreferrer">
           GeoSphere Austria
         </a>{' '}
-        (Messnetz TAWES, CC BY 4.0). Die Stationen liegen nicht genau an den gefundenen Punkten, sondern möglichst nah und auf
+        (Messnetz TAWES, CC BY 4.0). Was eine <Term id="messstation">Messstation</Term> anders macht als die Modelle, steht im Lexikon. Die Stationen liegen nicht genau an den gefundenen Punkten, sondern möglichst nah und auf
         ähnlicher Höhe.
       </p>
     </section>

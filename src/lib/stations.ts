@@ -198,3 +198,37 @@ export function formatNum(v: number, digits = 1): string {
 export function formatViennaClock(utcMs: number): string {
   return new Date(utcMs).toLocaleTimeString('de-AT', { hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Vienna' })
 }
+
+// ---------- Nebel aus Messwerten (Etappe 14c) ----------
+
+/**
+ * Ab dieser GEMESSENEN Feuchte (%) gehen wir von Nebel bzw. Hochnebel aus.
+ * Höher als die Modell-Grenze (FOG_RH = 90 % in inversion.ts), weil Messungen genauer sind:
+ * Am 09.11.2026 maßen die Grazer Stationen 95–98 % bei Nebel, die Modelle zeigten nur 86–93 %.
+ */
+export const MEASURED_FOG_RH = 95
+/** So viele Stunden ab der Messung zählt der gemessene Nebel im Tagesverlauf. */
+export const MEASURED_FOG_HOURS = 3
+/** Ab so viel Niederschlag in 10 Minuten (mm) ist es Regen, kein Nebel. */
+const MEASURED_RAIN_MM = 0.1
+
+export interface MeasuredFog {
+  stationName: string
+  humidity: number
+  /** Messzeitpunkt (echte UTC-Zeit, ms) */
+  time: number
+}
+
+/** Nebel laut Messung? Nur bei frischer Messung, hoher Feuchte und ohne Regen. */
+export function detectMeasuredFog(m: Measurement, station: Station, now: number): MeasuredFog | null {
+  if (m.humidity === null || m.humidity < MEASURED_FOG_RH) return null
+  if (now - m.time > STALE_AFTER_MS) return null
+  if (m.precipitation !== null && m.precipitation >= MEASURED_RAIN_MM) return null
+  return { stationName: prettyStationName(station.name), humidity: m.humidity, time: m.time }
+}
+
+/** Zeitfenster des gemessenen Nebels in der Zeitrechnung der Vorhersage („Ortszeit als UTC“). */
+export function measuredFogWindow(fog: MeasuredFog, utcOffsetSeconds: number): { from: number; to: number; humidity: number } {
+  const from = fog.time + utcOffsetSeconds * 1000
+  return { from, to: from + MEASURED_FOG_HOURS * 60 * 60 * 1000, humidity: fog.humidity }
+}

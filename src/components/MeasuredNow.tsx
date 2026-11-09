@@ -5,6 +5,7 @@ import {
   MAX_HEIGHT_DIFF_M,
   MAX_STATION_DISTANCE_KM,
   STALE_AFTER_MS,
+  detectMeasuredFog,
   firstWithData,
   formatNum as num,
   formatViennaClock as clock,
@@ -18,19 +19,30 @@ import { compassName } from '../lib/wind'
 import type { MultiModelForecast } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
 import type { Measurement, StationCandidate } from '../types/station'
+import type { MeasuredFog } from '../lib/stations'
 import { ErrorMessage } from './ErrorMessage'
+import { Term } from './LexikonLink'
 import { Loading } from './Loading'
 
 type Result =
   | { key: string; status: 'none' }
   | { key: string; status: 'error'; message: string }
-  | { key: string; status: 'ok'; candidate: StationCandidate; measurement: Measurement; stale: boolean }
+  | { key: string; status: 'ok'; candidate: StationCandidate; measurement: Measurement; stale: boolean; fog: MeasuredFog | null }
 
 /**
  * Karte „Jetzt gemessen“: echte Messwerte der nächsten Station von GeoSphere Austria,
  * daneben der Mittelwert der Modelle für dieselbe Stunde. Nur in Österreich.
  */
-export function MeasuredNow({ location, forecast }: { location: WeatherLocation; forecast: MultiModelForecast }) {
+export function MeasuredNow({
+  location,
+  forecast,
+  onFog,
+}: {
+  location: WeatherLocation
+  forecast: MultiModelForecast
+  /** meldet gemessenen Nebel (oder `null`) nach oben – für den Tagesverlauf */
+  onFog?: (fog: MeasuredFog | null) => void
+}) {
   const [reload, setReload] = useState(0)
   const [result, setResult] = useState<Result | null>(null)
   const inAustria = isNearAustria(location.latitude, location.longitude)
@@ -52,7 +64,18 @@ export function MeasuredNow({ location, forecast }: { location: WeatherLocation;
         )
         const found = firstWithData(candidates, measurements)
         // „veraltet“ hier beim Laden prüfen (nicht beim Zeichnen – dort soll die Uhr keine Rolle spielen)
-        setResult(found ? { key, status: 'ok', ...found, stale: Date.now() - found.measurement.time > STALE_AFTER_MS } : { key, status: 'none' })
+        if (!found) {
+          setResult({ key, status: 'none' })
+          return
+        }
+        const now = Date.now()
+        setResult({
+          key,
+          status: 'ok',
+          ...found,
+          stale: now - found.measurement.time > STALE_AFTER_MS,
+          fog: detectMeasuredFog(found.measurement, found.candidate.station, now),
+        })
       })
       .catch((err: unknown) => {
         if (controller.signal.aborted) return
@@ -67,6 +90,9 @@ export function MeasuredNow({ location, forecast }: { location: WeatherLocation;
     [current, forecast],
   )
 
+  const fog = current?.status === 'ok' ? current.fog : null
+  useEffect(() => onFog?.(fog), [fog, onFog])
+
   // Außerhalb Österreichs gibt es keine GeoSphere-Stationen – dann zeigen wir die Karte gar nicht.
   if (!inAustria) return null
 
@@ -80,13 +106,14 @@ export function MeasuredNow({ location, forecast }: { location: WeatherLocation;
           Keine Messstation von GeoSphere Austria in der Nähe (bis {MAX_STATION_DISTANCE_KM} km) liefert gerade Daten.
         </p>
       )}
+      {fog && <FogHint fog={fog} />}
       {current?.status === 'ok' && <MeasuredBody candidate={current.candidate} m={current.measurement} stale={current.stale} model={model} />}
       <p className="muted small measured-source">
         Datenquelle:{' '}
         <a href="https://data.hub.geosphere.at/" target="_blank" rel="noopener noreferrer">
           GeoSphere Austria
         </a>{' '}
-        (Messnetz TAWES, CC BY 4.0). Messungen alle 10 Minuten.
+        (Messnetz TAWES, CC BY 4.0). Was eine <Term id="messstation">Messstation</Term> anders macht als die Modelle, steht im Lexikon. Messungen alle 10 Minuten.
       </p>
     </section>
   )
@@ -174,5 +201,18 @@ function MeasuredBody({
         )}
       </dl>
     </>
+  )
+}
+
+/** Hinweis „Nebel gemessen“ – auch in der Karte „Berg & Tal“ verwendet */
+export function FogHint({ fog }: { fog: MeasuredFog }) {
+  return (
+    <p className="notice small">
+      🌫️ <strong>
+        <Term id="hochnebel">Nebel</Term> wahrscheinlich:
+      </strong>{' '}
+      Die Station {fog.stationName} misst {Math.round(fog.humidity)} % Luftfeuchte. Der Tagesverlauf berücksichtigt das für die
+      nächsten Stunden – auch wenn die Modelle trockener rechnen.
+    </p>
   )
 }

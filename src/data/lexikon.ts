@@ -193,4 +193,14 @@ export const LEXIKON: LexikonEntry[] = [
     inApp: 'Fronten zeichnet die App nicht ein. Auf der „Großwetterlage“ sieht man ein älteres, sich auffüllendes Tief: Der Kerndruck steigt von Tag zu Tag.',
     sketch: 'okklusion',
   },
+  {
+    id: 'messstation',
+    title: 'Messstation',
+    terms: ['Messstation', 'Talstation', 'Bergstation'],
+    explanation:
+      'Eine Messstation misst das Wetter wirklich – Temperatur, Luftfeuchte, Wind, Niederschlag und mehr, in Österreich bei GeoSphere Austria alle 10 Minuten. Vorhersagemodelle rechnen dagegen mit Gitterfeldern von mehreren Kilometern und glätten dabei Täler und Berge. Darum liegen Messung und Modell oft ein paar Grad auseinander, besonders bei Nebel und Inversion.',
+    inApp:
+      'Auf „Lokal“ in der Karte „Jetzt gemessen“ (nächste Station mit ähnlicher Höhe, daneben der Mittelwert der Modelle) und auf „Berg & Tal“ mit einer Tal- und einer Bergstation. Ist es oben wärmer, steht dort „Inversion gemessen“; ab 95 % gemessener Feuchte im Tal meldet die App Nebel und berücksichtigt ihn im Tagesverlauf. Nur in Österreich.',
+    example: 'Am 9.11.2026 maß Graz-Thalerhof −1,7 °C bei 98 % Feuchte (Nebel), der Schöckl +4,3 °C – die Modelle rechneten im Tal nur mit 86–93 % Feuchte.',
+  },
 ]

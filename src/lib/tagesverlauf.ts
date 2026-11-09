@@ -343,12 +343,21 @@ interface FogInfo {
   fogFromGround: boolean
 }
 
+/** Regnet/schneit es im Abschnitt nennenswert? */
+function isWet(s: PeriodStats): boolean {
+  return s.precip >= PRECIP.trace && s.wetShare >= WET_SHARE_DRY
+}
+
+/** Nebel: aus dem Profil (Berg & Tal), der Messung oder dem Wettercode der Modelle – nur wenn es nicht regnet */
+function fogSentenceApplies(s: PeriodStats, fog: FogInfo | null): boolean {
+  return !isWet(s) && (!!fog?.fog || s.fogShare >= FOG_SHARE)
+}
+
 function weatherSentence(s: PeriodStats, seed: number, fog: FogInfo | null): string {
-  const wet = s.precip >= PRECIP.trace && s.wetShare >= WET_SHARE_DRY
+  const wet = isWet(s)
   const thunder = thunderClause(s, seed + 7)
 
-  // Nebel: aus dem Profil (Berg & Tal) oder aus dem Wettercode der Modelle – nur wenn es nicht regnet
-  if (!wet && (fog?.fog || s.fogShare >= FOG_SHARE)) {
+  if (fogSentenceApplies(s, fog)) {
     const kind = fog?.fog ? (fog.fogFromGround ? 'Nebel' : 'Hochnebel') : 'Nebel oder Hochnebel'
     const top = fog?.fogTop != null ? `, die Obergrenze liegt bei etwa ${meters(fog.fogTop)}` : ''
     return pick(
@@ -457,6 +466,12 @@ export interface DayCourseInput {
   /** Nur Berg & Tal: Gipfel-Vorhersage (Temperatur aus der freien Atmosphäre) und Gipfelhöhe */
   summit?: MultiModelForecast | null
   summitElevation?: number
+  /**
+   * Nebel laut Messstation (Etappe 14c): Zeitfenster in der Zeitrechnung der Vorhersage
+   * und gemessene Feuchte. Abschnitte, die das Fenster berühren, beschreiben Nebel –
+   * auch wenn die Modelle trockener rechnen (siehe measuredFogWindow in stations.ts).
+   */
+  measuredFog?: { from: number; to: number; humidity: number } | null
 }
 
 /** Inversion in einem Abschnitt: wenn mindestens die Hälfte der Stunden eine zeigt. */
@@ -548,7 +563,16 @@ function describePeriods(input: DayCourseInput, fc: MultiModelForecast, startInd
     if (!s) return { ...base, valley: ['Für diesen Abschnitt liefern die Modelle keine Daten.'], mountain: null, inversion: false }
 
     const inv = periodInversion(input.inversions, from, to)
-    const weather = weatherSentence(s, seed, inv)
+    // Gemessener Nebel in diesem Abschnitt? Dann gilt für das TAL Nebel (der Berg-Text bleibt beim Modellprofil)
+    const mf = input.measuredFog
+    const fogMeasured = !!mf && base.start < mf.to && base.end > mf.from
+    const valleyFog: FogInfo | null = fogMeasured && !inv?.fog ? { fog: true, fogTop: inv?.fogTop ?? null, fogFromGround: true } : inv
+    // Gemessener Nebel: die Messung an den Nebel-Satz anhängen (kein eigener Satz – höchstens 3 Sätze je Abschnitt)
+    const fogSentence = weatherSentence(s, seed, valleyFog)
+    const weather =
+      fogMeasured && mf && fogSentenceApplies(s, valleyFog)
+        ? `${fogSentence.slice(0, -1)} ${pick([`(gemessen: ${Math.round(mf.humidity)} % Feuchte)`, `– die Messstation meldet ${Math.round(mf.humidity)} % Feuchte`], seed + 61)}.`
+        : fogSentence
     const tempWind = tempWindSentence(s, seed + 13)
     // Die Uneinigkeit der Modelle muss immer im Text stehen (CLAUDE.md) – sie hat Vorrang vor Zusatzsätzen
     const unsure = uncertaintySentence(s, p.when, seed + 29)

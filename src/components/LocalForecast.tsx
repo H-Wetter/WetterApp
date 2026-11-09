@@ -20,6 +20,7 @@ import { ModelComparison } from './ModelComparison'
 import { Term } from './LexikonLink'
 import { Loading } from './Loading'
 import { MeasuredNow } from './MeasuredNow'
+import type { MeasuredFog } from '../lib/stations'
 import { ErrorMessage } from './ErrorMessage'
 import { friendlyError } from '../api/errors'
 
@@ -48,6 +49,8 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
   const [compareOpen, setCompareOpen] = useState(readOpen)
   const [hidden, setHidden] = useState<Set<string>>(new Set())
   const [cloudResult, setCloudResult] = useState<CloudResult | null>(null)
+  // Nebel laut Messstation (Etappe 14c) – fließt in den Tagesverlauf der Stundenansicht ein
+  const [measuredFog, setMeasuredFog] = useState<MeasuredFog | null>(null)
 
   // Eindeutiger Schlüssel der aktuellen Anfrage. Passt das Ergebnis nicht dazu, laden wir gerade.
   const requestKey = `${location.latitude},${location.longitude},${location.elevation ?? ''},${reload}`
@@ -154,7 +157,7 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
       </ErrorBoundary>
 
       <ErrorBoundary label="Jetzt gemessen" resetKey={requestKey}>
-        <MeasuredNow location={location} forecast={forecast} />
+        <MeasuredNow location={location} forecast={forecast} onFog={setMeasuredFog} />
       </ErrorBoundary>
 
       <ErrorBoundary label="Die Tageskacheln" resetKey={requestKey}>
@@ -178,6 +181,7 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
             cloudProfile={cloudProfile}
             cloudError={cloudCurrent && 'error' in cloudCurrent ? cloudCurrent.error : null}
             warnings={warnings.filter((w) => w.dayStart === selected.dayStart)}
+            measuredFog={measuredFog}
             onClose={() => setSelectedDay(null)}
           />
         </ErrorBoundary>
