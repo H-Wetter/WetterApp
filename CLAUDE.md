@@ -20,14 +20,15 @@ Eine Web-App, die
 - Karte: Leaflet (react-leaflet), Isolinien: d3-contour
 - Styling: einfaches CSS, mobilfreundlich
 - Keine API-Schlüssel nötig für Open-Meteo. Keine Geheimnisse im Frontend-Code.
+- Ausnahme Windy-Webcams: Schlüssel nur über `.env` (nicht im Git); er ist im fertigen Frontend trotzdem sichtbar (siehe Datenquellen).
 
 ## Projektstruktur (Ziel)
 ```
 src/
-  api/          # alle API-Aufrufe (openMeteo.ts, ensemble.ts, airQuality.ts, geocoding.ts)
+  api/          # alle API-Aufrufe (openMeteo.ts, ensemble.ts, airQuality.ts, geocoding.ts, webcams.ts)
   lib/          # Berechnungen (Statistik, Inversion, Wolkenbasis, Texte)
   components/   # UI-Bausteine (Diagramme, Karten, Kacheln)
-  pages/        # Lokal, Berg & Tal, Radar, Großwetterlage, Wetterlexikon
+  pages/        # Lokal, Berg & Tal, Radar, Großwetterlage, Wetterlexikon, Webcams
   data/         # feste Texte, z. B. lexikon.ts (Wetterlexikon)
   types/        # TypeScript-Typen
 ```
@@ -61,6 +62,14 @@ API-Aufrufe nur in `src/api/`, Berechnungen nur in `src/lib/` – nie direkt in 
 
 ### Ortssuche – `https://geocoding-api.open-meteo.com/v1/search?name=…&language=de`
 Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
+
+### Webcams – Windy Webcams API v3 `https://api.windy.com/webcams/api/v3/webcams`
+- Suche: `nearby=lat,lon,radius_km`, `limit` (max. 50), `include=images,location,urls,player`, `lang=de`.
+- API-Schlüssel nötig (kostenlos, https://api.windy.com/keys), Header `x-windy-api-key`. Nur über `.env` (`VITE_WINDY_API_KEY`), `.env` nie ins Git.
+- Achtung: Alles mit `VITE_` landet im öffentlichen JavaScript → Schlüssel ist im Browser sichtbar.
+- Bildlinks verfallen (Free: ca. 10–15 Min.) → nicht dauerhaft speichern, Cache max. 10 Min.
+- Bedingungen: Quellenangabe „Webcams provided by Windy.com“ mit Link, Bilder nur Originalgröße oder kleiner, jedes Bild verlinkt auf die Webcam-Seite (`urls.detail`) oder den Player.
+- Liefert **keine Höhe** → Höhe über die Open-Meteo Elevation API ergänzen (dauerhaft cachen).
 
 ### Blitze live (optional, zuletzt)
 - Blitzortung.org nur nach Prüfung der Nutzungsbedingungen. Sonst nur Gewitter-Prognose (CAPE, Wettercode 95–99).
@@ -103,6 +112,15 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
     - Regeln und Schwellenwerte in `src/lib/tagesverlauf.ts`, verständlich kommentiert.
     - Abwechslungsreiche Formulierungen, damit sich die Texte nicht jeden Tag gleich lesen.
 12. **Feinschliff:** Mobil-Layout, Ladeanzeigen, Fehlermeldungen, Caching (z. B. 30 Min).
+13. **Webcams:** Webcams zum aktuellen bzw. gesuchten Standort.
+    - Eigener Reiter „Webcams“ (gleichrangig mit „Lokal“ und „Berg & Tal“).
+    - Umkreis Standard 15 km, einstellbar 5–50 km, sortiert nach Entfernung.
+    - Je Webcam: Name, Ort, Höhe (falls verfügbar), Entfernung, Vorschaubild (nur wie erlaubt eingebunden) und Link, der in einem neuen Tab öffnet.
+    - Getrennt nach **Tallage** und **Berglage** (Berglage = mind. 300 m über dem Tal, wie bei Etappe 5), damit man z. B. Hochnebel unten und Sonne oben direkt vergleichen kann. Bei erkannter Inversion ein Hinweis dazu.
+    - Datenquelle Windy Webcams API (siehe Datenquellen), Aufruf in `src/api/webcams.ts`, Ergebnis ca. 10 Minuten cachen. Entfernung/Einteilung in `src/lib/webcams.ts`.
+    - Fallback, wenn die API nichts liefert oder kein Schlüssel da ist: feste Such-Links mit dem Ortsnamen zu foto-webcam.eu, bergfex und panomax.
+    - Keine fremden Bilder speichern oder kopieren – nur einbinden bzw. verlinken. Quellenangabe Windy sichtbar.
+    - Freundliche Meldung, wenn keine Webcams gefunden werden.
 
 ## Qualität
 - TypeScript streng, keine `any`.
