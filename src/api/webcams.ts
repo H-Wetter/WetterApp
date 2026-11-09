@@ -52,6 +52,12 @@ interface RawResponse {
   webcams?: RawWebcam[]
 }
 
+/** Windy schreibt bei fehlenden Angaben manchmal „unknown“ – das zeigen wir nicht an. */
+function known(text: string | undefined): string | undefined {
+  const t = text?.trim()
+  return t && t.toLowerCase() !== 'unknown' ? t : undefined
+}
+
 function toWebcam(raw: RawWebcam): Webcam | null {
   const lat = raw.location?.latitude
   const lon = raw.location?.longitude
@@ -63,9 +69,9 @@ function toWebcam(raw: RawWebcam): Webcam | null {
   return {
     id,
     title: raw.title?.trim() || 'Webcam',
-    city: raw.location?.city || undefined,
-    region: raw.location?.region || undefined,
-    country: raw.location?.country || undefined,
+    city: known(raw.location?.city),
+    region: known(raw.location?.region),
+    country: known(raw.location?.country),
     lat,
     lon,
     previewUrl: raw.images?.current?.preview ?? raw.images?.current?.thumbnail,

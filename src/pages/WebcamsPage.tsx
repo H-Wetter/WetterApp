@@ -310,7 +310,12 @@ interface SectionProps {
   onExpired: () => void
 }
 
+/** So viele Webcams je Bereich zuerst zeigen – bei Städten gibt es oft sehr viele. */
+const FIRST_SHOWN = 12
+
 function WebcamSection({ title, hint, variant, webcams, fogTop, onExpired }: SectionProps) {
+  const [showAll, setShowAll] = useState(false)
+  const shown = showAll ? webcams : webcams.slice(0, FIRST_SHOWN)
   return (
     <section className={`webcam-section webcam-${variant}`}>
       <h2>
@@ -322,11 +327,16 @@ function WebcamSection({ title, hint, variant, webcams, fogTop, onExpired }: Sec
         </p>
       ) : (
         <ul className="webcam-grid">
-          {webcams.map((cam) => (
+          {shown.map((cam) => (
             // Neue Bildadresse = neue Karte, damit „Bild abgelaufen“ nach dem Neuladen verschwindet
             <WebcamCard key={`${cam.id}-${cam.previewUrl ?? ''}`} cam={cam} fogTop={fogTop} onExpired={onExpired} />
           ))}
         </ul>
+      )}
+      {webcams.length > FIRST_SHOWN && (
+        <button type="button" className="webcam-more" onClick={() => setShowAll((s) => !s)}>
+          {showAll ? 'Weniger anzeigen' : `Alle ${webcams.length} anzeigen`}
+        </button>
       )}
     </section>
   )
