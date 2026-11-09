@@ -486,7 +486,7 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
 /* Wetterlexikon */
 .nav { overflow-x: auto; scrollbar-width: none; }
 .nav-short { display: none; }
-@media (max-width: 560px) {
+@media (max-width: 600px) {
   .nav-long { display: none; }
   .nav-short { display: inline; }
 }
@@ -568,3 +568,18 @@ table.hours { border-collapse: collapse; width: 100%; font-size: 0.92rem; }
 .error-box p { margin: 0 0 0.4rem; color: var(--error); }
 .error-box p:last-child { margin-bottom: 0; }
 
+/* ---------- Handy (Etappe 12) ---------- */
+/* Reiter: auf schmalen Bildschirmen 3 × 2 Knöpfe statt einer Leiste, in der man seitlich wischen müsste */
+@media (max-width: 600px) {
+  .app-header { padding: 0.5rem 0.6rem; gap: 0.5rem; }
+  .brand { font-size: 0; }
+  .brand::first-letter { font-size: 1.4rem; }
+  .nav { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem; overflow: visible; }
+  .nav-item { padding: 0.45rem 0.2rem; font-size: 0.9rem; text-align: center; border-color: var(--border); }
+  main { padding: 0.75rem; }
+}
+/* Touch-Bildschirme: Knöpfe und Schieber groß genug für den Finger (mind. ca. 40 px hoch) */
+@media (pointer: coarse) {
+  .segmented button { min-height: 2.5rem; }
+  input[type='range'] { height: 2rem; accent-color: var(--accent); }
+}
