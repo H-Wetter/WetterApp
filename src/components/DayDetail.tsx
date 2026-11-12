@@ -50,8 +50,6 @@ function formatTime(ms: number): string {
   const d = new Date(ms)
   return `${String(d.getUTCHours()).padStart(2, '0')}:${String(d.getUTCMinutes()).padStart(2, '0')}`
 }
-/** Symbolleiste: alle 3 Stunden ein Symbol – passt auch aufs Handy. */
-const STRIP_STEP = 3
 
 /** Stundenansicht eines Tages: gleiche Diagramme wie der 7-Tage-Verlauf, nur für 24 Stunden. */
 export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfile, cloudError, warnings, measuredFog, onClose }: Props) {
@@ -77,8 +75,6 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfil
     () => lineModels.filter((m) => dayForecast.availableModels.includes(m.id)),
     [lineModels, dayForecast],
   )
-
-  const strip = hours.filter((h) => new Date(h.t).getUTCHours() % STRIP_STEP === 0)
 
   const ref = useRef<HTMLElement>(null)
   // Beim Öffnen (oder Tageswechsel) die Stundenansicht ins Bild scrollen.
@@ -147,30 +143,42 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfil
         </p>
       )}
 
-      {/* Symbolleiste: Wetter alle 3 Stunden */}
-      <ol className="hour-strip">
-        {strip.map((h) => {
-          const isNow = now >= h.t && now < h.t + STRIP_STEP * HOUR_MS
+      {/* Je Stunde eine Zeile */}
+      <ol className="hour-list" aria-label="Stündliche Vorhersage">
+        <li className="hl-head small muted" aria-hidden="true">
+          <span>Zeit</span>
+          <span />
+          <span>Temp.</span>
+          <span>Niederschlag</span>
+          <span>Wind / Böen</span>
+          <span>Sonne</span>
+        </li>
+        {hours.map((h) => {
+          const isNow = now >= h.t && now < h.t + HOUR_MS
+          const isPast = h.t + HOUR_MS <= now
+          const p = Math.round(hourProbability(h))
+          const mm = h.precip.mean ?? 0
+          const classes = ['hl-row', isNow ? 'now' : '', isPast ? 'past' : '', h.symbol.isDay ? '' : 'night'].join(' ')
           return (
-            <li key={h.t} className={isNow ? 'now' : ''} title={h.symbol.label}>
-              <span className="muted small">{formatHour(h.t)}</span>
-              <span className="strip-icon">
-                <WeatherIcon symbol={h.symbol} size={34} />
+            <li key={h.t} className={classes} title={h.symbol.label}>
+              <span className="hl-time">{isNow ? 'jetzt' : formatHour(h.t)}</span>
+              <span className="hl-icon">
+                <WeatherIcon symbol={h.symbol} size={30} />
               </span>
-              <strong>{h.temp.mean === null ? '–' : `${Math.round(h.temp.mean)}°`}</strong>
-              <span className="muted small" title="gefühlte Temperatur">
-                {h.feels.mean === null ? ' ' : `gef. ${Math.round(h.feels.mean)}°`}
+              <span className="hl-temp">
+                <strong>{h.temp.mean === null ? '–' : `${Math.round(h.temp.mean)}°`}</strong>
+                <span className="muted small">{h.feels.mean === null ? '' : ` gef. ${Math.round(h.feels.mean)}°`}</span>
               </span>
-              <span className="small strip-prob" title="Niederschlagswahrscheinlichkeit">
-                <SmallIcon name="raindrop" size={14} /> {Math.round(hourProbability(h))} %
+              <span className="hl-rain small">
+                <span className={p >= 30 ? 'hc-prob wet' : 'muted'}>{p} %</span>
+                {mm >= 0.05 && <span> · {mm.toFixed(1).replace('.', ',')} mm</span>}
+                {h.snow !== null && h.snow >= 0.1 && <span> · Schnee {h.snow.toFixed(1).replace('.', ',')} cm</span>}
               </span>
-              <span className="muted small">{(h.precip.mean ?? 0) >= 0.05 ? `${(h.precip.mean ?? 0).toFixed(1)} mm` : ' '}</span>
-              <span className="small strip-wind" title="Wind (Mittel) und Richtung">
+              <span className="hl-wind small">
                 <WindArrow wind={h.windDirection} size={13} showName={false} /> {Math.round(h.wind.mean ?? 0)}
-                {h.windDirection.degrees !== null && h.windDirection.name !== 'wechselnd' && h.windDirection.name !== 'still'
-                  ? ` ${h.windDirection.name}`
-                  : ''}
+                <span className="muted"> / {Math.round(h.gust.mean ?? 0)} km/h</span>
               </span>
+              <span className="hl-sun small muted">{h.sunshineMinutes === null || !h.symbol.isDay ? '' : `${Math.round(h.sunshineMinutes)} min`}</span>
             </li>
           )
         })}
@@ -208,61 +216,6 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfil
         </ErrorBoundary>
       </div>
 
-      <details className="hour-table">
-        <summary>Stundenwerte als Tabelle</summary>
-        <div className="table-scroll">
-          <table className="hours">
-            <thead>
-              <tr>
-                <th>Zeit</th>
-                <th>Wetter</th>
-                <th>Temp.</th>
-                <th>Gefühlt</th>
-                <th title="Menge (Mittel) · Wahrscheinlichkeit">Niederschlag</th>
-                <th>Wind / Böen</th>
-                <th>Wolken</th>
-                <th title="Sonnenschein in dieser Stunde">Sonne</th>
-              </tr>
-            </thead>
-            <tbody>
-              {hours.map((h) => {
-                const isNow = now >= h.t && now < h.t + HOUR_MS
-                const isPast = h.t + HOUR_MS <= now
-                return (
-                  <tr key={h.t} className={isNow ? 'now' : isPast ? 'past' : ''}>
-                    <td className="time">{formatHour(h.t)}</td>
-                    <td>
-                      <WeatherIcon symbol={h.symbol} size={22} />{' '}
-                      <span className="h-label small">{h.symbol.label}</span>
-                    </td>
-                    <td>
-                      <strong>{h.temp.mean === null ? '–' : `${h.temp.mean.toFixed(1)}°`}</strong>
-                      {h.temp.min !== null && h.temp.max !== null && h.temp.count > 1 && (
-                        <span className="muted small range">
-                          {' '}
-                          {h.temp.min.toFixed(0)} bis {h.temp.max.toFixed(0)}
-                        </span>
-                      )}
-                    </td>
-                    <td>{h.feels.mean === null ? '–' : `${h.feels.mean.toFixed(1)}°`}</td>
-                    <td>
-                      {(h.precip.mean ?? 0).toFixed(1)} mm
-                      <span className="muted small"> · {Math.round(hourProbability(h))} %</span>
-                      {h.snow !== null && h.snow >= 0.1 && <span className="small"> · Schnee {h.snow.toFixed(1)} cm</span>}
-                    </td>
-                    <td>
-                      <WindArrow wind={h.windDirection} size={13} /> {Math.round(h.wind.mean ?? 0)} / {Math.round(h.gust.mean ?? 0)}
-                      <span className="muted small"> km/h</span>
-                    </td>
-                    <td>{h.cloud === null ? '–' : `${Math.round(h.cloud)} %`}</td>
-                    <td>{h.sunshineMinutes === null ? '–' : `${Math.round(h.sunshineMinutes)} min`}</td>
-                  </tr>
-                )
-              })}
-            </tbody>
-          </table>
-        </div>
-      </details>
     </section>
   )
 }

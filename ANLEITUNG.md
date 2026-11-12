@@ -86,7 +86,7 @@ Reiter „Webcams“: Webcams im Umkreis, getrennt nach Tal und Berg (Windy Webc
 Echte Messwerte der nächsten Station neben der Vorhersage („Lokal“), Tal- und Bergstation mit „Inversion gemessen“ („Berg & Tal“) und Nebel aus den Messwerten (≥ 95 % Feuchte an einer nahen Talstation). Nur in Österreich.
 
 ### Etappe 15 – Verbesserungen
-Automatische Tests (`npm test`), amtliche Warnungen von GeoSphere, App aufs Handy (siehe unten), Modell-Check „Welches Modell lag zuletzt richtig?“ und schönere Verlaufsdiagramme (Farbe je Größe, Regen als Säulen, Nacht grau, Höchst-/Tiefstwerte).
+Automatische Tests (`npm test`), amtliche Warnungen von GeoSphere, App aufs Handy (siehe unten), Modell-Check „Welches Modell lag zuletzt richtig?“ schönere Verlaufsdiagramme (Farbe je Größe, Regen als Säulen, Nacht grau, Höchst-/Tiefstwerte) und die Vorhersage als Liste: oben „Heute“ Stunde für Stunde zum Wischen, darunter je Tag eine Zeile; Tippen auf einen Tag zeigt jede Stunde in einer eigenen Zeile.
 
 ### Neue Ideen
 Einfach beschreiben, z. B.: „Trag als Etappe 16 in die CLAUDE.md ein: …, und mach zuerst einen Plan.“ Jede Etappe bekommt am Ende einen Tag (`etappe-16`), zu dem man jederzeit zurück kann.

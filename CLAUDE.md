@@ -157,6 +157,7 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
     - **Automatische Tests** mit Vitest (`npm test`), laufen auch beim Veröffentlichen.
     - **Amtliche Warnungen** von GeoSphere Austria auf „Lokal“ über den Modell-Hinweisen (Stufe, Art, Zeitraum, Auswirkungen, Empfehlungen).
     - **App aufs Handy:** Web-App-Manifest + Symbole (`public/`), `scripts/add-pwa.mjs` trägt sie nach dem Verschlüsseln in die Passwort-Seite ein. Symbole aus `public/icon.svg` bzw. `npm run icons` (`scripts/make-icons.mjs`). Kein Service Worker (keine Offline-Daten – Wetter soll aktuell sein).
+    - **Vorhersage als Liste (12.11.2026):** oben „Heute“ mit den nächsten 24 Stunden zum seitlichen Wischen (Symbol, Regenwahrscheinlichkeit, Temperatur), darunter je Tag eine Zeile (Tag- und Nachtsymbol, Höchst-/Tiefstwert farbig, Regen als Spanne der Modelle, Wind, Sonne, Verlässlichkeit 1–4 Punkte). Klick klappt darunter die Stundenansicht auf, je Stunde eine Zeile. Ersetzt die Tageskacheln. Berechnungen in `src/lib/dayDisplay.ts`, Komponente `src/components/DayList.tsx`.
     - **Modell-Check** „Welches Modell lag zuletzt richtig?“ auf „Lokal“ (aufklappbar, lädt erst beim Öffnen): Ø-Abweichung der Vortags-Vorhersage gegen die Messung der Station aus „Jetzt gemessen“, letzte 3 Tage.
 
 ## Qualität

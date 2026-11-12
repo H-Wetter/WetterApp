@@ -12,7 +12,7 @@ import { EnsembleTrend } from './EnsembleTrend'
 import { dayStarts, localNow } from '../lib/time'
 import type { ModelInfo, MultiModelForecast } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
-import { DailyTiles } from './DailyTiles'
+import { DayList } from './DayList'
 import { ErrorBoundary } from './ErrorBoundary'
 import { DayDetail } from './DayDetail'
 import { ForecastCharts } from './ForecastCharts'
@@ -175,32 +175,34 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
         </ErrorBoundary>
       )}
 
-      <ErrorBoundary label="Die Tageskacheln" resetKey={requestKey}>
-        <DailyTiles
+      <ErrorBoundary label="Die Vorhersage" resetKey={requestKey}>
+        <DayList
+          forecast={forecast}
           days={days}
           now={now}
           warnings={warnings}
           selectedIndex={selectedDay}
           onSelect={(i) => setSelectedDay((prev) => (prev === i ? null : i))}
+          detail={
+            selected && (
+              <ErrorBoundary label="Die Stundenansicht" resetKey={`${requestKey}-${selected.dayStart}`}>
+                <DayDetail
+                  forecast={forecast}
+                  day={selected}
+                  now={now}
+                  statIds={statIds}
+                  lineModels={lineModels}
+                  cloudProfile={cloudProfile}
+                  cloudError={cloudCurrent && 'error' in cloudCurrent ? cloudCurrent.error : null}
+                  warnings={warnings.filter((w) => w.dayStart === selected.dayStart)}
+                  measuredFog={measuredFog}
+                  onClose={() => setSelectedDay(null)}
+                />
+              </ErrorBoundary>
+            )
+          }
         />
       </ErrorBoundary>
-
-      {selected && (
-        <ErrorBoundary label="Die Stundenansicht" resetKey={`${requestKey}-${selected.dayStart}`}>
-          <DayDetail
-            forecast={forecast}
-            day={selected}
-            now={now}
-            statIds={statIds}
-            lineModels={lineModels}
-            cloudProfile={cloudProfile}
-            cloudError={cloudCurrent && 'error' in cloudCurrent ? cloudCurrent.error : null}
-            warnings={warnings.filter((w) => w.dayStart === selected.dayStart)}
-            measuredFog={measuredFog}
-            onClose={() => setSelectedDay(null)}
-          />
-        </ErrorBoundary>
-      )}
 
       <ErrorBoundary label="Luft & Umwelt" resetKey={requestKey}>
         <EnvironmentPanel location={location} now={now} />

@@ -54,6 +54,14 @@ export interface DaySummary {
   moon: MoonInfo
   modelCount: number
   symbol: WeatherSymbol
+  /** Wetter in der folgenden Nacht (18 bis 6 Uhr), `null` am Ende der Vorhersage */
+  nightSymbol: WeatherSymbol | null
+}
+
+/** Ein Stundenbereich in der Vorhersage, z. B. ein Tag oder die nächsten 24 Stunden (Ende exklusiv). */
+export interface HourRange {
+  startIndex: number
+  endIndex: number
 }
 
 export interface HourSummary {
@@ -188,6 +196,7 @@ export function summarizeDays(forecast: MultiModelForecast): DaySummary[] {
         { precipitation: precipSum.mean, snowfall: snowSum, cloudCover: cloud, precipShare, thunderShare, fogShare, isDay: true },
         'day',
       ),
+      nightSymbol: nightSymbol(forecast, start + 18, start + 30, moonInfo(dayStart + 24 * 60 * 60 * 1000).phase),
     })
   }
 
@@ -195,8 +204,53 @@ export function summarizeDays(forecast: MultiModelForecast): DaySummary[] {
   return days.filter((d) => d.modelCount > 0)
 }
 
-/** Fasst einen Tag stundenweise zusammen (Statistik über alle Modelle je Stunde). */
-export function summarizeHours(forecast: MultiModelForecast, day: DaySummary): HourSummary[] {
+/**
+ * Wetter einer Nacht (Stunden `from` bis `to`, z. B. 18 bis 6 Uhr) als ein Symbol mit Mond.
+ * Gleiche Regeln wie beim Tagessymbol, nur über die Nachtstunden gemittelt.
+ */
+function nightSymbol(forecast: MultiModelForecast, from: number, to: number, moonPhase: number): WeatherSymbol | null {
+  if (to > forecast.times.length) return null
+  const perModel = forecast.availableModels
+    .map((id) => {
+      const temps = nums(range(forecast, 'temperature_2m', id, from, to))
+      if (temps.length < (to - from) / 2) return null
+      const codes = nums(range(forecast, 'weather_code', id, from, to))
+      return {
+        precip: sum(nums(range(forecast, 'precipitation', id, from, to))),
+        snow: sum(nums(range(forecast, 'snowfall', id, from, to))),
+        cloud: mean(nums(range(forecast, 'cloud_cover', id, from, to))),
+        thunder: codes.some(isThunderCode),
+        fog: codes.filter(isFogCode).length >= 3,
+      }
+    })
+    .filter((m): m is NonNullable<typeof m> => m !== null)
+  const n = perModel.length
+  if (n === 0) return null
+  return weatherSymbol(
+    {
+      precipitation: mean(perModel.map((m) => m.precip)),
+      snowfall: mean(perModel.map((m) => m.snow)),
+      cloudCover: mean(nums(perModel.map((m) => m.cloud))),
+      precipShare: perModel.filter((m) => m.precip >= 1).length / n,
+      thunderShare: perModel.filter((m) => m.thunder).length / n,
+      fogShare: perModel.filter((m) => m.fog).length / n,
+      isDay: false,
+      moonPhase,
+    },
+    'day',
+  )
+}
+
+/** Die nächsten `count` Stunden ab der Stunde, in der `now` liegt (Zeiten wie forecast.times). */
+export function upcomingHours(forecast: MultiModelForecast, now: number, count = 24): HourRange {
+  const hourStart = Math.floor(now / 3_600_000) * 3_600_000
+  const found = forecast.times.findIndex((t) => t >= hourStart)
+  const startIndex = found < 0 ? forecast.times.length : found
+  return { startIndex, endIndex: Math.min(forecast.times.length, startIndex + count) }
+}
+
+/** Fasst einen Stundenbereich (z. B. einen Tag) stundenweise zusammen (Statistik über alle Modelle je Stunde). */
+export function summarizeHours(forecast: MultiModelForecast, day: HourRange): HourSummary[] {
   const hours: HourSummary[] = []
   const ids = forecast.availableModels
   const at = (variable: HourlyVariable, i: number) => ids.map((id) => forecast.data[variable][id]?.[i] ?? null)

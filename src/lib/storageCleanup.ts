@@ -3,7 +3,7 @@
  * Am 09.11.2026 entfernt: Seite „Großwetterlage“ (Kartenraster, einige 100 KB) und das eigene
  * RainViewer-Radar (Liste geladener Kartenbilder). Schadet nichts, wenn die Einträge fehlen.
  */
-const OLD_KEYS = ['wetter-app.synoptic.v1', 'wetter-app.radar-tiles.v1']
+const OLD_KEYS = ['wetter-app.synoptic.v1', 'wetter-app.radar-tiles.v1', 'wetter-app.tile-range']
 
 export function removeOldStorage() {
   for (const key of OLD_KEYS) {
