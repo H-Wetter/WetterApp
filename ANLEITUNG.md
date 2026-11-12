@@ -88,8 +88,20 @@ Echte Messwerte der nächsten Station neben der Vorhersage („Lokal“), Tal- u
 ### Etappe 15 – Verbesserungen
 Automatische Tests (`npm test`), amtliche Warnungen von GeoSphere, App aufs Handy (siehe unten), Modell-Check „Welches Modell lag zuletzt richtig?“ schönere Verlaufsdiagramme (Farbe je Größe, Regen als Säulen, Nacht grau, Höchst-/Tiefstwerte) und die Vorhersage als Liste: oben „Heute“ Stunde für Stunde zum Wischen, darunter je Tag eine Zeile; Tippen auf einen Tag zeigt jede Stunde in einer eigenen Zeile.
 
+### Etappe 16 – Bauernregeln
+Auf „Lokal“ die Karte „Bauernregel des Tages“: an einem Lostag dessen Regel, sonst eine Regel des Monats, dazu „Was steckt dahinter?“ und der nächste Lostag. Lostage sind in der Tagesliste markiert. Im Wetterlexikon ganz unten alle Regeln nach Monaten mit eigener Suche, dazu die Begriffe Lostag, Eisheilige, Schafskälte, Altweibersommer und Siebenschläfer.
+
+Regeln ergänzen: in `src/data/bauernregeln.ts` einen Block kopieren und ausfüllen (Anleitung steht oben in der Datei). Regeln mit `ungeprueft: true` zeigen den Vermerk „ungeprüft“. Hast du eine Regel kontrolliert, die Zeile `ungeprueft: true` löschen.
+
+Ausprobieren mit einem anderen Datum, ohne die Uhr zu verstellen: an die Adresse `?datum=JJJJ-MM-TT` anhängen, z. B.
+- http://localhost:5173/?datum=2026-11-11 (Martini)
+- http://localhost:5173/?datum=2026-06-27 (Siebenschläfer)
+- http://localhost:5173/?datum=2026-05-13 (Eisheilige)
+
+Das Testdatum gilt nur für die Karte „Bauernregel des Tages“. Die Vorhersage und die Lostag-Zeichen in der Tagesliste bleiben echt. „Trifft die Regel heuer zu?“ erscheint nur, wenn der Lostag in den nächsten 14 Tagen liegt und die Regel prüfbar ist.
+
 ### Neue Ideen
-Einfach beschreiben, z. B.: „Trag als Etappe 16 in die CLAUDE.md ein: …, und mach zuerst einen Plan.“ Jede Etappe bekommt am Ende einen Tag (`etappe-16`), zu dem man jederzeit zurück kann.
+Einfach beschreiben, z. B.: „Trag als Etappe 17 in die CLAUDE.md ein: …, und mach zuerst einen Plan.“ Jede Etappe bekommt am Ende einen Tag (`etappe-17`), zu dem man jederzeit zurück kann.
 
 ---
 

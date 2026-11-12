@@ -159,6 +159,26 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
     - **App aufs Handy:** Web-App-Manifest + Symbole (`public/`), `scripts/add-pwa.mjs` trägt sie nach dem Verschlüsseln in die Passwort-Seite ein. Symbole aus `public/icon.svg` bzw. `npm run icons` (`scripts/make-icons.mjs`). Kein Service Worker (keine Offline-Daten – Wetter soll aktuell sein).
     - **Vorhersage als Liste (12.11.2026):** oben „Heute“ mit den nächsten 24 Stunden zum seitlichen Wischen (Symbol, Regenwahrscheinlichkeit, Temperatur), darunter je Tag eine Zeile (Tag- und Nachtsymbol, Höchst-/Tiefstwert farbig, Regen als Spanne der Modelle, Wind, Sonne, Verlässlichkeit 1–4 Punkte). Klick klappt darunter die Stundenansicht auf, je Stunde eine Zeile. Ersetzt die Tageskacheln. Berechnungen in `src/lib/dayDisplay.ts`, Komponente `src/components/DayList.tsx`.
     - **Modell-Check** „Welches Modell lag zuletzt richtig?“ auf „Lokal“ (aufklappbar, lädt erst beim Öffnen): Ø-Abweichung der Vortags-Vorhersage gegen die Messung der Station aus „Jetzt gemessen“, letzte 3 Tage.
+16. **Bauernregeln (österreichisch, Alpenraum):** überlieferte Wetterregeln als unterhaltsame Ergänzung, klar getrennt von der Vorhersage.
+    - **Grundsatz: keine Regeln erfinden.** Nur bekannte, überlieferte Regeln aufnehmen. Bin ich mir bei Wortlaut, Lostag oder Region nicht sicher, bekommt die Regel `ungeprüft: true` und erscheint in der App mit dem Vermerk „ungeprüft“, bis der Nutzer sie kontrolliert hat.
+    - **Daten** in `src/data/bauernregeln.ts`, gut lesbar und leicht zu ergänzen (Aufbau wie `lexikon.ts`). Je Regel:
+      - Regeltext auf Hochdeutsch, falls vorhanden zusätzlich die Mundart-Fassung
+      - Datum (Tag) oder Zeitraum, Name des Lostags (z. B. Martini) bzw. nur Monat bei Monatsregeln
+      - Region, falls bekannt (Steiermark, Tirol, Kärnten, allgemein Alpenraum, allgemein deutschsprachig …), sonst weglassen
+      - kurze Erklärung in 1–2 Sätzen, was gemeint ist
+      - „Was steckt dahinter?“: gibt es eine meteorologische Grundlage (Beispiel Siebenschläfer: Erhaltungsneigung der Wetterlage Ende Juni/Anfang Juli; durch die Gregorianische Kalenderreform 1582 liegt der „echte“ Termin eher um den 7. Juli) oder ist es reine Überlieferung
+      - optional eine Prüfregel für „Trifft die Regel heuer zu?“ (siehe unten)
+      - `ungeprüft` (ja/nein)
+    - **Umfang zum Start:** ca. 3–5 Regeln pro Monat plus die wichtigen Lostage, mindestens Lichtmess (2.2.), Eisheilige (11.–15.5.), Schafskälte (Mitte Juni), Siebenschläfer (27.6.), Martini (11.11.), Kathrein (25.11.).
+    - **Lostage** mit festem Datum in `src/lib/bauernregeln.ts`: „Welcher Lostag ist an Datum X?“ und „Welche Regel zeigen wir heute?“ (Lostag des Tages bevorzugt, sonst eine Monatsregel, die täglich wechselt, aber am selben Tag gleich bleibt). Mit Tests (z. B. 11.11., 27.6., 13.5., ein gewöhnlicher Tag).
+    - **Anzeige:**
+      - Auf „Lokal“ eine kleine Karte „Bauernregel des Tages“ (Regel, Lostag, Region, Erklärung; „Was steckt dahinter?“ aufklappbar).
+      - In der Tagesliste der Vorhersage sind Lostage markiert (kleines Zeichen mit Namen, z. B. „Martini“), damit man sieht, wann einer kommt.
+      - Im Wetterlexikon ein eigener Abschnitt „Bauernregeln“: alle Regeln nach Monaten, mit Suchfeld (Text, Lostag, Region).
+      - Neue Lexikon-Begriffe: Lostag, Eisheilige, Schafskälte, Altweibersommer (ggf. Siebenschläfer), verknüpft wie die übrigen Begriffe.
+    - **Spielerisch „Trifft die Regel heuer zu?“:** nur bei Regeln, die sich klar mit Prognosewerten prüfen lassen (z. B. Bewölkung, Niederschlag oder Frost an einem bestimmten Tag innerhalb der 14-Tage-Vorhersage). Die Prüfung nutzt den Mittelwert der Modelle und sagt dazu, worauf sie schaut (z. B. „Bewölkung am 11.11.: 85 % → trüb“). Liegt der Tag außerhalb der Vorhersage oder ist die Regel nicht prüfbar, fehlt der Abschnitt. Klar als Spielerei kennzeichnen, die Regel ist keine Vorhersage. Logik in `src/lib/bauernregeln.ts`, mit Tests.
+    - Keine neue Datenquelle und keine neuen Pakete nötig (nur eigene Texte und die vorhandene Vorhersage).
+    - **Testen:** Datum in der App vorgeben können, ohne die Uhr des Computers zu verstellen, z. B. über die Adresse `?datum=2026-11-11` (nur für Bauernregeln und Lostag-Markierung, die Vorhersage bleibt echt).
 
 ## Qualität
 - TypeScript streng, keine `any`.

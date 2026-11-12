@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from 'react'
 import { LinkedText } from '../components/LexikonLink'
 import { LexikonSketch } from '../components/LexikonSketch'
+import { BauernregelnSection } from '../components/BauernregelnSection'
 import { LEXIKON_SORTED, searchLexikon } from '../lib/lexikon'
 
 interface Props {
@@ -68,6 +69,9 @@ export function LexikonPage({ target, backLabel, onBack }: Props) {
                 {e.title}
               </button>
             ))}
+            <button type="button" className="lex-index-regeln" onClick={() => jump('bauernregeln')}>
+              Bauernregeln
+            </button>
           </div>
         )}
         {query && (
@@ -100,6 +104,9 @@ export function LexikonPage({ target, backLabel, onBack }: Props) {
           </div>
         </article>
       ))}
+
+      {/* Bauernregeln: eigener Abschnitt mit eigener Suche (Etappe 16) */}
+      {!query && <BauernregelnSection highlight={highlight === 'bauernregeln'} />}
     </div>
   )
 }

@@ -204,4 +204,47 @@ export const LEXIKON: LexikonEntry[] = [
       'Auf „Lokal“ in der Karte „Jetzt gemessen“ (nächste Station mit ähnlicher Höhe, daneben der Mittelwert der Modelle) und auf „Berg & Tal“ mit einer Tal- und einer Bergstation. Ist es oben wärmer, steht dort „Inversion gemessen“; ab 95 % gemessener Feuchte im Tal meldet die App Nebel und berücksichtigt ihn im Tagesverlauf. Nur in Österreich.',
     example: 'Am 9.11.2026 maß Graz-Thalerhof −1,7 °C bei 98 % Feuchte (Nebel), der Schöckl +4,3 °C – die Modelle rechneten im Tal nur mit 86–93 % Feuchte.',
   },
+  {
+    id: 'lostag',
+    title: 'Lostag',
+    terms: ['Lostag', 'Lostage', 'Lostagen'],
+    explanation:
+      'Ein Lostag ist ein Tag im Jahr, an dessen Wetter man nach alter Überlieferung das kommende Wetter ablesen kann („Los“ wie Schicksal). Meist sind es Namenstage von Heiligen wie Martini, Lichtmess oder Siebenschläfer. Die meisten Lostag-Regeln sind reine Überlieferung, einige haben einen wahren Kern.',
+    inApp:
+      'Auf „Lokal“ in der Karte „Bauernregel des Tages“ und als kleines Zeichen mit dem Namen in der Tagesliste der Vorhersage. Alle Regeln stehen unten im Lexikon im Abschnitt „Bauernregeln“.',
+    example: 'Martini (11.11.): „Ist’s um Martini trüb, wird der Winter auch nicht lieb.“',
+  },
+  {
+    id: 'eisheilige',
+    title: 'Eisheilige',
+    terms: ['Eisheiligen', 'Eisheilige', 'Kalte Sophie'],
+    explanation:
+      'Die Eisheiligen sind die Namenstage Pankratius (12.5.), Servatius (13.5.), Bonifatius (14.5.) und die „Kalte Sophie“ (15.5.); in Norddeutschland zählt auch Mamertus (11.5.) dazu. Erst danach gilt Nachtfrost als vorbei, darum pflanzt man Empfindliches erst nach den Eisheiligen aus. Kälteeinbrüche im Mai gibt es tatsächlich häufig, sie halten sich aber nicht an diese Tage.',
+    inApp: 'Als Lostag in der Tagesliste und in der Bauernregel des Tages. Ob es in diesen Tagen Frost gibt, zeigt die Prüfung „Trifft die Regel heuer zu?“, sobald die Tage in der Vorhersage liegen.',
+    example: '„Pankraz, Servaz, Bonifaz machen erst dem Sommer Platz.“',
+  },
+  {
+    id: 'schafskaelte',
+    title: 'Schafskälte',
+    terms: ['Schafskälte'],
+    explanation:
+      'Die Schafskälte ist ein Kälterückfall um Mitte Juni. Das Festland ist dann schon warm, das Meer noch kühl; dadurch strömt häufig kühle Meeresluft nach Mitteleuropa. Der Name kommt von den frisch geschorenen Schafen, die in diesen Tagen frieren.',
+    inApp: 'In der Vorhersage als spürbarer Temperaturrückgang Mitte Juni, wenn sie eintritt. Sie hat keinen festen Tag und ist darum kein Lostag.',
+  },
+  {
+    id: 'altweibersommer',
+    title: 'Altweibersommer',
+    terms: ['Altweibersommer'],
+    explanation:
+      'Altweibersommer heißt eine Schönwetterzeit im Frühherbst (Ende September, Oktober): sonnige, warme Nachmittage, kühle Nächte, morgens oft Nebel. Ursache ist ein ruhiges Hoch über Mitteleuropa. Der Name kommt wohl von den Spinnfäden, die dann durch die Luft treiben und an graue Haare erinnern.',
+    inApp: 'In der Vorhersage als mehrere sonnige, trockene Tage mit großem Unterschied zwischen Tag und Nacht. Am Morgen zeigt „Berg & Tal“ dann oft Nebel im Tal.',
+  },
+  {
+    id: 'siebenschlaefer',
+    title: 'Siebenschläfer',
+    terms: ['Siebenschläfer', 'Siebenschläfertag'],
+    explanation:
+      'Der Siebenschläfertag (27.6.) erinnert an eine Legende von sieben jungen Männern, die in einer Höhle fast 200 Jahre geschlafen haben sollen. Die Regel dazu sagt, das Wetter dieses Tages halte sieben Wochen. Sie hat einen wahren Kern: Ende Juni / Anfang Juli stellt sich die Wetterlage oft für längere Zeit ein. Wegen der Kalenderreform 1582 ist der „richtige“ Zeitraum heute eher Anfang Juli, und man muss mehrere Tage betrachten.',
+    inApp: 'Als Lostag in der Tagesliste und in der Bauernregel des Tages; ab Mitte Juni mit der Prüfung „Trifft die Regel heuer zu?“.',
+  },
 ]

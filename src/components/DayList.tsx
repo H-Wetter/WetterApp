@@ -1,6 +1,7 @@
 import { useMemo, type ReactNode } from 'react'
 import { summarizeHours, upcomingHours, type DaySummary, type HourSummary } from '../lib/daily'
 import { CONFIDENCE_LABEL, dayConfidence, precipRange, temperatureBackground } from '../lib/dayDisplay'
+import { kalendertag, lostagName } from '../lib/bauernregeln'
 import { formatDate, formatHour } from '../lib/time'
 import { LEVEL_NAME, type WarnLevel, type Warning } from '../lib/warnings'
 import type { MultiModelForecast } from '../types/forecast'
@@ -47,6 +48,7 @@ export function DayList({ forecast, days, now, warnings, selectedIndex, onSelect
           <button type="button" className="today-head" aria-expanded={selectedIndex === 0} onClick={() => onSelect(0)}>
             <strong>Heute</strong>
             <span className="muted small">nächste 24 Stunden</span>
+            <LostagChip dayStart={today.dayStart} />
             <span className="today-temps">
               <span className="temp-badge" style={{ background: temperatureBackground(today.tempMax.mean) }}>
                 {deg(today.tempMax.mean)}
@@ -82,6 +84,7 @@ export function DayList({ forecast, days, now, warnings, selectedIndex, onSelect
                 <span className="dr-day">
                   <strong>{i === 1 ? 'Morgen' : WEEKDAYS[new Date(d.dayStart).getUTCDay()]}</strong>
                   <span className="muted small">{formatDate(d.dayStart)}</span>
+                  <LostagChip dayStart={d.dayStart} />
                 </span>
                 <span className="dr-icons" title={d.symbol.label}>
                   <WeatherIcon symbol={d.symbol} size={40} />
@@ -161,5 +164,16 @@ function HourCell({ hour: h, first }: { hour: HourSummary; first: boolean }) {
       <span className={p >= 30 ? 'small hc-prob wet' : 'small hc-prob muted'}>{p} %</span>
       <strong>{deg(h.temp.mean)}</strong>
     </li>
+  )
+}
+
+/** Kleines Zeichen „Lostag: Martini“ in der Tageszeile (siehe Bauernregeln im Lexikon) */
+function LostagChip({ dayStart }: { dayStart: number }) {
+  const name = lostagName(kalendertag(dayStart))
+  if (!name) return null
+  return (
+    <span className="lostag-chip" title={`Lostag: ${name}. Die Bauernregel dazu steht im Wetterlexikon.`}>
+      {name}
+    </span>
   )
 }

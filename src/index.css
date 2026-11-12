@@ -671,3 +671,30 @@ h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
 .lg-dash { display: inline-block; width: 18px; height: 0; border-top: 2px dashed; }
 .lg-night { display: inline-block; width: 14px; height: 10px; border-radius: 2px; background: var(--night); border: 1px solid var(--grid); }
 @media (max-width: 600px) { .lg-night-item { display: none; } }
+
+/* Bauernregeln (Etappe 16) */
+.bauernregel { display: flex; flex-direction: column; gap: 0.35rem; }
+.bauernregel-title { font-size: 1.2rem; }
+.bauernregel-text {
+  margin: 0.2rem 0; padding: 0.4rem 0.8rem; border-left: 4px solid var(--mountain);
+  background: color-mix(in srgb, var(--mountain) 8%, var(--surface)); border-radius: 0 8px 8px 0;
+  font-size: 1.05rem; font-style: italic;
+}
+.bauernregel-mundart { display: block; font-size: 0.9rem; color: var(--muted); }
+.bauernregel-details > summary { cursor: pointer; color: var(--accent); font-size: 0.9rem; }
+.bauernregel-check { border: 1px dashed var(--border); border-radius: 8px; padding: 0.35rem 0.6rem; }
+.bauernregel-check.ja { border-color: var(--mountain); }
+.bauernregel-check p { margin: 0.1rem 0; }
+.badge-ungeprueft {
+  display: inline-block; margin-left: 0.5rem; padding: 0 0.4rem; border-radius: 999px; font-size: 0.75rem;
+  background: var(--notice-bg); color: var(--text); border: 1px solid var(--warn-1);
+}
+.lostag-chip {
+  display: inline-block; align-self: flex-start; margin-top: 0.1rem; padding: 0 0.35rem; border-radius: 999px;
+  font-size: 0.7rem; line-height: 1.4; white-space: nowrap;
+  background: color-mix(in srgb, var(--mountain) 16%, var(--surface)); color: var(--text);
+}
+.regel-monat h3 { margin: 0.8rem 0 0.3rem; }
+.regel-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
+.regel-liste > li { border-top: 1px solid var(--grid); padding-top: 0.5rem; }
+.regel-kopf { display: flex; flex-wrap: wrap; gap: 0.2rem 0.6rem; align-items: baseline; }
