@@ -22,7 +22,7 @@ export const FORECAST_VARIABLES: HourlyVariable[] = [
 ]
 
 /** Rohantwort von Open-Meteo. Bei mehreren Modellen heißen die Felder z. B. „temperature_2m_ecmwf_ifs“. */
-interface ForecastResponse {
+export interface ForecastResponse {
   utc_offset_seconds: number
   hourly: { time: string[] } & Record<string, Series | string[]>
   /** Tageswerte; bei mehreren Modellen z. B. „sunrise_ecmwf_ifs“ (für alle Modelle gleich, weil astronomisch) */
@@ -154,6 +154,14 @@ export async function fetchMultiModelForecast(
     'Wetterdaten konnten nicht geladen werden',
     signal,
   )
+  return parseMultiModel(raw, modelIds, extraVariables)
+}
+
+/**
+ * Zerlegt eine Open-Meteo-Antwort (ein Ort, ein oder mehrere Modelle) in unser Format.
+ * Gemeinsam genutzt von „Lokal“ und der Österreich-Karte (dort eine Antwort je Ort).
+ */
+export function parseMultiModel(raw: ForecastResponse, modelIds: string[], extraVariables: string[] = []): MultiModelForecast {
   const times = raw.hourly.time.map(parseLocalTime)
 
   const data = {} as MultiModelForecast['data']

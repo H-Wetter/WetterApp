@@ -34,6 +34,10 @@
   --night: rgba(40, 60, 100, 0.07);
   --sky-strip: #8fb9e6;
   --night-badge: #1e3a5f;
+  /* Österreich-Karte */
+  --map-land: #e3ecf6;
+  --map-land-hover: #b9d2f0;
+  --map-border: #5b6b80;
   font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
   line-height: 1.5;
   color: var(--text);
@@ -75,6 +79,9 @@
     --night: rgba(0, 0, 0, 0.28);
     --sky-strip: #2b4a72;
     --night-badge: #0f1f33;
+    --map-land: #243142;
+    --map-land-hover: #34557d;
+    --map-border: #9fb0c4;
   }
 }
 
@@ -698,3 +705,71 @@ h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
 .regel-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
 .regel-liste > li { border-top: 1px solid var(--grid); padding-top: 0.5rem; }
 .regel-kopf { display: flex; flex-wrap: wrap; gap: 0.2rem 0.6rem; align-items: baseline; }
+
+/* Österreich-Karte (Etappe 17) */
+.austria-map { margin: 0; padding: 0.5rem; }
+.austria-svg { display: block; width: 100%; height: auto; }
+.austria-svg .land {
+  fill: var(--map-land); stroke: var(--map-border); stroke-width: 1.5; stroke-linejoin: round;
+  cursor: pointer; transition: fill 0.15s;
+}
+.austria-svg .land.hover { fill: var(--map-land-hover); }
+.austria-svg .land.selected { fill: var(--map-land-hover); stroke: var(--accent); stroke-width: 2.5; }
+.austria-caption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.2rem 1rem; padding: 0.2rem 0.3rem 0; }
+.austria-hover { font-weight: 600; color: var(--text); }
+.austria-svg .marker { cursor: pointer; }
+.austria-svg .marker-hit { fill: transparent; }
+.austria-svg .marker:hover .marker-hit { fill: var(--surface); fill-opacity: 0.6; stroke: var(--accent); }
+.austria-svg .marker-dot { fill: var(--accent); stroke: var(--surface); }
+.austria-svg .marker.berg .marker-dot { fill: var(--mountain); }
+.austria-svg .marker-leader { stroke: var(--muted); }
+.austria-svg .marker-temp { fill: var(--text); font-weight: 700; paint-order: stroke; stroke: var(--map-land); stroke-width: 3px; stroke-linejoin: round; }
+
+/* Tagesauswahl über der Österreich-Karte */
+.day-picker {
+  display: flex; gap: 0.35rem; overflow-x: auto; scroll-snap-type: x proximity; scrollbar-width: thin;
+  padding: 0.15rem 0.1rem 0.35rem;
+}
+.dp-day {
+  flex: 1 0 4.4rem; scroll-snap-align: start;
+  display: flex; flex-direction: column; align-items: center; gap: 0.05rem;
+  padding: 0.35rem 0.3rem; border-radius: 12px; background: var(--surface); line-height: 1.2;
+}
+.dp-day:hover { border-color: var(--accent); }
+.dp-day.selected { border: 2px solid var(--accent); padding: calc(0.35rem - 1px) calc(0.3rem - 1px); background: color-mix(in srgb, var(--accent) 12%, var(--surface)); }
+.dp-label { font-weight: 700; }
+.dp-date { font-size: 0.8rem; color: var(--muted); }
+
+/* Detailbereich der Österreich-Karte (Etappe 17d) */
+.austria-layout { display: block; }
+.austria-svg .marker.selected .marker-hit { fill: var(--surface); fill-opacity: 0.75; stroke: var(--accent); stroke-width: 3; }
+.place-detail { display: flex; flex-direction: column; gap: 0.6rem; }
+.pd-head { display: flex; align-items: center; gap: 0.6rem; }
+.pd-head h2 { margin: 0; font-size: 1.3rem; }
+.pd-head p { margin: 0; }
+.pd-close { margin-left: auto; padding: 0.2rem 0.6rem; }
+.pd-facts { margin: 0; display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 0.5rem 1rem; }
+.pd-facts dt { color: var(--muted); font-size: 0.8rem; }
+.pd-facts dd { margin: 0; }
+.place-detail .day-course .course-grid { grid-template-columns: 1fr; }
+.pd-more { align-self: flex-start; }
+.pd-backdrop { display: none; }
+
+/* Computer: Seitenbereich rechts neben der Karte */
+@media (min-width: 900px) {
+  .austria-layout.open { display: grid; grid-template-columns: minmax(0, 1fr) 360px; gap: 1rem; align-items: start; }
+  .place-detail { position: sticky; top: 1rem; max-height: calc(100vh - 2rem); overflow-y: auto; }
+}
+
+/* Handy und Tablet: Bereich fährt von unten herein */
+@media (max-width: 899px) {
+  .place-detail {
+    position: fixed; left: 0; right: 0; bottom: 0; z-index: 50;
+    max-height: 80vh; overflow-y: auto; border-radius: 16px 16px 0 0; margin: 0;
+    box-shadow: 0 -6px 24px rgba(0, 0, 0, 0.25);
+    animation: pd-slide-up 0.25s ease-out;
+  }
+  .pd-backdrop { display: block; position: fixed; inset: 0; z-index: 40; background: rgba(0, 0, 0, 0.3); }
+}
+@keyframes pd-slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
+@media (prefers-reduced-motion: reduce) { .place-detail { animation: none; } }

@@ -100,8 +100,27 @@ Ausprobieren mit einem anderen Datum, ohne die Uhr zu verstellen: an die Adresse
 
 Das Testdatum gilt nur für die Karte „Bauernregel des Tages“. Die Vorhersage und die Lostag-Zeichen in der Tagesliste bleiben echt. „Trifft die Regel heuer zu?“ erscheint nur, wenn der Lostag in den nächsten 14 Tagen liegt und die Regel prüfbar ist.
 
+### Etappe 17 – Österreich-Karte
+Eigener Reiter „Österreich“: Karte der 9 Bundesländer mit Wettersymbol und Höchst-/Tiefstwert für die Landeshauptstädte und Ramsau am Dachstein. Oben 7 Tage zur Auswahl. Klick auf ein Bundesland zeigt die Landeshauptstadt, Klick auf einen Marker den Ort: Werte, Nullgradgrenze, Tagesverlauf und „Mehr Details“ (öffnet den Ort in „Lokal“).
+
+Gut zu wissen:
+- Die Karte nutzt 6 Modelle und lädt alle 10 Orte mit einem Abruf (30 Minuten gemerkt).
+- Die Grenzen liegen als Datei im Projekt (`src/data/bundeslaender.geo.json`). Neu holen mit `node scripts/make-austria-map.mjs`.
+- Weitere Orte: in `src/data/orte-oesterreich.ts` ergänzen (Koordinaten und Höhe aus der Open-Meteo-Ortssuche).
+
+Testen am Computer (`npm run dev`, Reiter „Österreich“):
+1. Über die Bundesländer fahren: Das Land färbt sich blau, unten steht der Name.
+2. Einen anderen Tag oben anklicken: Symbole und Temperaturen wechseln.
+3. Auf die Steiermark klicken: Rechts öffnet sich Graz. Auf den Marker bei Ramsau klicken: Ramsau (1123 m).
+4. Mit ✕ oder der Esc-Taste schließen. „Mehr Details“ öffnet den Ort in „Lokal“.
+
+Testen am Handy (Online-Version oder im Browser mit Handy-Ansicht):
+1. Tageszeile seitlich wischen, einen Tag antippen.
+2. Prüfen, dass sich keine Marker überlappen. Wo es eng ist, steht der Marker neben dem Ort (blauer Punkt).
+3. Ein Bundesland antippen: Der Bereich fährt von unten herein. Antippen des grauen Hintergrunds schließt ihn.
+
 ### Neue Ideen
-Einfach beschreiben, z. B.: „Trag als Etappe 17 in die CLAUDE.md ein: …, und mach zuerst einen Plan.“ Jede Etappe bekommt am Ende einen Tag (`etappe-17`), zu dem man jederzeit zurück kann.
+Einfach beschreiben, z. B.: „Trag als Etappe 18 in die CLAUDE.md ein: …, und mach zuerst einen Plan.“ Jede Etappe bekommt am Ende einen Tag (`etappe-18`), zu dem man jederzeit zurück kann.
 
 ---
 

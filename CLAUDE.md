@@ -97,6 +97,12 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
 - `hourly=temperature_2m_previous_day1` = Vorhersage von ~24 h vorher, mit `models=`, `past_days=3`. Alle 15 Vergleichsmodelle verfügbar (09.11.2026 geprüft). `elevation` = Höhe der Messstation.
 - Aufruf in `src/api/openMeteo.ts` (`fetchPreviousDayTemperatures`), Auswertung in `src/lib/modelCheck.ts`.
 
+### Bundesländer-Grenzen – GeoSphere Austria Kartendienst (Etappe 17)
+- `https://gis.geosphere.at/maps/rest/services/grenzen/admin_grenzen_oesterreich/MapServer/0/query?where=1%3D1&returnGeometry=true&outSR=4326&maxAllowableOffset=…&geometryPrecision=3&f=geojson`
+- Lizenz laut Dienst: „©Statistik Austria, GeoSphere Austria / CC BY 4.0“ → diese Quellenangabe in der App zeigen.
+- Liefert 12 Flächen OHNE Namen (am 12.11.2026 geprüft): die 9 Länder plus Osttirol und Jungholz (beide Tirol) und ein winziges Splitterstück. Namen per Punkt-in-Fläche-Test mit den Landeshauptstädten (und Lienz/Jungholz für Tirol) im Skript zuordnen.
+- Nur einmal beim Bauen der Datei abrufen, nicht in der App.
+
 ### Blitze live (optional, zuletzt)
 - Blitzortung.org nur nach Prüfung der Nutzungsbedingungen. Sonst nur Gewitter-Prognose (CAPE, Wettercode 95–99).
 - **Geprüft am 09.11.2026:** Keine offene Schnittstelle für fremde Apps; Rohdaten nur für Stationsbetreiber oder nach Einzelfreigabe durch das Projekt. → Keine Live-Blitzdaten in der App, nur ein Link zur öffentlichen Karte `https://map.blitzortung.org/#Zoom/Breite/Länge` im Reiter „Radar“ (`src/lib/radar.ts`).
@@ -179,6 +185,12 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
     - **Spielerisch „Trifft die Regel heuer zu?“:** nur bei Regeln, die sich klar mit Prognosewerten prüfen lassen (z. B. Bewölkung, Niederschlag oder Frost an einem bestimmten Tag innerhalb der 14-Tage-Vorhersage). Die Prüfung nutzt den Mittelwert der Modelle und sagt dazu, worauf sie schaut (z. B. „Bewölkung am 11.11.: 85 % → trüb“). Liegt der Tag außerhalb der Vorhersage oder ist die Regel nicht prüfbar, fehlt der Abschnitt. Klar als Spielerei kennzeichnen, die Regel ist keine Vorhersage. Logik in `src/lib/bauernregeln.ts`, mit Tests.
     - Keine neue Datenquelle und keine neuen Pakete nötig (nur eigene Texte und die vorhandene Vorhersage).
     - **Testen:** Datum in der App vorgeben können, ohne die Uhr des Computers zu verstellen, z. B. über die Adresse `?datum=2026-11-11` (nur für Bauernregeln und Lostag-Markierung, die Vorhersage bleibt echt).
+17. **Österreich-Karte:** eigener Reiter „Österreich“ mit Wetter für die 9 Landeshauptstädte und Ramsau am Dachstein. Schritte einzeln umsetzen, nach jedem auf OK warten:
+    - **17a Karte:** SVG-Karte der 9 Bundesländer (feste Ansicht, kein Zoom, keine Kartenkacheln), Projektion mit d3-geo. Grenzen aus dem offiziellen Kartendienst von GeoSphere Austria („Administrative Grenzen von Österreich, Stand 2025“, ©Statistik Austria, GeoSphere Austria, CC BY 4.0), einmalig per Skript geladen, vereinfacht und als Datei im Projekt abgelegt; Quellenangabe in der App. Darüberfahren hebt ein Bundesland hervor, Mauszeiger als Hand.
+    - **17b Orte:** Wien, St. Pölten, Linz, Salzburg, Innsbruck, Bregenz, Graz, Klagenfurt, Eisenstadt und Ramsau am Dachstein (Berglage). Koordinaten und Höhe einmalig über die Open-Meteo Geocoding API ermitteln und fest in `src/data/orte-oesterreich.ts` ablegen. Je Ort: eigenes SVG-Wettersymbol (alle WMO-Codes), Höchst- und Tiefstwert, Name. Beschriftungen dürfen sich nicht überlappen, auch nicht am Handy (Platzierung in `src/lib`, mit Tests). Alle 10 Orte in EINEM Open-Meteo-Aufruf, 7 Tage, 30 Min. Cache.
+    - **17c Tagesauswahl:** Zeile mit 7 Tagen über der Karte (Wochentag, Datum, kleines Symbol), heute vorausgewählt, am Handy wischbar.
+    - **17d Detailbereich:** Klick auf ein Bundesland zeigt die Landeshauptstadt, Klick auf Ramsau zeigt Ramsau. Am Computer Seitenbereich rechts, am Handy Bereich von unten. Inhalt: Ort, Datum, Höchst-/Tiefstwert, Regen/Schnee, Wind und Böen, Sonne, Nullgradgrenze, Tagesverlauf in vier Abschnitten aus `src/lib/tagesverlauf.ts` (gemeinsam mit „Lokal“), Hinweis bei Uneinigkeit der Modelle, Link „Mehr Details“ öffnet den Ort in „Lokal“.
+    - Wettersymbol auf der Karte: je Modell der häufigste Wettercode tagsüber (6–18 Uhr), dann der häufigste über alle Modelle; bei Gleichstand der schwerere Code. Erklärung im Code.
 
 ## Qualität
 - TypeScript streng, keine `any`.
