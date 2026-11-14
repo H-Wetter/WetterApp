@@ -297,6 +297,21 @@ export function tempPair(max: number | null, min: number | null): string {
 }
 
 /**
+ * Der breiteste Temperatur-Text eines Ortes über alle Tage, z. B. „10°/−1°“.
+ * Die Karte reserviert für jeden Marker diesen Platz und rechnet die Positionen damit aus.
+ * So stehen die Marker an jedem Tag der Auswahl an derselben Stelle und überlappen trotzdem nie:
+ * Ohne das würde ein breiterer Text an einem anderen Tag die Marker verschieben.
+ */
+export function widestTemps(days: PlaceDay[]): string | null {
+  let best: string | null = null
+  for (const d of days) {
+    const text = tempPair(d.max, d.min)
+    if (best === null || textWidth(text, 1) > textWidth(best, 1)) best = text
+  }
+  return best
+}
+
+/**
  * Größe eines Markers auf der Karte: oben die Temperaturen („12°/6°“), darunter das Symbol
  * (2,2 × Schrift). Der Ort liegt in der Mitte des Symbols (anchorY). Gleiche Formel in Karte und Tests.
  */

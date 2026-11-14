@@ -12,6 +12,11 @@ export interface MapPlace {
   ort: OrtOesterreich
   /** Wetter am gewählten Tag; null = noch keine Daten */
   day: PlaceDay | null
+  /**
+   * Breitester Temperatur-Text des Ortes über alle Tage (siehe widestTemps). Danach richtet sich
+   * der Platz des Markers, damit er beim Wechsel des Tages nicht springt.
+   */
+  layoutTemps?: string | null
 }
 
 interface Props {
@@ -59,7 +64,8 @@ export function AustriaMap({ places, onSelectLand, onSelectPlace, selectedLand =
       const pt = map.project(p.ort.longitude, p.ort.latitude)
       if (!pt) return []
       const temps = tempPair(p.day?.max ?? null, p.day?.min ?? null)
-      const size = labelSize(temps, font)
+      // Platz nach dem breitesten Text der Woche, nicht nach dem des gewählten Tages: feste Positionen
+      const size = labelSize(p.layoutTemps ?? temps, font)
       return [{ place: p, temps, x: pt[0], y: pt[1], ...size }]
     })
     const placed = placeLabels(

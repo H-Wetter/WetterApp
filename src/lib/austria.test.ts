@@ -1,7 +1,7 @@
 import { describe, expect, it } from 'vitest'
 import { ORTE_OESTERREICH } from '../data/orte-oesterreich'
 import type { MultiModelForecast } from '../types/forecast'
-import { dailyWeatherCode, dayOverview, hauptstadtVon, ortAlsStandort, labelSize, leaderEnd, modeHigher, placeLabels, type LabelBox, type PlaceDay } from './austria'
+import { dailyWeatherCode, dayOverview, hauptstadtVon, ortAlsStandort, labelSize, leaderEnd, modeHigher, placeLabels, widestTemps, type LabelBox, type PlaceDay } from './austria'
 import { MAP_HEIGHT, MAP_WIDTH, MOBILE_BAND, MOBILE_HEIGHT, buildAustriaMap } from './austriaMap'
 
 describe('modeHigher', () => {
@@ -132,5 +132,17 @@ describe('Bundesland → Ort und „Mehr Details“', () => {
     const ramsau = ORTE_OESTERREICH.find((o) => o.id === 'ramsau')
     if (!ramsau) throw new Error('Ramsau fehlt')
     expect(ortAlsStandort(ramsau)).toMatchObject({ name: 'Ramsau am Dachstein', elevation: 1123, region: 'Steiermark', source: 'search' })
+  })
+})
+
+describe('widestTemps', () => {
+  const tag = (max: number | null, min: number | null): PlaceDay => ({ dayStart: 0, code: 1, max, min })
+
+  it('nimmt den breitesten Text der Woche, damit die Marker an jedem Tag gleich stehen', () => {
+    expect(widestTemps([tag(7, 0), tag(10, -1), tag(9, 4)])).toBe('10°/−1°')
+  })
+
+  it('liefert null ohne Tage', () => {
+    expect(widestTemps([])).toBeNull()
   })
 })

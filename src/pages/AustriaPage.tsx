@@ -7,7 +7,7 @@ import { ErrorMessage } from '../components/ErrorMessage'
 import { GrosswetterlageCard } from '../components/GrosswetterlageCard'
 import { Loading } from '../components/Loading'
 import { ORTE_OESTERREICH } from '../data/orte-oesterreich'
-import { dayOverview, hauptstadtVon, ortAlsStandort, placeDays } from '../lib/austria'
+import { dayOverview, hauptstadtVon, ortAlsStandort, placeDays, widestTemps } from '../lib/austria'
 import { PlaceDetail } from '../components/PlaceDetail'
 import type { WeatherLocation } from '../types/location'
 import { DayPicker } from '../components/DayPicker'
@@ -49,7 +49,7 @@ export function AustriaPage({ onOpenLocal }: { onOpenLocal: (location: WeatherLo
   const perPlace = useMemo(() => ORTE_OESTERREICH.map((ort) => (data?.get(ort.id) ? placeDays(data.get(ort.id) as MultiModelForecast) : [])), [data])
   const days = useMemo(() => dayOverview(perPlace, DAYS), [perPlace])
   const places: MapPlace[] = useMemo(
-    () => ORTE_OESTERREICH.map((ort, i) => ({ ort, day: perPlace[i][dayIndex] ?? null })),
+    () => ORTE_OESTERREICH.map((ort, i) => ({ ort, day: perPlace[i][dayIndex] ?? null, layoutTemps: widestTemps(perPlace[i].slice(0, DAYS)) })),
     [perPlace, dayIndex],
   )
 
