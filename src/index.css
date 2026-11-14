@@ -773,3 +773,37 @@ h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
 }
 @keyframes pd-slide-up { from { transform: translateY(100%); } to { transform: translateY(0); } }
 @media (prefers-reduced-motion: reduce) { .place-detail { animation: none; } }
+
+/* Großwetterlage (Etappe 18): Liste der Hochs und Tiefs */
+.gwl h2 { margin: 0 0 0.3rem; font-size: 1.15rem; }
+.gwl-list { list-style: none; margin: 0.4rem 0; padding: 0; display: flex; flex-direction: column; gap: 0.35rem; }
+.gwl-list li { display: flex; align-items: baseline; gap: 0.55rem; }
+.gwl-mark { flex: none; width: 1.5rem; text-align: center; font-weight: 800; font-size: 1.05rem; }
+.gwl-mark.tief { color: #d62728; }
+.gwl-mark.hoch { color: #1f77b4; }
+.gwl-dist { margin-left: auto; white-space: nowrap; }
+.gwl h3 { margin: 0.7rem 0 0.2rem; font-size: 1rem; }
+.gwl-lage + .gwl-lage { margin-top: 0.4rem; }
+.gwl-warnung { border-left: 4px solid #d62728; padding-left: 0.6rem; font-weight: 600; }
+
+/* Großwetterlage (Etappe 18e): Absatz, Stichwörter, Skizze */
+.gwl-haupt { display: grid; gap: 0.8rem 1.2rem; grid-template-columns: 1fr; align-items: start; }
+@media (min-width: 760px) { .gwl-haupt { grid-template-columns: minmax(0, 1.5fr) minmax(0, 1fr); } }
+.gwl-absatz { line-height: 1.55; }
+.gwl-stichwort { display: flex; flex-wrap: wrap; align-items: center; gap: 0.35rem 0.5rem; margin-top: 0.6rem !important; }
+.gwl-chip { border: 1px solid var(--accent); border-radius: 999px; padding: 0.1rem 0.6rem; font-weight: 600; }
+.gwl-chip.warnung { border-color: #d62728; }
+.gwl-chip.warnung .term-link { color: #d62728; }
+.gwl-sicherheit { color: var(--muted); margin-top: 0.5rem !important; }
+.gwl-skizze { margin: 0; }
+.gwl-skizze svg { display: block; width: 100%; height: auto; border-radius: 8px; }
+.gwl-meer { fill: var(--surface); }
+.gwl-land { fill: var(--map-land); stroke: var(--muted); stroke-width: 0.6; stroke-linejoin: round; }
+.gwl-austria { fill: var(--accent); fill-opacity: 0.55; }
+.gwl-kern-buchstabe { font-size: 30px; font-weight: 800; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.gwl-kern-druck { font-size: 14px; font-weight: 700; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+.gwl-kern.tief { fill: #d62728; }
+.gwl-kern.hoch { fill: #1f77b4; }
+.gwl-details { margin-top: 0.8rem; }
+.gwl-details summary { cursor: pointer; font-weight: 600; }
+.gwl-gruende { margin: 0.2rem 0; padding-left: 1.2rem; }

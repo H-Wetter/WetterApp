@@ -4,6 +4,7 @@ import { friendlyError } from '../api/errors'
 import { AustriaMap, type MapPlace } from '../components/AustriaMap'
 import { ErrorBoundary } from '../components/ErrorBoundary'
 import { ErrorMessage } from '../components/ErrorMessage'
+import { GrosswetterlageCard } from '../components/GrosswetterlageCard'
 import { Loading } from '../components/Loading'
 import { ORTE_OESTERREICH } from '../data/orte-oesterreich'
 import { dayOverview, hauptstadtVon, ortAlsStandort, placeDays } from '../lib/austria'
@@ -90,6 +91,11 @@ export function AustriaPage({ onOpenLocal }: { onOpenLocal: (location: WeatherLo
         )}
       </div>
       {!selected && data && <p className="small muted">Tippe auf ein Bundesland oder einen Ort für Details.</p>}
+      {days[dayIndex] && (
+        <ErrorBoundary label="Die Großwetterlage">
+          <GrosswetterlageCard dayStart={days[dayIndex].dayStart} tageVoraus={dayIndex} />
+        </ErrorBoundary>
+      )}
       <p className="small muted">
         Symbol: häufigstes Wetter tagsüber (6–18 Uhr) über 6 Modelle (ICON, ECMWF, GFS, Météo-France, UKMO, GEM). Temperaturen:
         Höchst- und Tiefstwert, Mittel der Modelle.

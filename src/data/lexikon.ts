@@ -58,11 +58,11 @@ export const LEXIKON: LexikonEntry[] = [
   {
     id: 'foehn',
     title: 'Föhn',
-    terms: ['Föhn'],
+    terms: ['Südföhn', 'Föhn'],
     explanation:
       'Föhn ist ein warmer, trockener Fallwind auf der windabgewandten Seite eines Gebirges. Die Luft regnet sich beim Aufsteigen auf der einen Seite ab und erwärmt sich beim Herabsinken auf der anderen Seite stark. Dort wird es plötzlich mild, sehr klar und oft stürmisch. In Österreich ist vor allem der Südföhn nördlich der Alpen bekannt.',
     inApp:
-      'Die App erkennt Föhn noch nicht automatisch. Hinweise: kräftiger Südwind in der Höhe (Pfeile im Diagramm „Wolken nach Höhe“), starke Böen und ungewöhnlich hohe Temperaturen.',
+      'Im Reiter „Österreich“ unter „Großwetterlage“ steht das Stichwort „Südföhn“, wenn der Luftdruck in Bozen mindestens 4 hPa höher ist als in Innsbruck und in 3000 m kräftiger Südwind weht. Weitere Hinweise: Pfeile aus Süd im Diagramm „Wolken nach Höhe“, starke Böen und ungewöhnlich hohe Temperaturen.',
     example: 'Innsbruck hat bei Südföhn im Winter 18 °C, südlich des Brenners regnet es.',
     sketch: 'foehn',
   },
@@ -151,7 +151,7 @@ export const LEXIKON: LexikonEntry[] = [
     explanation:
       'Ein Hoch ist ein Gebiet mit hohem Luftdruck: Die Luft sinkt dort ab, Wolken lösen sich auf – meist ruhiges, trockenes Wetter. Ein Tief hat niedrigen Luftdruck: Die Luft steigt auf, es bilden sich Wolken und Niederschlag. Der Wind weht vom Hoch zum Tief und wird durch die Erddrehung abgelenkt, sodass er auf unserer Erdhälfte gegen den Uhrzeigersinn um ein Tief kreist.',
     inApp:
-      'Die App zeigt keine Druckkarte. Auf windy.com (Reiter „Radar“ → „Groß bei Windy öffnen“) lässt sich der Luftdruck einblenden: „H“ und „T“ markieren die Zentren, die Linien (Isobaren) verbinden Orte mit gleichem Luftdruck. Liegen sie eng beieinander, weht kräftiger Wind.',
+      'Im Reiter „Österreich“ unter „Großwetterlage“: Die Skizze von Europa zeigt die erkannten Hochs (H) und Tiefs (T) mit ihrem Kerndruck, der Text nennt ihre Lage. Liegt hoher Druck über Österreich und bleibt es trocken, steht dort das Stichwort „Hochdrucklage“. Linien gleichen Luftdrucks (Isobaren) zeigt windy.com (Reiter „Radar“ → „Groß bei Windy öffnen“): Liegen sie eng beieinander, weht kräftiger Wind.',
     sketch: 'hochtief',
   },
   {
@@ -246,5 +246,63 @@ export const LEXIKON: LexikonEntry[] = [
     explanation:
       'Der Siebenschläfertag (27.6.) erinnert an eine Legende von sieben jungen Männern, die in einer Höhle fast 200 Jahre geschlafen haben sollen. Die Regel dazu sagt, das Wetter dieses Tages halte sieben Wochen. Sie hat einen wahren Kern: Ende Juni / Anfang Juli stellt sich die Wetterlage oft für längere Zeit ein. Wegen der Kalenderreform 1582 ist der „richtige“ Zeitraum heute eher Anfang Juli, und man muss mehrere Tage betrachten.',
     inApp: 'Als Lostag in der Tagesliste und in der Bauernregel des Tages; ab Mitte Juni mit der Prüfung „Trifft die Regel heuer zu?“.',
+  },
+  // ---------- Großwetterlage (Etappe 18) ----------
+  {
+    id: 'nordstau',
+    title: 'Nordstau',
+    terms: ['Nordstau'],
+    explanation:
+      'Bei Nordstau strömt feuchte Luft aus Nordwest bis Nord gegen die Alpen. Sie muss aufsteigen, kühlt dabei ab und regnet oder schneit sich an der Alpennordseite aus, oft stundenlang. Südlich des Alpenhauptkamms kommt die Luft trocken an, dort ist es häufig sonnig und windig (Nordföhn).',
+    inApp:
+      'Im Reiter „Österreich“ unter „Großwetterlage“ als Stichwort. Die App erkennt Nordstau, wenn der Wind in 3000 m aus Nordwest bis Nord weht und nördlich des Alpenhauptkamms deutlich mehr Niederschlag fällt als südlich.',
+    example: 'In Salzburg und im Salzkammergut schneit es den ganzen Tag, in Klagenfurt scheint die Sonne.',
+  },
+  {
+    id: 'suedstau',
+    title: 'Südstau',
+    terms: ['Südstau'],
+    explanation:
+      'Südstau ist das Gegenstück zum Nordstau: Feuchte Luft vom Mittelmeer strömt aus Süd bis Südwest gegen die Alpen und regnet sich an der Alpensüdseite aus. Betroffen sind vor allem Osttirol, Kärnten und Südtirol. Nördlich des Alpenhauptkamms bleibt es oft trocken, dort weht dann häufig Föhn.',
+    inApp:
+      'Im Reiter „Österreich“ unter „Großwetterlage“ als Stichwort, oft zusammen mit „Südföhn“. Die App erkennt Südstau, wenn der Wind in 3000 m aus Süd weht und südlich des Alpenhauptkamms deutlich mehr Niederschlag fällt als nördlich.',
+    example: 'In Lienz und im Gailtal regnet es kräftig, in Innsbruck ist es bei Föhn mild und trocken.',
+  },
+  {
+    id: 'genuatief',
+    title: 'Genuatief und Adriatief',
+    terms: ['Genuatief', 'Adriatief', 'Italientief'],
+    explanation:
+      'Ein Genuatief ist ein Tief, das über dem Golf von Genua oder über Oberitalien entsteht, häufig wenn kalte Luft aus Nordwesten über die Alpen oder durch das Rhonetal ins Mittelmeer fließt. Es bringt der Alpensüdseite viel Regen oder Schnee. Liegt der Kern weiter östlich, spricht man vom Adriatief. Wohin das Tief danach zieht, entscheidet, welche Teile Österreichs den meisten Niederschlag bekommen.',
+    inApp:
+      'Im Reiter „Österreich“ unter „Großwetterlage“ als Stichwort, wenn die App einen Tiefkern über Oberitalien oder der Adria findet. In der Europa-Skizze steht dort ein rotes T.',
+  },
+  {
+    id: 'vb-lage',
+    title: 'Vb-Lage',
+    terms: ['Vb-Lage', 'Vb-Tief', 'Vb-Wetterlage'],
+    explanation:
+      'Vb (gesprochen „fünf b“) ist der Name einer Zugbahn von Tiefs: von Oberitalien oder der Adria nach Nordosten, über Ungarn und die Slowakei Richtung Polen. Der Name stammt aus einer Einteilung der Zugbahnen, die der Meteorologe Wilhelm Jacob van Bebber im 19. Jahrhundert aufgestellt hat. Das Tief führt sehr feuchte Mittelmeerluft um die Alpen herum nach Norden. Dort gleitet sie auf kältere Luft auf und es regnet lange und ergiebig, was zu Hochwasser führen kann.',
+    inApp:
+      'Im Reiter „Österreich“ unter „Großwetterlage“ als rot markierter Warnhinweis. Die App verfolgt einen Tiefkern über Italien zwei Tage lang. Zieht er nach Nordosten, weist sie auf eine mögliche Vb-Lage hin.',
+    example: 'Die Hochwasser im August 2002 und im September 2024 entstanden bei Vb-Lagen.',
+  },
+  {
+    id: 'luftmassenzufuhr',
+    title: 'Warmluft- und Kaltluftzufuhr',
+    terms: ['Warmluftzufuhr', 'Kaltluftzufuhr', 'Kaltluftausbruch'],
+    explanation:
+      'Die Strömung bringt Luft aus anderen Gegenden heran. Kommt sie aus Süden oder Südwesten, wird es wärmer (Warmluftzufuhr), kommt sie aus Norden, wird es kälter (Kaltluftzufuhr). Man misst das am besten in rund 1500 m Höhe, weil dort Sonne, Nebel und Nacht die Temperatur kaum verfälschen. Stößt in kurzer Zeit sehr kalte Luft aus dem Norden bis zu den Alpen vor, spricht man von einem Kaltluftausbruch.',
+    inApp:
+      'Im Reiter „Österreich“ unter „Großwetterlage“: Die App vergleicht die Temperatur in 1500 m mit den zwei Vortagen. Ab 4 Grad Unterschied schreibt sie „Es strömt Warmluft ein“ oder „Es strömt Kaltluft ein“. Ab 6 Grad Abkühlung bei Strömung aus Norden steht das Stichwort „Kaltluftausbruch aus Norden“.',
+  },
+  {
+    id: 'west-ostlage',
+    title: 'Westlage und Ostlage',
+    terms: ['Westlage', 'Ostlage'],
+    explanation:
+      'Bei einer Westlage strömt die Luft in der Höhe vom Atlantik her von West nach Ost über Europa. Tiefs und ihre Fronten ziehen in rascher Folge durch, das Wetter wechselt oft und ist für die Jahreszeit meist mild. Bei einer Ostlage kommt die Luft vom Kontinent im Osten: im Winter trocken und kalt, im Sommer trocken und warm.',
+    inApp:
+      'Im Reiter „Österreich“ unter „Großwetterlage“ als Stichwort. Die App nennt West- oder Ostlage nur, wenn keine andere typische Alpen-Wetterlage zutrifft.',
   },
 ]

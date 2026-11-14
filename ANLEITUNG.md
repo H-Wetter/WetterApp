@@ -119,6 +119,29 @@ Testen am Handy (Online-Version oder im Browser mit Handy-Ansicht):
 2. Prüfen, dass sich keine Marker überlappen. Wo es eng ist, steht der Marker neben dem Ort (blauer Punkt).
 3. Ein Bundesland antippen: Der Bereich fährt von unten herein. Antippen des grauen Hintergrunds schließt ihn.
 
+### Etappe 18 – Großwetterlage in Worten
+Im Reiter „Österreich“ unter der Karte: ein Absatz, der für den gewählten Tag beschreibt, wie die Wetterlage über Europa auf Österreich einwirkt. Darunter die erkannte Wetterlage als Stichwort (antippen öffnet das Lexikon), ein Satz zur Sicherheit und rechts eine Europa-Skizze mit Hochs (H) und Tiefs (T). „Einzelheiten und Zahlen“ zeigt, woraus die App das ableitet.
+
+Gut zu wissen:
+- Die App erkennt Hochdrucklage, Nordstau, Südstau, Südföhn, Genua- und Adriatief (mit Warnung bei möglicher Vb-Lage), Kaltluftausbruch aus Norden, Westlage und Ostlage. Passt nichts, steht dort „keine eindeutige“.
+- Ein Laden kostet rund 300 Aufrufe bei Open-Meteo (273 für das Europa-Raster). Das Ergebnis bleibt 1 Stunde gemerkt, der Tageswechsel kostet nichts.
+- Die Namen der Hochs und Tiefs (FU Berlin) fehlen, weil es dafür keine frei nutzbare Quelle gibt.
+- Saharastaub reicht nur etwa 5 Tage voraus.
+
+Wo du etwas anpasst:
+- Schwellen der Wetterlagen: Block `SCHWELLEN` oben in `src/lib/grosswetterlage.ts`.
+- Hochs und Tiefs: oben in `src/lib/druckgebilde.ts`. Strömung, Luftmasse, Fronten: oben in `src/lib/stroemung.ts`. Staub, Gewitter, Nullgradgrenze, Sturm: oben in `src/lib/einfluesse.ts`.
+- Gebietsnamen („über der Biskaya“): `src/data/europa-regionen.ts`. Orte im Alpenraum: `src/data/alpenpunkte.ts`.
+- Küstenlinien der Skizze neu holen: `node scripts/make-europa-kueste.mjs`.
+
+Testen (`npm run dev`, Reiter „Österreich“, nach unten scrollen):
+1. Der Absatz hat 4–8 Sätze. In der Skizze stehen H und T dort, wo der Text sie nennt.
+2. Andere Tage antippen: Text, Stichwort und Skizze wechseln sofort, ohne neues Laden.
+3. Das Stichwort antippen: Das Lexikon öffnet sich beim passenden Begriff.
+4. „Einzelheiten und Zahlen“ aufklappen: Begründung der Wetterlage, Strömung, weitere Einflüsse, Liste aller Hochs und Tiefs.
+5. Am Handy: Die Skizze steht unter dem Text, nichts ragt seitlich hinaus.
+6. Vergleich: im Reiter „Radar“ bei Windy den Luftdruck einblenden. Die Tiefs und Hochs sollten ungefähr an denselben Stellen liegen.
+
 ### Neue Ideen
 Einfach beschreiben, z. B.: „Trag als Etappe 18 in die CLAUDE.md ein: …, und mach zuerst einen Plan.“ Jede Etappe bekommt am Ende einen Tag (`etappe-18`), zu dem man jederzeit zurück kann.
 
