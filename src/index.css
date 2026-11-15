@@ -807,3 +807,26 @@ h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
 .gwl-details { margin-top: 0.8rem; }
 .gwl-details summary { cursor: pointer; font-weight: 600; }
 .gwl-gruende { margin: 0.2rem 0; padding-left: 1.2rem; }
+
+/* Sonnenstrahlung (Etappe 19) */
+.strahlung h3 { margin: 0.8rem 0 0.2rem; font-size: 1rem; }
+.strahlung-liste { list-style: none; margin: 0.5rem 0; padding: 0; display: flex; flex-direction: column; gap: 0.2rem; }
+.strahlung-zeile {
+  display: grid; grid-template-columns: 6.5rem minmax(2rem, 1fr) auto auto; align-items: center; gap: 0.3rem 0.7rem;
+  width: 100%; padding: 0.3rem 0.5rem; border: 1px solid transparent; border-radius: 8px;
+  background: none; color: inherit; font: inherit; text-align: left; cursor: pointer;
+}
+.strahlung-zeile:hover { border-color: var(--border); }
+.strahlung-zeile.aktiv { border-color: var(--accent); }
+.strahlung-balken { height: 0.6rem; border-radius: 999px; background: var(--border); overflow: hidden; }
+.strahlung-balken span { display: block; height: 100%; background: var(--chart-sun, #e0a100); border-radius: 999px; }
+.strahlung-wert { white-space: nowrap; font-weight: 600; }
+.strahlung-pv { white-space: nowrap; color: var(--muted); }
+@media (max-width: 560px) {
+  .strahlung-zeile { grid-template-columns: 5.5rem 1fr; }
+  .strahlung-wert, .strahlung-pv { grid-column: 2; }
+}
+.strahlung-legende .sl { display: inline-block; width: 1.1rem; height: 0; margin: 0 0.25rem 0.2rem 0.5rem; border-top: 3px solid; vertical-align: middle; }
+.strahlung-legende .sl.gesamt { border-color: var(--chart-sun, #e0a100); margin-left: 0; }
+.strahlung-legende .sl.direkt { border-color: #d9480f; }
+.strahlung-legende .sl.diffus { border-color: #5c7cfa; border-top-style: dashed; }

@@ -218,6 +218,12 @@ Plus Browser-Geolocation (`navigator.geolocation`) mit Fallback auf Graz.
     - **UV-Index als Tageswert:** Höchstwert je Tag in der Tagesliste bzw. im Umwelt-Bereich. Tag 1–5 aus den schon geladenen CAMS-Daten, danach `uv_index_max` von GFS.
     - **`convective_inhibition` (CIN):** der „Deckel“, der Gewitter unterdrückt. Der Gewitter-Hinweis in `src/lib/warnings.ts` berücksichtigt CAPE und CIN gemeinsam (viel CAPE mit starkem Deckel = Gewitter eher unwahrscheinlich, aber heftig, falls der Deckel bricht). Neuer Lexikon-Begriff „CIN / Deckel“.
     - **Sonnenstrahlung:** `shortwave_radiation`, `direct_radiation`, `diffuse_radiation` als Tagesverlauf und Tagessumme in kWh/m², dazu eine grobe Schätzung für Photovoltaik (kWh je kWp, klar als Schätzung gekennzeichnet).
+    - Fertig am 15.11.2026. Umsetzung:
+      - Alle neuen Werte kommen im vorhandenen Abruf von „Lokal“ mit (kein eigener Abruf): stündlich `convective_inhibition` und die drei Strahlungswerte als `extra`, täglich `uv_index_max`.
+      - UV: abweichend vom Plan für ALLE Tage aus der Vorhersage-API (Mittel von GFS und KNMI), nicht aus CAMS. Grund: Die CAMS-Daten lädt nur der Umwelt-Bereich, so bleibt es eine Quelle für die ganze Tagesliste. Anzeige in der Tagesliste („· UV 2“) und in der Stundenansicht. Feld `DaySummary.uvMax`.
+      - CIN ist bei Open-Meteo positiv (0 = kein Deckel). Regel in `thunderWarning` (`src/lib/warnings.ts`): unter 50 J/kg „kaum Deckel“ (Stufe wird nicht gesenkt), ab 200 „starker Deckel“ (Stufe sinkt, bei CAPE ab 1000 bleibt gelb). Gemessen wird der kleinste CIN-Wert in den Stunden mit CAPE ab 500. Bisher nur mit erfundenen Beispielen getestet (November, keine Gewitter).
+      - Strahlung: `src/lib/strahlung.ts`, Karte `src/components/StrahlungPanel.tsx` unter „Luft & Umwelt“. Photovoltaik = kWh/m² × 0,8 (`PV_WIRKUNGSANTEIL`), gerechnet für eine waagrechte Fläche. Negative Nachtwerte einzelner Modelle zählen als 0.
+      - Lexikon: „CIN und Deckel“, „Globalstrahlung (Sonnenstrahlung)“.
 
 ## Qualität
 - TypeScript streng, keine `any`.

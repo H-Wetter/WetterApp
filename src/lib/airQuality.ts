@@ -119,6 +119,11 @@ export function summarizeAirDays(d: AirQualityData): AirDay[] {
   return days
 }
 
+/** Stufe des UV-Index in Worten: 2 → „niedrig“, 7 → „hoch“ (Stufen der WHO: 3, 6, 8, 11) */
+export function uvLabel(uv: number): string {
+  return rate(uv, UV_LIMITS, UV_LABELS).label
+}
+
 /** Kurzer Rat zum UV-Index (WHO-Empfehlungen, vereinfacht). */
 export function uvAdvice(uv: number | null): string {
   if (uv === null) return ''

@@ -31,6 +31,7 @@ function sunnyDay(overrides: Partial<Record<HourlyVariable, number>> = {}): Mult
   return {
     times: Array.from({ length: 24 }, (_, i) => DAY + i * HOUR),
     utcOffsetSeconds: 3600,
+    uvMax: [],
     data,
     availableModels: models,
     lastIndex: { a: 23, b: 23 },

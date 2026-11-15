@@ -26,7 +26,7 @@ export interface ForecastResponse {
   utc_offset_seconds: number
   hourly: { time: string[] } & Record<string, Series | string[]>
   /** Tageswerte; bei mehreren Modellen z. B. „sunrise_ecmwf_ifs“ (für alle Modelle gleich, weil astronomisch) */
-  daily?: { time: string[] } & Record<string, (string | null)[]>
+  daily?: { time: string[] } & Record<string, (string | number | null)[]>
 }
 
 /** Sonnenauf-/-untergang aus den Tageswerten – wir nehmen das erste Modell, das Werte liefert. */
@@ -36,13 +36,26 @@ function parseSunTimes(daily: ForecastResponse['daily']): MultiModelForecast['su
   const sunriseKey = keys.find((k) => k.startsWith('sunrise') && daily[k].some((v) => v !== null))
   const sunsetKey = keys.find((k) => k.startsWith('sunset') && daily[k].some((v) => v !== null))
   return daily.time.map((day, i) => {
-    const rise = sunriseKey ? daily[sunriseKey][i] : null
-    const set = sunsetKey ? daily[sunsetKey][i] : null
+    const rise = sunriseKey ? (daily[sunriseKey][i] as string | null) : null
+    const set = sunsetKey ? (daily[sunsetKey][i] as string | null) : null
     return {
       dayStart: Date.parse(`${day}T00:00:00Z`),
       sunrise: rise ? parseLocalTime(rise) : null,
       sunset: set ? parseLocalTime(set) : null,
     }
+  })
+}
+
+/**
+ * Höchster UV-Index je Tag (Etappe 19). Bei mehreren Modellen heißen die Felder z. B. „uv_index_max_gfs_seamless“.
+ * Nur wenige Modelle liefern ihn: Wir mitteln über die, die einen Wert haben.
+ */
+function parseUvMax(daily: ForecastResponse['daily']): (number | null)[] {
+  if (!daily) return []
+  const keys = Object.keys(daily).filter((k) => k.startsWith('uv_index_max'))
+  return daily.time.map((_, i) => {
+    const values = keys.map((k) => daily[k][i]).filter((v): v is number => typeof v === 'number')
+    return values.length ? values.reduce((a, b) => a + b, 0) / values.length : null
   })
 }
 
@@ -138,7 +151,7 @@ export async function fetchMultiModelForecast(
     latitude: location.latitude.toFixed(4),
     longitude: location.longitude.toFixed(4),
     hourly: [...FORECAST_VARIABLES, ...extraVariables].join(','),
-    daily: 'sunrise,sunset',
+    daily: 'sunrise,sunset,uv_index_max',
     models: modelIds.join(','),
     forecast_days: String(days),
     timezone: 'auto',
@@ -208,6 +221,7 @@ export function parseMultiModel(raw: ForecastResponse, modelIds: string[], extra
     availableModels: modelIds.filter((id) => available.has(id)),
     lastIndex,
     sun: parseSunTimes(raw.daily),
+    uvMax: parseUvMax(raw.daily),
     extra,
   }
 }

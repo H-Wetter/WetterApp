@@ -73,7 +73,7 @@ export const LEXIKON: LexikonEntry[] = [
     explanation:
       'CAPE (gesprochen „Kejp“) ist die Energie, die aufsteigende warme, feuchte Luft zur Verfügung hat – gemessen in Joule pro Kilogramm (J/kg). Je mehr CAPE, desto kräftiger können Gewitter werden. Ob wirklich eines entsteht, hängt aber auch davon ab, ob die Luft einen „Anstoß“ bekommt, etwa durch eine Front oder die Sonne über Bergen.',
     inApp:
-      'In den Warnhinweisen auf der Seite „Lokal“: ab 500 J/kg leichte, ab 1000 deutliche, ab 2000 kräftige Gewitterneigung – immer zusammen mit dem Wettercode der Modelle.',
+      'In den Warnhinweisen auf der Seite „Lokal“: ab 500 J/kg leichte, ab 1000 deutliche, ab 2000 kräftige Gewitterneigung – immer zusammen mit dem Wettercode der Modelle und dem Deckel (CIN).',
     example: 'Sommernachmittag mit 1500 J/kg: Über den Bergen bauen sich mächtige Quellwolken auf.',
     sketch: 'cape',
   },
@@ -246,6 +246,27 @@ export const LEXIKON: LexikonEntry[] = [
     explanation:
       'Der Siebenschläfertag (27.6.) erinnert an eine Legende von sieben jungen Männern, die in einer Höhle fast 200 Jahre geschlafen haben sollen. Die Regel dazu sagt, das Wetter dieses Tages halte sieben Wochen. Sie hat einen wahren Kern: Ende Juni / Anfang Juli stellt sich die Wetterlage oft für längere Zeit ein. Wegen der Kalenderreform 1582 ist der „richtige“ Zeitraum heute eher Anfang Juli, und man muss mehrere Tage betrachten.',
     inApp: 'Als Lostag in der Tagesliste und in der Bauernregel des Tages; ab Mitte Juni mit der Prüfung „Trifft die Regel heuer zu?“.',
+  },
+  // ---------- Gewitterdeckel und Sonnenstrahlung (Etappe 19) ----------
+  {
+    id: 'cin',
+    title: 'CIN und Deckel',
+    terms: ['CIN', 'Deckel'],
+    explanation:
+      'CIN (englisch „convective inhibition“) ist die Energie, die aufsteigende Luft erst überwinden muss, bevor ein Gewitter entstehen kann. Ursache ist eine wärmere, stabile Schicht in der Höhe, die wie ein Deckel auf einem Topf wirkt. Ohne Deckel (CIN nahe 0) entstehen bei genug CAPE leicht Schauer und Gewitter. Ein starker Deckel hält alles zurück, die Energie staut sich darunter. Bricht er doch, etwa an einer Front oder über den Bergen, entladen sich wenige, dafür heftige Gewitter.',
+    inApp:
+      'Im Gewitter-Hinweis auf der Seite „Lokal“ steht „Kaum Deckel“ (unter 50 J/kg), „Mäßiger Deckel“ oder „Starker Deckel“ (ab 200 J/kg). Bei kaum Deckel bleibt die Warnstufe, auch wenn noch kein Modell ein Gewitter zeigt. Bei starkem Deckel sinkt sie, bei viel CAPE bleibt aber ein gelber Hinweis.',
+    example: 'Schwüler Sommertag mit 2500 J/kg CAPE und starkem Deckel: bis zum Abend sonnig, dann ein einzelnes Unwetter.',
+  },
+  {
+    id: 'globalstrahlung',
+    title: 'Globalstrahlung (Sonnenstrahlung)',
+    terms: ['Globalstrahlung', 'Sonnenstrahlung'],
+    explanation:
+      'Die Globalstrahlung ist die gesamte Sonnenenergie, die auf einer waagrechten Fläche ankommt. Sie besteht aus zwei Teilen: der direkten Strahlung, die geradewegs von der Sonnenscheibe kommt und Schatten wirft, und der diffusen Strahlung, die von Himmel und Wolken gestreut wird. Die Leistung misst man in Watt je Quadratmeter (W/m²), die Energie eines Tages in Kilowattstunden je Quadratmeter (kWh/m²). An einem klaren Sommertag sind es in Österreich rund 7 bis 8 kWh/m², an einem trüben Wintertag oft unter 0,5.',
+    inApp:
+      'Auf der Seite „Lokal“ in der Karte „Sonnenstrahlung“: Tagessumme mit der Spanne der Modelle, Tagesverlauf als Diagramm und eine grobe Schätzung für Photovoltaik (kWh je kWp installierter Leistung).',
+    example: 'Bei 3 kWh/m² liefert eine Anlage mit 5 kWp grob 3 × 0,8 × 5 = 12 kWh Strom.',
   },
   // ---------- Großwetterlage (Etappe 18) ----------
   {

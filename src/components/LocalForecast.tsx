@@ -6,6 +6,8 @@ import { reachInDays, sliceForecast } from '../lib/chartData'
 import { summarizeDays } from '../lib/daily'
 import { CLOUD_PROFILE_MODELS, COMPARISON_MODELS } from '../lib/models'
 import { WARNING_EXTRA_VARIABLES, computeWarnings } from '../lib/warnings'
+import { STRAHLUNG_VARIABLES } from '../lib/strahlung'
+import { StrahlungPanel } from './StrahlungPanel'
 import { WarningsPanel } from './WarningsPanel'
 import { EnvironmentPanel } from './EnvironmentPanel'
 import { EnsembleTrend } from './EnsembleTrend'
@@ -33,6 +35,8 @@ import { friendlyError } from '../api/errors'
 const FETCH_DAYS = 14
 const CHART_DAYS = 7
 const OPEN_KEY = 'wetter-app.comparison-open'
+/** Zusätzliche stündliche Werte: für die Warnhinweise (CAPE, Deckel, Nullgradgrenze) und die Sonnenstrahlung */
+const LOCAL_EXTRA_VARIABLES = [...WARNING_EXTRA_VARIABLES, ...STRAHLUNG_VARIABLES]
 
 type Result = { key: string; forecast: MultiModelForecast } | { key: string; error: string }
 type CloudResult = { key: string; profile: CloudProfileRaw } | { key: string; error: string }
@@ -64,7 +68,7 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
 
   useEffect(() => {
     const controller = new AbortController()
-    fetchMultiModelForecast(location, COMPARISON_MODELS.map((m) => m.id), FETCH_DAYS, controller.signal, WARNING_EXTRA_VARIABLES)
+    fetchMultiModelForecast(location, COMPARISON_MODELS.map((m) => m.id), FETCH_DAYS, controller.signal, LOCAL_EXTRA_VARIABLES)
       .then((forecast) => {
         setSelectedDay(null)
         setResult({ key: requestKey, forecast })
@@ -214,6 +218,10 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
 
       <ErrorBoundary label="Luft & Umwelt" resetKey={requestKey}>
         <EnvironmentPanel location={location} now={now} />
+      </ErrorBoundary>
+
+      <ErrorBoundary label="Die Sonnenstrahlung" resetKey={requestKey}>
+        <StrahlungPanel forecast={forecast} days={days} now={now} />
       </ErrorBoundary>
 
       <section className="trend">

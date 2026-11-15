@@ -1,3 +1,4 @@
+import { uvLabel } from '../lib/airQuality'
 import { useMemo, type ReactNode } from 'react'
 import { summarizeHours, upcomingHours, type DaySummary, type HourSummary } from '../lib/daily'
 import { CONFIDENCE_LABEL, dayConfidence, precipRange, temperatureBackground } from '../lib/dayDisplay'
@@ -116,8 +117,12 @@ export function DayList({ forecast, days, now, warnings, selectedIndex, onSelect
                   <WindArrow wind={d.windDirection} size={14} showName={false} /> {Math.round(d.windMax.mean ?? 0)} km/h
                   <span className="muted"> · Böen {Math.round(d.gustMax.mean ?? 0)}</span>
                 </span>
-                <span className="dr-sun small" title="Sonnenstunden (Mittel der Modelle)">
+                <span
+                  className="dr-sun small"
+                  title={`Sonnenstunden (Mittel der Modelle)${d.uvMax === null ? '' : ` und höchster UV-Index des Tages: ${Math.round(d.uvMax)} (${uvLabel(d.uvMax)})`}`}
+                >
                   <SmallIcon name="sun" size={18} /> {d.sunshineHours.mean === null ? '–' : `${Math.round(d.sunshineHours.mean)} h`}
+                  {d.uvMax !== null && <span className="muted"> · UV {Math.round(d.uvMax)}</span>}
                 </span>
                 <span className="dr-conf" title={`Verlässlichkeit: ${CONFIDENCE_LABEL[conf]} (${d.modelCount} Modelle)`}>
                   {[1, 2, 3, 4].map((k) => (

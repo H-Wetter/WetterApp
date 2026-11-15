@@ -32,7 +32,7 @@ export interface Warning {
 export const LEVEL_NAME: Record<WarnLevel, string> = { 1: 'gelb', 2: 'orange', 3: 'rot', 4: 'violett' }
 
 /** Zusätzliche Variablen, die für die Warnungen abgefragt werden müssen. */
-export const WARNING_EXTRA_VARIABLES = ['cape', 'freezing_level_height']
+export const WARNING_EXTRA_VARIABLES = ['cape', 'convective_inhibition', 'freezing_level_height']
 
 // ---------- Schwellen ----------
 
@@ -47,6 +47,23 @@ const SNOW_TITLES = ['Schneefall', 'Starker Schneefall', 'Sehr starker Schneefal
 /** CAPE in J/kg (laut CLAUDE.md: > 500 leicht, > 1000 deutlich, > 2000 kräftig) */
 export const CAPE_LEVELS = [500, 1000, 2000] as const
 const THUNDER_TITLES = ['Gewitter möglich', 'Gewitter', 'Kräftige Gewitter'] as const
+
+/**
+ * CIN in J/kg (convective_inhibition): der „Deckel“, eine stabile Schicht, die aufsteigende Luft bremst.
+ * 0 = kein Deckel. Unter CIN_SCHWACH lösen Gewitter leicht aus, ab CIN_STARK hält der Deckel meist.
+ * Bricht ein starker Deckel doch, entlädt sich die angestaute Energie auf einmal: wenige, aber heftige Gewitter.
+ * (Open-Meteo liefert CIN als positive Zahl; ICON, Météo-France und GEM liefern keine.)
+ */
+export const CIN_SCHWACH = 50
+export const CIN_STARK = 200
+export type Deckel = 'schwach' | 'mittel' | 'stark'
+
+/** Stufe des Deckels aus dem CIN-Wert, `null` = kein Wert */
+export function deckelStufe(cin: number | null): Deckel | null {
+  if (cin === null) return null
+  const betrag = Math.abs(cin)
+  return betrag < CIN_SCHWACH ? 'schwach' : betrag >= CIN_STARK ? 'stark' : 'mittel'
+}
 
 // ---------- Hilfsfunktionen ----------
 
@@ -154,19 +171,32 @@ function snowWarning(fc: MultiModelForecast, day: DaySummary): Warning | null {
  * Gewitter: CAPE (Energie für Gewitter) UND Wettercode (melden Modelle Gewitter?) zusammen.
  * Viel CAPE ohne Gewittercode → eine Stufe niedriger (Energie da, aber Auslösung unsicher).
  * Gewittercode bei mind. 30 % der Modelle → mindestens gelb.
+ *
+ * Dazu der Deckel (CIN, Etappe 19), gemessen in den Stunden mit genug CAPE (kleinster Wert, denn dort bricht er am ehesten):
+ * - schwacher Deckel: Die Auslösung ist leicht, die Stufe wird NICHT gesenkt, auch wenn kein Modell Gewitter meldet.
+ * - starker Deckel und kaum Gewittercodes: eine Stufe niedriger. Bei viel CAPE bleibt aber mindestens gelb,
+ *   mit dem Hinweis, dass Gewitter unwahrscheinlich, aber heftig wären.
+ * - kein CIN-Wert: wie bisher.
  */
-function thunderWarning(fc: MultiModelForecast, day: DaySummary): Warning | null {
+export function thunderWarning(fc: MultiModelForecast, day: DaySummary): Warning | null {
   let maxCape = 0
   let maxShare = 0
+  let minCin: number | null = null
   for (let i = day.startIndex; i < day.endIndex; i++) {
-    maxCape = Math.max(maxCape, median(atHour(fc, 'cape', i)) ?? 0)
+    const cape = median(atHour(fc, 'cape', i)) ?? 0
+    maxCape = Math.max(maxCape, cape)
     const codes = atHour(fc, 'weather_code', i)
     if (codes.length) maxShare = Math.max(maxShare, codes.filter(isThunderCode).length / codes.length)
+    const cin = median(atHour(fc, 'convective_inhibition', i).map(Math.abs))
+    if (cape >= CAPE_LEVELS[0] && cin !== null) minCin = minCin === null ? cin : Math.min(minCin, cin)
   }
+  const deckel = deckelStufe(minCin)
 
   let level = levelOf(maxCape, CAPE_LEVELS)
-  if (maxShare < 0.1) level = Math.max(0, level - 1)
+  if (maxShare < 0.1 && deckel !== 'schwach') level = Math.max(0, level - 1)
+  if (deckel === 'stark' && maxShare < 0.3) level = Math.max(0, level - 1)
   if (maxShare >= 0.3) level = Math.max(1, level)
+  if (deckel === 'stark' && maxCape >= CAPE_LEVELS[1]) level = Math.max(1, level)
   if (level === 0) return null
 
   const total = fc.availableModels.length
@@ -185,12 +215,21 @@ function thunderWarning(fc: MultiModelForecast, day: DaySummary): Warning | null
     kind: 'thunder',
     level: level as WarnLevel,
     title: THUNDER_TITLES[Math.min(level, 3) - 1],
-    detail: `${hits} von ${total} Modellen zeigen Gewitter.${capeText}${extra}`,
+    detail: `${hits} von ${total} Modellen zeigen Gewitter.${capeText}${deckelText(deckel, minCin)}${extra}`,
     dayStart: day.dayStart,
     ...w,
     hits,
     total,
   }
+}
+
+/** Satz zum Deckel für den Gewitter-Hinweis (mit führendem Leerzeichen), leer ohne CIN-Wert */
+function deckelText(deckel: Deckel | null, cin: number | null): string {
+  if (deckel === null || cin === null) return ''
+  const wert = `CIN ${Math.round(cin / 10) * 10} J/kg`
+  if (deckel === 'schwach') return ` Kaum Deckel (${wert}): Gewitter können leicht auslösen.`
+  if (deckel === 'stark') return ` Starker Deckel (${wert}): Gewitter sind eher unwahrscheinlich, wären aber heftig, falls der Deckel bricht.`
+  return ` Mäßiger Deckel (${wert}): Gewitter brauchen einen Auslöser, etwa eine Front oder Berge.`
 }
 
 /**

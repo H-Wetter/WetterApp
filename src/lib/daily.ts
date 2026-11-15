@@ -51,6 +51,8 @@ export interface DaySummary {
   sunshineHours: HourStats
   /** mittlere Bewölkung tagsüber (%), Mittel der Modelle */
   cloudCover: number | null
+  /** höchster UV-Index des Tages (Mittel der Modelle, die ihn liefern: GFS und KNMI), `null` = kein Wert */
+  uvMax: number | null
   sunrise: number | null
   sunset: number | null
   moon: MoonInfo
@@ -190,6 +192,7 @@ export function summarizeDays(forecast: MultiModelForecast): DaySummary[] {
       windDirection: meanWindDirection(windPairs(forecast, forecast.availableModels, start, end)),
       sunshineHours: statsForValues(perModel.map((m) => m.sunshineHours)),
       cloudCover: cloud,
+      uvMax: forecast.uvMax?.[forecast.sun.findIndex((s) => s.dayStart === dayStart)] ?? null,
       sunrise: sun?.sunrise ?? null,
       sunset: sun?.sunset ?? null,
       // Mondphase für Mitternacht des Folgetages – also die Nacht, die zu diesem Tag gehört

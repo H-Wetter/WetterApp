@@ -142,6 +142,23 @@ Testen (`npm run dev`, Reiter „Österreich“, nach unten scrollen):
 5. Am Handy: Die Skizze steht unter dem Text, nichts ragt seitlich hinaus.
 6. Vergleich: im Reiter „Radar“ bei Windy den Luftdruck einblenden. Die Tiefs und Hochs sollten ungefähr an denselben Stellen liegen.
 
+### Etappe 19 – UV, Gewitterdeckel, Sonnenstrahlung
+Drei Ergänzungen auf „Lokal“:
+- **UV-Index:** In der Tagesliste steht neben den Sonnenstunden der höchste UV-Index des Tages („· UV 2“). Die Stundenansicht zeigt ihn mit Stufe (niedrig, mäßig, hoch …).
+- **Gewitterdeckel (CIN):** Der Gewitter-Hinweis nennt jetzt den Deckel: „Kaum Deckel“, „Mäßiger Deckel“ oder „Starker Deckel“. Bei kaum Deckel bleibt die Warnstufe, bei starkem Deckel sinkt sie. Schwellen `CIN_SCHWACH` und `CIN_STARK` oben in `src/lib/warnings.ts`.
+- **Sonnenstrahlung:** eigene Karte unter „Luft & Umwelt“ mit der Tagessumme in kWh/m² (in Klammer die Spanne der Modelle), dem Tagesverlauf als Diagramm und einer groben Schätzung für Photovoltaik. Den Faktor 0,8 änderst du als `PV_WIRKUNGSANTEIL` oben in `src/lib/strahlung.ts`.
+
+Gut zu wissen:
+- Die Photovoltaik-Zahl gilt für eine waagrechte Fläche. Nach Süden geneigte Module liefern im Winter deutlich mehr.
+- Den UV-Index liefern in der Vorhersage nur zwei Modelle (GFS, KNMI).
+- Es kommt kein neuer Abruf dazu, die Werte reisen mit der Vorhersage von „Lokal“ mit.
+
+Testen (`npm run dev`, Reiter „Lokal“):
+1. Tagesliste: Bei jedem Tag steht „· UV …“. Einen Tag aufklappen: „UV-Index bis …“.
+2. Zur Karte „Sonnenstrahlung“ scrollen, einen anderen Tag antippen: Diagramm und Summe wechseln.
+3. Gewitterdeckel: erst an einem Tag mit Gewitter-Hinweis sichtbar (im Winter kaum). Zum Ausprobieren einen Ort in den Tropen suchen, z. B. Singapur.
+4. Lexikon: „CIN und Deckel“ und „Globalstrahlung“ suchen.
+
 ### Neue Ideen
 Einfach beschreiben, z. B.: „Trag als Etappe 18 in die CLAUDE.md ein: …, und mach zuerst einen Plan.“ Jede Etappe bekommt am Ende einen Tag (`etappe-18`), zu dem man jederzeit zurück kann.
 

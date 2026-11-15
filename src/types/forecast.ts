@@ -49,6 +49,11 @@ export interface MultiModelForecast {
   lastIndex: Record<string, number>
   /** Sonnenauf-/-untergang je Tag */
   sun: SunTimes[]
+  /**
+   * Höchster UV-Index je Tag (gleiche Reihenfolge wie `sun`), Mittel der Modelle, die ihn liefern
+   * (in der Vorhersage-API nur GFS und KNMI). `null` = kein Wert.
+   */
+  uvMax: (number | null)[]
   /** Zusätzlich angefragte Variablen (z. B. Temperatur auf Druckniveaus für den Berg): extra[variable][modelId] */
   extra: Record<string, Record<string, Series>>
 }

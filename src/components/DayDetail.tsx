@@ -1,3 +1,4 @@
+import { uvAdvice, uvLabel } from '../lib/airQuality'
 import { useEffect, useMemo, useRef } from 'react'
 import { sliceForecast } from '../lib/chartData'
 import { FEW_MODELS, summarizeHours, type DaySummary, type HourSummary } from '../lib/daily'
@@ -110,6 +111,11 @@ export function DayDetail({ forecast, day, now, statIds, lineModels, cloudProfil
             {day.sunshineHours.min !== null && day.sunshineHours.max !== null && day.sunshineHours.count > 1 && (
               <span className="muted"> ({day.sunshineHours.min.toFixed(1)}–{day.sunshineHours.max.toFixed(1)})</span>
             )}
+          </li>
+        )}
+        {day.uvMax !== null && (
+          <li title={`Höchster UV-Index des Tages (Modelle GFS und KNMI). ${uvAdvice(day.uvMax)}`}>
+            <SmallIcon name="sun" size={24} /> UV-Index bis {Math.round(day.uvMax)} <span className="muted">({uvLabel(day.uvMax)})</span>
           </li>
         )}
         {day.feelsMax.mean !== null && (
