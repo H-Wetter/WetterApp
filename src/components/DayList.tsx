@@ -23,6 +23,13 @@ interface Props {
 
 const WEEKDAYS = ['So', 'Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa']
 
+/** „Heute“, „Morgen“, danach der Wochentag („Do“) */
+function dayLabel(index: number, dayStart: number): string {
+  if (index === 0) return 'Heute'
+  if (index === 1) return 'Morgen'
+  return WEEKDAYS[new Date(dayStart).getUTCDay()]
+}
+
 function deg(v: number | null): string {
   return v === null ? '–' : `${Math.round(v)}°`.replace('-', '−')
 }
@@ -69,11 +76,11 @@ export function DayList({ forecast, days, now, warnings, selectedIndex, onSelect
           </ol>
         </div>
       )}
-      {selectedIndex === 0 && detail}
 
+      {/* Alle Tage untereinander, auch heute. Die Stundenansicht klappt unter der Zeile des gewählten Tages auf
+          (für heute also gleich unter der Zeile „Heute“, egal ob man oben auf die Karte oder auf die Zeile tippt). */}
       <ul className="daylist">
         {days.map((d, i) => {
-          if (i === 0) return null
           const open = i === selectedIndex
           const dayWarnings = warnings.filter((w) => w.dayStart === d.dayStart)
           const top = dayWarnings[0] // schon nach Stärke sortiert
@@ -83,7 +90,7 @@ export function DayList({ forecast, days, now, warnings, selectedIndex, onSelect
             <li key={d.dayStart}>
               <button type="button" className={open ? 'day-row selected' : 'day-row'} aria-expanded={open} onClick={() => onSelect(i)}>
                 <span className="dr-day">
-                  <strong>{i === 1 ? 'Morgen' : WEEKDAYS[new Date(d.dayStart).getUTCDay()]}</strong>
+                  <strong>{dayLabel(i, d.dayStart)}</strong>
                   <span className="muted small">{formatDate(d.dayStart)}</span>
                   <LostagChip dayStart={d.dayStart} />
                 </span>

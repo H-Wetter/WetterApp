@@ -234,7 +234,8 @@ h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
 .day-row {
   width: 100%; text-align: left; padding: 0.4rem 0.7rem; border-radius: 12px; background: var(--surface);
   display: grid; align-items: center; gap: 0.3rem 0.8rem;
-  grid-template-columns: 4.2rem 5rem 6.2rem minmax(6rem, 1fr) minmax(8rem, 1fr) 3.6rem 3.4rem 2.2rem;
+  /* Spalte „sun“ (6. Spalte) breit genug für Sonnenstunden UND UV-Index, z. B. „12 h · UV 7“ */
+  grid-template-columns: 4.2rem 5rem 6.2rem minmax(6rem, 1fr) minmax(8rem, 1fr) max-content 3.4rem 2.2rem;
   grid-template-areas: 'day icons temps rain wind sun conf end';
 }
 .day-row:hover { border-color: var(--accent); }
