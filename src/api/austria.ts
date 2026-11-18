@@ -1,4 +1,3 @@
-import type { OrtOesterreich } from '../data/orte-oesterreich'
 import type { MultiModelForecast } from '../types/forecast'
 import { fetchJsonCached } from './cache'
 import { FORECAST_VARIABLES, parseMultiModel, type ForecastResponse } from './openMeteo'
@@ -16,12 +15,25 @@ export const AUSTRIA_MODELS = ['dwd_icon_seamless', 'ecmwf_ifs', 'gfs_seamless',
 /** Zusätzliche stündliche Werte: Nullgradgrenze für den Detailbereich */
 export const AUSTRIA_EXTRA_VARIABLES = ['freezing_level_height']
 
+/** Was der Abruf von einem Ort braucht (Orte der Österreich- und der Europa-Karte) */
+export interface KartenPunkt {
+  id: string
+  latitude: number
+  longitude: number
+  elevation: number
+}
+
 /**
- * Vorhersage für alle Orte in EINEM Abruf: Open-Meteo nimmt mehrere Koordinaten kommagetrennt
+ * Vorhersage für alle Orte in EINEM Abruf (auch für die Europa-Karte): Open-Meteo nimmt mehrere Koordinaten kommagetrennt
  * und antwortet dann mit einer Liste, ein Eintrag je Ort in derselben Reihenfolge.
  * Ergebnis 30 Minuten im Zwischenspeicher (Standard von fetchJsonCached).
  */
-export async function fetchAustriaForecast(orte: OrtOesterreich[], days: number, signal?: AbortSignal): Promise<Map<string, MultiModelForecast>> {
+export async function fetchAustriaForecast(
+  orte: KartenPunkt[],
+  days: number,
+  signal?: AbortSignal,
+  fehlertext = 'Wetterdaten für Österreich konnten nicht geladen werden',
+): Promise<Map<string, MultiModelForecast>> {
   const params = new URLSearchParams({
     latitude: orte.map((o) => o.latitude.toFixed(4)).join(','),
     longitude: orte.map((o) => o.longitude.toFixed(4)).join(','),
@@ -34,7 +46,7 @@ export async function fetchAustriaForecast(orte: OrtOesterreich[], days: number,
   })
   const raw = await fetchJsonCached<ForecastResponse | ForecastResponse[]>(
     `${FORECAST_URL}?${params.toString()}`,
-    'Wetterdaten für Österreich konnten nicht geladen werden',
+    fehlertext,
     signal,
   )
   // Bei nur einem Ort antwortet Open-Meteo ohne Liste

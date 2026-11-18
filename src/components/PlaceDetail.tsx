@@ -1,5 +1,4 @@
 import { useEffect, useMemo } from 'react'
-import type { OrtOesterreich } from '../data/orte-oesterreich'
 import { dailyWeatherCode } from '../lib/austria'
 import { summarizeDays } from '../lib/daily'
 import { CONFIDENCE_LABEL, dayConfidence, precipRange, temperatureBackground } from '../lib/dayDisplay'
@@ -13,7 +12,10 @@ import { WmoIcon } from './WmoIcon'
 import { WindArrow } from './WindArrow'
 
 interface Props {
-  ort: OrtOesterreich
+  /** Ort der Österreich- oder Europa-Karte */
+  ort: { name: string; elevation: number }
+  /** Zusatz hinter dem Datum, z. B. das Land */
+  zusatz?: string
   forecast: MultiModelForecast
   dayIndex: number
   onClose: () => void
@@ -31,11 +33,11 @@ function meters(h: number): string {
 }
 
 /**
- * Detailbereich der Österreich-Karte für einen Ort und Tag. Am Computer rechts neben der Karte,
+ * Detailbereich der Österreich- und der Europa-Karte für einen Ort und Tag. Am Computer rechts neben der Karte,
  * am Handy als Bereich, der von unten hereinfährt (das regelt das CSS).
  * Der Tagesverlauf kommt aus derselben Logik wie in „Lokal“ (src/lib/tagesverlauf.ts).
  */
-export function PlaceDetail({ ort, forecast, dayIndex, onClose, onOpenLocal }: Props) {
+export function PlaceDetail({ ort, zusatz, forecast, dayIndex, onClose, onOpenLocal }: Props) {
   const days = useMemo(() => summarizeDays(forecast), [forecast])
   const day = days[dayIndex]
   const now = localNow(forecast.utcOffsetSeconds)
@@ -62,7 +64,8 @@ export function PlaceDetail({ ort, forecast, dayIndex, onClose, onOpenLocal }: P
         <div>
           <h2>{ort.name}</h2>
           <p className="small muted">
-            {relativeDayName(day.dayStart, now)}, {formatDate(day.dayStart)} · {ort.elevation} m
+            {relativeDayName(day.dayStart, now)}, {formatDate(day.dayStart)} · {zusatz ? `${zusatz} · ` : ''}
+            {ort.elevation} m
           </p>
         </div>
         <button type="button" className="pd-close" onClick={onClose} aria-label="Detailbereich schließen">

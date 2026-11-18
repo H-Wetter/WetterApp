@@ -611,13 +611,13 @@ h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
 .error-box p:last-child { margin-bottom: 0; }
 
 /* ---------- Handy (Etappe 12) ---------- */
-/* Reiter: auf schmalen Bildschirmen 3 × 2 Knöpfe statt einer Leiste, in der man seitlich wischen müsste */
+/* Reiter: auf schmalen Bildschirmen 4 + 3 Knöpfe statt einer Leiste, in der man seitlich wischen müsste */
 @media (max-width: 600px) {
   .app-header { padding: 0.5rem 0.6rem; gap: 0.5rem; }
   .brand { font-size: 0; }
   .brand::first-letter { font-size: 1.4rem; }
-  .nav { flex: 1; display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.25rem; overflow: visible; }
-  .nav-item { padding: 0.45rem 0.2rem; font-size: 0.9rem; text-align: center; border-color: var(--border); }
+  .nav { flex: 1; display: grid; grid-template-columns: repeat(4, 1fr); gap: 0.25rem; overflow: visible; }
+  .nav-item { padding: 0.45rem 0.1rem; font-size: 0.82rem; text-align: center; border-color: var(--border); }
   main { padding: 0.75rem; }
 }
 /* Touch-Bildschirme: Knöpfe und Schieber groß genug für den Finger (mind. ca. 40 px hoch) */
@@ -702,6 +702,26 @@ h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
   font-size: 0.7rem; line-height: 1.4; white-space: nowrap;
   background: color-mix(in srgb, var(--mountain) 16%, var(--surface)); color: var(--text);
 }
+/* Feiertage auf „Lokal“ */
+.feiertag-chip {
+  display: inline-block; align-self: flex-start; margin-top: 0.1rem; padding: 0 0.35rem; border-radius: 999px;
+  font-size: 0.7rem; line-height: 1.4; white-space: nowrap;
+  background: color-mix(in srgb, var(--accent) 12%, var(--surface)); color: var(--text);
+}
+.feiertag-chip.frei { background: color-mix(in srgb, var(--accent) 28%, var(--surface)); font-weight: 600; }
+.feiertag { display: flex; flex-direction: column; gap: 0.35rem; }
+.feiertag-title { font-size: 1.2rem; }
+.feiertag-fest + .feiertag-fest { border-top: 1px solid var(--grid); padding-top: 0.4rem; }
+.feiertag-fest p { margin: 0.1rem 0; }
+.feiertag-name { display: flex; flex-wrap: wrap; align-items: baseline; gap: 0.2rem 0.5rem; }
+.feiertag-konf { font-size: 0.75rem; padding: 0 0.4rem; border-radius: 999px; border: 1px solid var(--border); color: var(--muted); }
+.feiertag-konf.frei { border-color: var(--accent); color: var(--text); font-weight: 600; }
+.feiertag-details > summary, .feiertag-mini > summary { cursor: pointer; color: var(--accent); }
+.feiertag-details > summary { font-size: 0.9rem; }
+.feiertag-weitere { list-style: none; margin: 0.2rem 0 0; padding: 0.4rem 0 0; border-top: 1px solid var(--grid); display: flex; flex-direction: column; gap: 0.25rem; }
+.feiertag-mini > summary { color: var(--text); }
+.feiertag-mini p { margin: 0.2rem 0 0.3rem 1rem; }
+.feiertag-frei { color: var(--text); font-weight: 600; }
 .regel-monat h3 { margin: 0.8rem 0 0.3rem; }
 .regel-liste { list-style: none; margin: 0; padding: 0; display: flex; flex-direction: column; gap: 0.5rem; }
 .regel-liste > li { border-top: 1px solid var(--grid); padding-top: 0.5rem; }
@@ -715,6 +735,10 @@ h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
   cursor: pointer; transition: fill 0.15s;
 }
 .austria-svg .land.hover { fill: var(--map-land-hover); }
+/* Europa: Staaten ohne Hauptstadt auf der Karte sind nicht anklickbar */
+.austria-svg .land.passive { cursor: default; }
+.austria-svg .land.passive.hover { fill: color-mix(in srgb, var(--map-land-hover) 50%, var(--map-land)); }
+.europa-map .austria-svg .land { stroke-width: 1; }
 .austria-svg .land.selected { fill: var(--map-land-hover); stroke: var(--accent); stroke-width: 2.5; }
 .austria-caption { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 0.2rem 1rem; padding: 0.2rem 0.3rem 0; }
 .austria-hover { font-weight: 600; color: var(--text); }
@@ -800,10 +824,13 @@ h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
 .gwl-skizze svg { display: block; width: 100%; height: auto; border-radius: 8px; }
 .gwl-meer { fill: var(--surface); }
 .gwl-land { fill: var(--map-land); stroke: var(--muted); stroke-width: 0.6; stroke-linejoin: round; }
-.gwl-austria { fill: var(--accent); fill-opacity: 0.55; }
+.gwl-austria { fill: var(--accent); fill-opacity: 0.55; stroke: var(--muted); stroke-width: 0.6; }
 .gwl-kern-buchstabe { font-size: 30px; font-weight: 800; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
 .gwl-kern-druck { font-size: 14px; font-weight: 700; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
 .gwl-kern.tief { fill: #d62728; }
+.europa-kern-buchstabe { font-weight: 800; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
+.europa-kern-druck { font-weight: 700; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
+.europa-druck { margin: 0.6rem 0; }
 .gwl-kern.hoch { fill: #1f77b4; }
 .gwl-details { margin-top: 0.8rem; }
 .gwl-details summary { cursor: pointer; font-weight: 600; }

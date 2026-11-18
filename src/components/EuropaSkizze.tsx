@@ -1,6 +1,6 @@
 import { useMemo } from 'react'
 import { centerText } from '../lib/druckgebilde'
-import { KUESTE_QUELLE, SKIZZE_HEIGHT, SKIZZE_WIDTH, austriaPath, landPath, projectEurope } from '../lib/europaSkizze'
+import { KUESTE_QUELLE, SKIZZE_HEIGHT, SKIZZE_WIDTH, austriaPath, laenderPfade, projectEurope } from '../lib/europaSkizze'
 import type { PressureCenter } from '../types/grosswetterlage'
 
 /**
@@ -9,7 +9,7 @@ import type { PressureCenter } from '../types/grosswetterlage'
  */
 export function EuropaSkizze({ centers }: { centers: PressureCenter[] }) {
   // Die Umrisse ändern sich nie: nur einmal berechnen
-  const land = useMemo(() => landPath(), [])
+  const laender = useMemo(() => laenderPfade(), [])
   const austria = useMemo(() => austriaPath(), [])
   const label = centers.length > 0 ? `Europa-Skizze: ${centers.map(centerText).join('; ')}` : 'Europa-Skizze ohne ausgeprägte Hochs und Tiefs'
 
@@ -17,8 +17,14 @@ export function EuropaSkizze({ centers }: { centers: PressureCenter[] }) {
     <figure className="gwl-skizze">
       <svg viewBox={`0 0 ${SKIZZE_WIDTH} ${SKIZZE_HEIGHT}`} role="img" aria-label={label}>
         <rect width={SKIZZE_WIDTH} height={SKIZZE_HEIGHT} className="gwl-meer" />
-        <path d={land} className="gwl-land" />
-        <path d={austria} className="gwl-austria" />
+        {laender.map((l) => (
+          <path key={l.id} d={l.d} className="gwl-land">
+            <title>{l.name}</title>
+          </path>
+        ))}
+        <path d={austria} className="gwl-austria">
+          <title>Österreich</title>
+        </path>
         {centers.map((c) => {
           const [px, py] = projectEurope(c.lon, c.lat)
           // Kerne am Rand ein Stück hereinrücken, damit Buchstabe und Zahl nicht abgeschnitten werden
@@ -36,7 +42,7 @@ export function EuropaSkizze({ centers }: { centers: PressureCenter[] }) {
           )
         })}
       </svg>
-      <figcaption className="muted small">H = Hoch, T = Tief, Zahl = Kerndruck in hPa. Österreich ist hervorgehoben. Küstenlinien: {KUESTE_QUELLE}.</figcaption>
+      <figcaption className="muted small">H = Hoch, T = Tief, Zahl = Kerndruck in hPa. Österreich ist hervorgehoben. Grenzen: {KUESTE_QUELLE}.</figcaption>
     </figure>
   )
 }

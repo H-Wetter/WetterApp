@@ -16,6 +16,7 @@ import type { ModelInfo, MultiModelForecast } from '../types/forecast'
 import type { WeatherLocation } from '../types/location'
 import { DayList } from './DayList'
 import { BauernregelCard } from './BauernregelCard'
+import { FeiertagCard } from './FeiertagCard'
 import { kalendertag, testdatumAusAdresse } from '../lib/bauernregeln'
 import { ErrorBoundary } from './ErrorBoundary'
 import { DayDetail } from './DayDetail'
@@ -154,7 +155,7 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
   }
 
   const now = localNow(forecast.utcOffsetSeconds)
-  // Für die Bauernregel: heutiger Tag, oder zum Ausprobieren ein Testdatum aus der Adresse (?datum=2026-11-11)
+  // Für Bauernregel und Feiertage: heutiger Tag, oder zum Ausprobieren ein Testdatum aus der Adresse (?datum=2026-11-11)
   const testdatum = testdatumAusAdresse(window.location.search)
   const selected = selectedDay !== null ? days[selectedDay] : undefined
 
@@ -214,6 +215,10 @@ export function LocalForecast({ location }: { location: WeatherLocation }) {
 
       <ErrorBoundary label="Die Bauernregel" resetKey={requestKey}>
         <BauernregelCard heute={testdatum ?? kalendertag(now)} tage={days} testdatum={testdatum !== null} />
+      </ErrorBoundary>
+
+      <ErrorBoundary label="Die Feiertage" resetKey={requestKey}>
+        <FeiertagCard heute={testdatum ?? kalendertag(now)} />
       </ErrorBoundary>
 
       <ErrorBoundary label="Luft & Umwelt" resetKey={requestKey}>

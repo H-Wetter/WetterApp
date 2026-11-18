@@ -13,12 +13,14 @@ describe('modeHigher', () => {
 })
 
 describe('dailyWeatherCode', () => {
-  /** 24 Stunden je Modell; Codes tagsüber wie angegeben, nachts Nebel (45) */
+  /** 24 Stunden je Modell; Codes tagsüber wie angegeben, nachts Nebel (45), kein Niederschlag */
   function fc(byModel: Record<string, number>): MultiModelForecast {
+    const ids = Object.keys(byModel)
     const weather_code = Object.fromEntries(
       Object.entries(byModel).map(([id, code]) => [id, Array.from({ length: 24 }, (_, h) => (h >= 6 && h < 18 ? code : 45))]),
     )
-    return { availableModels: Object.keys(byModel), data: { weather_code } } as unknown as MultiModelForecast
+    const zero = () => Object.fromEntries(ids.map((id) => [id, Array.from({ length: 24 }, () => 0)]))
+    return { availableModels: ids, data: { weather_code, precipitation: zero(), snowfall: zero() } } as unknown as MultiModelForecast
   }
 
   it('zählt nur die Stunden 6–18 Uhr (nächtlicher Nebel bleibt außen vor)', () => {
@@ -36,7 +38,31 @@ describe('dailyWeatherCode', () => {
   it('macht aus einem einzelnen Schauer am Abend keinen Regentag', () => {
     const f = fc({ a: 2 })
     f.data.weather_code.a[17] = 80
+    f.data.precipitation.a[17] = 0.3
     expect(dailyWeatherCode(f, 0)).toBe(2)
+  })
+
+  it('zeigt Regen, wenn er nachts fällt (Beispiel Klagenfurt 22.11.2026)', () => {
+    // tagsüber bedeckt, von 0 bis 5 Uhr Regen mit zusammen 4,5 mm
+    const f = fc({ a: 3, b: 3, c: 3 })
+    for (const id of ['a', 'b']) {
+      for (let h = 0; h < 5; h++) {
+        f.data.weather_code[id][h] = 61
+        f.data.precipitation[id][h] = 0.9
+      }
+    }
+    expect(dailyWeatherCode(f, 0)).toBe(61)
+  })
+
+  it('macht aus Niederschlag ohne passenden Code Regen oder Schnee', () => {
+    // Modell meldet „klar“, rechnet aber 5 mm (so bei Météo-France gesehen)
+    const rain = fc({ a: 0 })
+    rain.data.precipitation.a[12] = 5
+    expect(dailyWeatherCode(rain, 0)).toBe(61)
+    const snow = fc({ a: 0 })
+    snow.data.precipitation.a[12] = 5
+    snow.data.snowfall.a[12] = 6
+    expect(dailyWeatherCode(snow, 0)).toBe(71)
   })
 })
 
@@ -109,6 +135,14 @@ describe('placeLabels (keine Überlappung)', () => {
 
 describe('dayOverview (Symbol der Tagesauswahl)', () => {
   const d = (dayStart: number, code: number | null): PlaceDay => ({ dayStart, code, max: 10, min: 2 })
+  it('zeigt Niederschlag, wenn mindestens die Hälfte der Orte welchen hat (auch bei verschiedenen Codes)', () => {
+    const perPlace = [[d(0, 51)], [d(0, 61)], [d(0, 53)], [d(0, 51)], [d(0, 3)], [d(0, 3)], [d(0, 3)], [d(0, 2)]]
+    expect(dayOverview(perPlace, 1)[0].code).toBe(51)
+  })
+  it('bleibt trocken, wenn weniger als die Hälfte Niederschlag hat', () => {
+    const perPlace = [[d(0, 61)], [d(0, 3)], [d(0, 3)]]
+    expect(dayOverview(perPlace, 1)[0].code).toBe(3)
+  })
   it('nimmt je Tag das häufigste Symbol über alle Orte, bei Gleichstand das schwerere', () => {
     const perPlace = [
       [d(0, 3), d(1, 0)],

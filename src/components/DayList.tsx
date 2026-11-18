@@ -3,6 +3,7 @@ import { useMemo, type ReactNode } from 'react'
 import { summarizeHours, upcomingHours, type DaySummary, type HourSummary } from '../lib/daily'
 import { CONFIDENCE_LABEL, dayConfidence, precipRange, temperatureBackground } from '../lib/dayDisplay'
 import { kalendertag, lostagName } from '../lib/bauernregeln'
+import { feiertageAm } from '../lib/feiertage'
 import { formatDate, formatHour } from '../lib/time'
 import { LEVEL_NAME, type WarnLevel, type Warning } from '../lib/warnings'
 import type { MultiModelForecast } from '../types/forecast'
@@ -179,13 +180,30 @@ function HourCell({ hour: h, first }: { hour: HourSummary; first: boolean }) {
   )
 }
 
-/** Kleines Zeichen „Lostag: Martini“ in der Tageszeile (siehe Bauernregeln im Lexikon) */
+/**
+ * Kleine Zeichen in der Tageszeile: Lostag („Martini“, siehe Bauernregeln im Lexikon) und Feiertage.
+ * Gesetzliche Feiertage stehen kräftiger da. Heißt ein Fest wie der Lostag (Martini, Lichtmess), nur einmal.
+ */
 function LostagChip({ dayStart }: { dayStart: number }) {
-  const name = lostagName(kalendertag(dayStart))
-  if (!name) return null
+  const tag = kalendertag(dayStart)
+  const name = lostagName(tag)
+  const feste = feiertageAm(tag).filter((f) => f.name !== name)
   return (
-    <span className="lostag-chip" title={`Lostag: ${name}. Die Bauernregel dazu steht im Wetterlexikon.`}>
-      {name}
-    </span>
+    <>
+      {name && (
+        <span className="lostag-chip" title={`Lostag: ${name}. Die Bauernregel dazu steht im Wetterlexikon.`}>
+          {name}
+        </span>
+      )}
+      {feste.map((f) => (
+        <span
+          key={f.id}
+          className={f.gesetzlich ? 'feiertag-chip frei' : 'feiertag-chip'}
+          title={`${f.name}${f.gesetzlich ? ' (gesetzlicher Feiertag)' : ''}: ${f.kurz}`}
+        >
+          {f.name}
+        </span>
+      ))}
+    </>
   )
 }

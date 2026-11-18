@@ -37,20 +37,50 @@ export function modeHigher(values: number[]): number | null {
 }
 
 /**
+ * Ab dieser Niederschlagsmenge (mm, ganzer Tag 0–24 Uhr) zählt ein Tag für ein Modell als
+ * Regen- oder Schneetag, auch wenn tagsüber meist „bedeckt“ als Code dasteht.
+ * Grund (18.11.2026): Regnet es nachts oder nur 3–4 Stunden, gewann vorher „bedeckt“. Am 22.11.
+ * rechneten in Klagenfurt 5 von 6 Modellen 1–8 mm, die Karte zeigte trotzdem eine Wolke.
+ */
+export const RAIN_DAY_MM = 1
+
+/** WMO-Codes ab 51 sind Niederschlag (Niesel, Regen, Schnee, Schauer, Gewitter) */
+const isPrecipCode = (c: number) => c >= 51
+
+/**
  * Wettercode für einen Tag (Symbol auf der Karte):
- * 1. Je Modell der häufigste Code tagsüber (6–18 Uhr). So macht ein einzelner Schauer am Abend
- *    noch keinen Regentag, und die Nacht (klar oder neblig) zählt nicht mit.
+ * 1. Je Modell:
+ *    - Fällt am ganzen Tag mindestens RAIN_DAY_MM Niederschlag, ist es ein Niederschlagstag.
+ *      Symbol = häufigster Niederschlagscode tagsüber (sonst des ganzen Tages). Liefert das Modell keinen (Météo-France
+ *      meldet teils „klar“ trotz 5 mm Regen), dann Regen (61) bzw. Schnee (71), je nachdem,
+ *      ob mehr als die Hälfte als Schnee fällt.
+ *    - Sonst der häufigste Code tagsüber (6–18 Uhr). So macht ein kurzer Schauer mit 0,3 mm
+ *      noch keinen Regentag, und nächtlicher Nebel zählt nicht mit.
  * 2. Über alle Modelle der häufigste dieser Codes.
  * Bei Gleichstand jeweils der schwerere (größere) Code, damit Regen oder Schnee nicht untergehen.
  * @param startIndex Index der Mitternacht des Tages in forecast.times
  */
 export function dailyWeatherCode(forecast: MultiModelForecast, startIndex: number): number | null {
   const perModel: number[] = []
+  const nums = (s: (number | null)[] | undefined, from: number, to: number) =>
+    (s ?? []).slice(startIndex + from, startIndex + to).filter((v): v is number => typeof v === 'number')
   for (const id of forecast.availableModels) {
-    const codes = (forecast.data.weather_code[id] ?? [])
-      .slice(startIndex + DAY_FROM, startIndex + DAY_TO)
-      .filter((c): c is number => typeof c === 'number')
-    const code = modeHigher(codes)
+    const allCodes = nums(forecast.data.weather_code?.[id], 0, 24)
+    const precip = nums(forecast.data.precipitation?.[id], 0, 24).reduce((a, b) => a + b, 0)
+    if (precip >= RAIN_DAY_MM) {
+      // Niederschlagscode tagsüber bevorzugt, sonst aus der Nacht
+      const dayCodes = nums(forecast.data.weather_code?.[id], DAY_FROM, DAY_TO)
+      const precipCode = modeHigher(dayCodes.filter(isPrecipCode)) ?? modeHigher(allCodes.filter(isPrecipCode))
+      if (precipCode !== null) {
+        perModel.push(precipCode)
+        continue
+      }
+      // Schneefall in cm; grob 1 cm Schnee ≈ 0,7 mm Wasser
+      const snowWater = nums(forecast.data.snowfall?.[id], 0, 24).reduce((a, b) => a + b, 0) * 0.7
+      perModel.push(snowWater > precip / 2 ? 71 : 61)
+      continue
+    }
+    const code = modeHigher(nums(forecast.data.weather_code?.[id], DAY_FROM, DAY_TO))
     if (code !== null) perModel.push(code)
   }
   return modeHigher(perModel)
@@ -279,15 +309,21 @@ export function placeDays(forecast: MultiModelForecast): PlaceDay[] {
 }
 
 /**
- * Für die Tagesauswahl: je Tag das häufigste Symbol über alle Orte (bei Gleichstand das schwerere).
+ * Für die Tagesauswahl: je Tag ein Symbol über alle Orte.
+ * - Hat mindestens die Hälfte der Orte Niederschlag (Code ab 51), der häufigste Niederschlagscode.
+ *   Sonst ginge Regen unter, weil die Regenorte verschiedene Codes haben (Niesel, Regen, Schauer),
+ *   die trockenen aber alle „bedeckt“ (18.11.2026: 6 von 10 Orten mit Regen, Auswahl zeigte „bedeckt“).
+ * - Sonst das häufigste Symbol.
+ * Bei Gleichstand jeweils das schwerere.
  * @param perPlace Tageswerte je Ort (aus placeDays), alle mit denselben Tagen
  */
 export function dayOverview(perPlace: PlaceDay[][], days: number): { dayStart: number; code: number | null }[] {
   const first = perPlace.find((p) => p.length > 0) ?? []
-  return first.slice(0, days).map((d, i) => ({
-    dayStart: d.dayStart,
-    code: modeHigher(perPlace.map((p) => p[i]?.code).filter((c): c is number => typeof c === 'number')),
-  }))
+  return first.slice(0, days).map((d, i) => {
+    const codes = perPlace.map((p) => p[i]?.code).filter((c): c is number => typeof c === 'number')
+    const nass = codes.filter(isPrecipCode)
+    return { dayStart: d.dayStart, code: nass.length > 0 && nass.length * 2 >= codes.length ? modeHigher(nass) : modeHigher(codes) }
+  })
 }
 
 /** „12°/3°“ (mit echtem Minuszeichen) */

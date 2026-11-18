@@ -97,8 +97,8 @@ export function AustriaPage({ onOpenLocal }: { onOpenLocal: (location: WeatherLo
         </ErrorBoundary>
       )}
       <p className="small muted">
-        Symbol: häufigstes Wetter tagsüber (6–18 Uhr) über 6 Modelle (ICON, ECMWF, GFS, Météo-France, UKMO, GEM). Temperaturen:
-        Höchst- und Tiefstwert, Mittel der Modelle.
+        Symbol: häufigstes Wetter tagsüber (6–18 Uhr) über 6 Modelle (ICON, ECMWF, GFS, Météo-France, UKMO, GEM); rechnet ein Modell
+        mindestens 1 mm Niederschlag am Tag, zählt es als Regen- bzw. Schneetag. Temperaturen: Höchst- und Tiefstwert, Mittel der Modelle.
       </p>
     </div>
   )

@@ -6,15 +6,17 @@ import { LocalPage } from './pages/LocalPage'
 import { MountainPage } from './pages/MountainPage'
 import { RadarPage } from './pages/RadarPage'
 import { AustriaPage } from './pages/AustriaPage'
+import { EuropaPage } from './pages/EuropaPage'
 import { WebcamsPage } from './pages/WebcamsPage'
 import type { WeatherLocation } from './types/location'
 import { loadSavedLocation, saveLocation } from './lib/savedLocation'
 
-type Page = 'local' | 'austria' | 'mountain' | 'webcams' | 'radar' | 'lexikon'
+type Page = 'local' | 'austria' | 'europa' | 'mountain' | 'webcams' | 'radar' | 'lexikon'
 
 const PAGES: { id: Page; label: string; short?: string }[] = [
   { id: 'local', label: 'Lokal' },
   { id: 'austria', label: 'Österreich' },
+  { id: 'europa', label: 'Europa' },
   { id: 'mountain', label: 'Berg & Tal' },
   { id: 'webcams', label: 'Webcams', short: 'Cams' },
   { id: 'radar', label: 'Radar' },
@@ -27,7 +29,7 @@ const PAGES: { id: Page; label: string; short?: string }[] = [
  * und man steht wieder an derselben Stelle. Nur das Radar (Windy-Karte) wird jedes Mal neu aufgebaut,
  * damit die Karte im Hintergrund nicht weiterläuft.
  */
-const KEEP_ALIVE: Page[] = ['local', 'austria', 'mountain', 'webcams', 'lexikon']
+const KEEP_ALIVE: Page[] = ['local', 'austria', 'europa', 'mountain', 'webcams', 'lexikon']
 
 function App() {
   const [page, setPage] = useState<Page>('local')
@@ -126,6 +128,18 @@ function App() {
           <div hidden={page !== 'austria'}>
             <ErrorBoundary label="Die Seite „Österreich“">
               <AustriaPage
+                onOpenLocal={(loc) => {
+                  setLocation(loc)
+                  go('local')
+                }}
+              />
+            </ErrorBoundary>
+          </div>
+        )}
+        {shows('europa') && (
+          <div hidden={page !== 'europa'}>
+            <ErrorBoundary label="Die Seite „Europa“">
+              <EuropaPage
                 onOpenLocal={(loc) => {
                   setLocation(loc)
                   go('local')
