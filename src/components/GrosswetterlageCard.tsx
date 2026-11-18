@@ -6,6 +6,7 @@ import { centerText, findPressureCenters, timeIndexForDay } from '../lib/druckge
 import { analyseGewitter, analyseHoehengrenze, analyseStaub, analyseSturm, gewitterText, hoehengrenzeText, staubText, sturmText } from '../lib/einfluesse'
 import { LAGE_LEXIKON, einschaetzungSicherheit, erkenneWetterlagen, findeItalientief, kennzahlen } from '../lib/grosswetterlage'
 import { grosswetterlageAbsatz } from '../lib/grosswetterlageText'
+import { zugText, zugbahn } from '../lib/zugbahn'
 import { analyseLuftmasse, analyseStroemung, findeFront, frontText, luftmasseText, stroemungText } from '../lib/stroemung'
 import type { AlpenDaten, EuropeGrid, StaubDaten } from '../types/grosswetterlage'
 import { ErrorMessage } from './ErrorMessage'
@@ -64,6 +65,8 @@ export function GrosswetterlageCard({ dayStart, tageVoraus }: { dayStart: number
 
   const timeIndex = grid ? timeIndexForDay(grid.times, dayStart) : -1
   const centers = useMemo(() => (grid && timeIndex >= 0 ? findPressureCenters(grid, timeIndex) : []), [grid, timeIndex])
+  // Wohin ziehen die Kerne in den nächsten 24 Stunden? (gleiche Reihenfolge wie centers)
+  const zuege = useMemo(() => (grid ? centers.map((c) => zugbahn(grid, timeIndex, c)) : []), [grid, timeIndex, centers])
 
   // Alles, was aus den Daten folgt, an einer Stelle berechnen
   const lage = useMemo(() => {
@@ -122,7 +125,7 @@ export function GrosswetterlageCard({ dayStart, tageVoraus }: { dayStart: number
             )}
             {lage.sicherheit && <p className="small gwl-sicherheit">{lage.sicherheit.text}</p>}
           </div>
-          {grid && timeIndex >= 0 && <EuropaSkizze centers={centers} />}
+          {grid && timeIndex >= 0 && <EuropaSkizze centers={centers} zuege={zuege} />}
         </div>
       )}
 
@@ -168,13 +171,14 @@ export function GrosswetterlageCard({ dayStart, tageVoraus }: { dayStart: number
                 <p>Kein ausgeprägtes Hoch oder Tief über Europa, der Luftdruck ist überall ähnlich.</p>
               ) : (
                 <ul className="gwl-list">
-                  {centers.map((c) => (
+                  {centers.map((c, i) => (
                     <li key={`${c.kind}-${c.lat}-${c.lon}`}>
                       <span className={c.kind === 'T' ? 'gwl-mark tief' : 'gwl-mark hoch'} aria-hidden="true">
                         {c.kind}
                       </span>
                       <span>
                         {centerText(c)}
+                        {zuege[i] && <span className="muted">, {zugText(zuege[i]!)}</span>}
                         {c.amRand && <span className="muted small"> (am Rand des Ausschnitts, der Kern kann weiter draußen liegen)</span>}
                       </span>
                       <span className="muted small gwl-dist">{Math.round(c.distanzKm / 50) * 50} km</span>

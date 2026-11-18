@@ -1,13 +1,17 @@
 import { useMemo } from 'react'
 import { centerText } from '../lib/druckgebilde'
 import { KUESTE_QUELLE, SKIZZE_HEIGHT, SKIZZE_WIDTH, austriaPath, laenderPfade, projectEurope } from '../lib/europaSkizze'
+import type { Zugbahn } from '../lib/zugbahn'
 import type { PressureCenter } from '../types/grosswetterlage'
+import { ZugPfeil } from './ZugPfeil'
 
 /**
  * Kleine Europa-Skizze mit den erkannten Hochs (H, blau) und Tiefs (T, rot) samt Kerndruck.
- * Österreich ist farbig hervorgehoben. Keine Kartenkacheln, nur ein SVG.
+ * Österreich ist farbig hervorgehoben. Pfeile zeigen, wohin die Kerne in den nächsten 24 Stunden ziehen.
+ * Keine Kartenkacheln, nur ein SVG.
+ * @param zuege Zugbahn je Kern, gleiche Reihenfolge wie centers
  */
-export function EuropaSkizze({ centers }: { centers: PressureCenter[] }) {
+export function EuropaSkizze({ centers, zuege = [] }: { centers: PressureCenter[]; zuege?: (Zugbahn | null)[] }) {
   // Die Umrisse ändern sich nie: nur einmal berechnen
   const laender = useMemo(() => laenderPfade(), [])
   const austria = useMemo(() => austriaPath(), [])
@@ -41,8 +45,12 @@ export function EuropaSkizze({ centers }: { centers: PressureCenter[] }) {
             </g>
           )
         })}
+        {/* Pfeile über den Buchstaben, sonst verschwinden kurze Pfeile unter dem großen H bzw. T */}
+        {centers.map((c, i) => (
+          <ZugPfeil key={`z-${c.kind}-${c.lat}-${c.lon}`} zug={zuege[i] ?? null} kind={c.kind} project={projectEurope} breite={2.5} />
+        ))}
       </svg>
-      <figcaption className="muted small">H = Hoch, T = Tief, Zahl = Kerndruck in hPa. Österreich ist hervorgehoben. Grenzen: {KUESTE_QUELLE}.</figcaption>
+      <figcaption className="muted small">H = Hoch, T = Tief, Zahl = Kerndruck in hPa, Pfeil = Zugrichtung der nächsten 24 Stunden. Österreich ist hervorgehoben. Grenzen: {KUESTE_QUELLE}.</figcaption>
     </figure>
   )
 }

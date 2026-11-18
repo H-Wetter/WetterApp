@@ -8,6 +8,7 @@ import { ErrorMessage } from '../components/ErrorMessage'
 import { Loading } from '../components/Loading'
 import { PlaceDetail } from '../components/PlaceDetail'
 import { WeatherMap, type KartenGeometrie, type MapPlace } from '../components/WeatherMap'
+import { ZugPfeil } from '../components/ZugPfeil'
 import { ORTE_EUROPA } from '../data/orte-europa'
 import { dayOverview, placeDays, widestTemps } from '../lib/austria'
 import { centerText, findPressureCenters, timeIndexForDay } from '../lib/druckgebilde'
@@ -22,6 +23,7 @@ import {
   ortEuropaAlsStandort,
 } from '../lib/europa'
 import { EUROPA_LAENDER, buildEuropaKarte } from '../lib/europaMap'
+import { zugText, zugbahn } from '../lib/zugbahn'
 import type { MultiModelForecast } from '../types/forecast'
 import type { EuropeGrid } from '../types/grosswetterlage'
 import type { WeatherLocation } from '../types/location'
@@ -50,11 +52,12 @@ function build(height: number, band: number): KartenGeometrie {
 }
 
 type Result = { key: number; data: Map<string, MultiModelForecast> } | { key: number; error: string }
-type GridState = { status: 'aus' } | { status: 'laedt' } | { status: 'da'; grid: EuropeGrid } | { status: 'fehler'; message: string }
+type GridState = { status: 'nie' } | { status: 'laedt' } | { status: 'da'; grid: EuropeGrid } | { status: 'fehler'; message: string }
 
 /**
  * Seite „Europa“: Wetter in 21 Hauptstädten auf einer Karte, aufgebaut wie die Österreich-Karte
- * (gleiche Symbol-Regel, Tagesauswahl, Detailbereich). Auf Wunsch mit Hochs und Tiefs.
+ * (gleiche Symbol-Regel, Tagesauswahl, Detailbereich). Auf Wunsch mit Hochs, Tiefs und ihrer Zugrichtung
+ * (Schalter zum Ein- und Ausblenden).
  *
  * Abrufe: 21 Orte × 6 Modelle in einem Aufruf, 30 Minuten gemerkt. Hochs und Tiefs brauchen das
  * Europa-Raster der Großwetterlage (273 Punkte), deshalb erst auf Knopfdruck; es wird 1 Stunde gemerkt
@@ -65,7 +68,9 @@ export function EuropaPage({ onOpenLocal }: { onOpenLocal: (location: WeatherLoc
   const [result, setResult] = useState<Result | null>(null)
   const [dayIndex, setDayIndex] = useState(0)
   const [selectedId, setSelectedId] = useState<string | null>(null)
-  const [gridState, setGridState] = useState<GridState>({ status: 'aus' })
+  const [gridState, setGridState] = useState<GridState>({ status: 'nie' })
+  // Schalter „Hochs und Tiefs“: Beim ersten Einschalten wird das Raster geladen, danach nur noch ein- und ausgeblendet
+  const [druckAn, setDruckAn] = useState(false)
   const close = useCallback(() => setSelectedId(null), [])
 
   useEffect(() => {
@@ -79,7 +84,7 @@ export function EuropaPage({ onOpenLocal }: { onOpenLocal: (location: WeatherLoc
     return () => controller.abort()
   }, [reload])
 
-  const zeigeDruck = () => {
+  const ladeDruck = () => {
     setGridState({ status: 'laedt' })
     loadEuropeGrid()
       .then((grid) => setGridState({ status: 'da', grid }))
@@ -98,26 +103,34 @@ export function EuropaPage({ onOpenLocal }: { onOpenLocal: (location: WeatherLoc
 
   // Hochs und Tiefs am Mittag des gewählten Tages (gleiche Erkennung wie in der Großwetterlage)
   const dayStart = days[dayIndex]?.dayStart
-  const centers = useMemo(() => {
+  const druck = useMemo(() => {
     if (gridState.status !== 'da' || dayStart === undefined) return []
-    const t = timeIndexForDay(gridState.grid.times, dayStart)
-    return t >= 0 ? findPressureCenters(gridState.grid, t) : []
+    const grid = gridState.grid
+    const t = timeIndexForDay(grid.times, dayStart)
+    // je Kern auch die Zugbahn der nächsten 24 Stunden
+    return t >= 0 ? findPressureCenters(grid, t).map((center) => ({ center, zug: zugbahn(grid, t, center) })) : []
   }, [gridState, dayStart])
+  const centers = druckAn ? druck : []
 
   const overlay = useCallback(
     (project: KartenGeometrie['project'], font: number) =>
-      centers.map((c) => {
+      centers.map(({ center: c, zug }) => {
         const p = project(c.lon, c.lat)
         if (!p) return null
         return (
           <g key={`${c.kind}-${c.lat}-${c.lon}`} className={c.kind === 'T' ? 'gwl-kern tief' : 'gwl-kern hoch'}>
-            <title>{centerText(c)}</title>
+            <title>
+              {centerText(c)}
+              {zug ? `, ${zugText(zug)}` : ''}
+            </title>
             <text x={p[0]} y={p[1]} textAnchor="middle" fontSize={font * 2} className="europa-kern-buchstabe">
               {c.kind}
             </text>
             <text x={p[0]} y={p[1] + font * 1.1} textAnchor="middle" fontSize={font * 0.9} className="europa-kern-druck">
               {c.hPa}
             </text>
+            {/* Pfeil über den Buchstaben, damit auch kurze Pfeile sichtbar bleiben */}
+            <ZugPfeil zug={zug} kind={c.kind} project={project} breite={font * 0.22} />
           </g>
         )
       }),
@@ -171,19 +184,42 @@ export function EuropaPage({ onOpenLocal }: { onOpenLocal: (location: WeatherLoc
       {!selected && data && <p className="small muted">Tippe auf ein Land oder eine Stadt für Details.</p>}
 
       <div className="europa-druck">
-        {gridState.status === 'aus' && (
-          <button type="button" onClick={zeigeDruck}>
-            Hochs und Tiefs einblenden
-          </button>
-        )}
-        {gridState.status === 'laedt' && <Loading small>Luftdruck über Europa wird geladen …</Loading>}
-        {gridState.status === 'fehler' && <ErrorMessage message={gridState.message} onRetry={zeigeDruck} />}
-        {gridState.status === 'da' && (
-          <p className="small muted">
-            <span className="gwl-mark hoch">H</span> Hoch, <span className="gwl-mark tief">T</span> Tief, Zahl = Kerndruck in hPa (ECMWF, Mittag des
-            gewählten Tages).{' '}
-            {centers.length === 0 && 'An diesem Tag gibt es keine ausgeprägten Hochs und Tiefs im Kartenausschnitt.'}
-          </p>
+        <label className="europa-schalter">
+          <input
+            type="checkbox"
+            checked={druckAn}
+            onChange={(e) => {
+              setDruckAn(e.target.checked)
+              if (e.target.checked && (gridState.status === 'nie' || gridState.status === 'fehler')) ladeDruck()
+            }}
+          />{' '}
+          Hochs und Tiefs mit Zugrichtung zeigen
+        </label>
+        {druckAn && gridState.status === 'laedt' && <Loading small>Luftdruck über Europa wird geladen …</Loading>}
+        {druckAn && gridState.status === 'fehler' && <ErrorMessage message={gridState.message} onRetry={ladeDruck} />}
+        {druckAn && gridState.status === 'da' && (
+          <>
+            <p className="small muted">
+              <span className="gwl-mark hoch">H</span> Hoch, <span className="gwl-mark tief">T</span> Tief, Zahl = Kerndruck in hPa (ECMWF, Mittag des
+              gewählten Tages). Pfeil = wohin der Kern in den nächsten 24 Stunden zieht.{' '}
+              {centers.length === 0 && 'An diesem Tag gibt es keine ausgeprägten Hochs und Tiefs im Kartenausschnitt.'}
+            </p>
+            {centers.length > 0 && (
+              <ul className="gwl-list small">
+                {centers.map(({ center: c, zug }) => (
+                  <li key={`${c.kind}-${c.lat}-${c.lon}`}>
+                    <span className={c.kind === 'T' ? 'gwl-mark tief' : 'gwl-mark hoch'} aria-hidden="true">
+                      {c.kind}
+                    </span>
+                    <span>
+                      {centerText(c)}
+                      {zug && <span className="muted">, {zugText(zug)}</span>}
+                    </span>
+                  </li>
+                ))}
+              </ul>
+            )}
+          </>
         )}
       </div>
 

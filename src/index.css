@@ -831,7 +831,16 @@ h3 { margin: 0 0 0.5rem; font-size: 1.1rem; }
 .europa-kern-buchstabe { font-weight: 800; paint-order: stroke; stroke: var(--surface); stroke-width: 4px; stroke-linejoin: round; }
 .europa-kern-druck { font-weight: 700; paint-order: stroke; stroke: var(--surface); stroke-width: 3px; stroke-linejoin: round; }
 .europa-druck { margin: 0.6rem 0; }
+.europa-schalter { display: inline-flex; align-items: center; gap: 0.3rem; cursor: pointer; font-weight: 600; }
 .gwl-kern.hoch { fill: #1f77b4; }
+/* Zugrichtung der Hochs und Tiefs */
+/* weißer Rand, damit der Pfeil auf dem gleichfarbigen Buchstaben sichtbar bleibt */
+.zug-pfeil polyline { stroke-opacity: 0.9; }
+.zug-pfeil polygon { stroke: var(--surface); stroke-width: 1px; paint-order: stroke; }
+.zug-pfeil.tief polyline { stroke: #d62728; }
+.zug-pfeil.tief polygon { fill: #d62728; }
+.zug-pfeil.hoch polyline { stroke: #1f77b4; }
+.zug-pfeil.hoch polygon { fill: #1f77b4; }
 .gwl-details { margin-top: 0.8rem; }
 .gwl-details summary { cursor: pointer; font-weight: 600; }
 .gwl-gruende { margin: 0.2rem 0; padding-left: 1.2rem; }
